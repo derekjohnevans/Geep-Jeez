@@ -1,0 +1,1 @@
+Place a copy of the VST SDK 3.6+ here.

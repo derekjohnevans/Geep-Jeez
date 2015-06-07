@@ -1,0 +1,1179 @@
+/*
+
+  Jesusonic Standard Library
+
+  These are the functions currently avaliable to Jes2Cpp. Not all have been tested, but the main ones work as
+  expected. Some of the functions are not fully implemented because VST doesn't support the feature, or, I
+  am yet to complete the task.
+
+  The documentation was taken from the Jesusonic Programming Reference.
+  http://reaper.fm/sdk/js/js.php
+
+*/
+
+@init // Variables
+
+// Use the variable 'jes2cpp' to determine if running as a plugin.
+jes2cpp = 1;
+
+// The current playback position (as of last @block) in REAPER, in beats (beats = quarternotes in /4 time signatures).
+beat_position extern;
+
+// The current time signature numerator, i.e. 3.0 if using 3/4 time.
+ts_num extern;
+
+// The current time signature denominator, i.e. 4.0 if using 3/4 time.
+ts_denom extern;
+
+// Specifies the number of channels available (usually 2).
+num_ch extern;
+
+/*
+The current delay added by the plug-in, in samples. Note that you shouldnt change this too often. This specifies the amount of the delay that should be
+compensated, however you need to set the pdc_bot_ch and pdc_top_ch below to tell JS which channels should be compensated.
+*/
+pdc_delay extern;
+
+/*
+The channels that are delayed by pdc_delay.
+(this is provided so that channels you dont delay can be properly synchronized by the host).
+*/
+pdc_bot_ch extern;
+pdc_top_ch extern;
+
+// The current playback position in REAPER (as of last @block), in seconds.
+// play_position extern;
+
+// The current playback state of REAPER (0=stopped, <0=error, 1=playing, 2=paused, 5=recording, 6=record paused).
+play_state extern;
+
+/*
+The samplesblock variable can be used within @block code to see how many samples will come before the next @block call. It may also be valid in other contexts
+(though your code should handle invalid values in other contexts with grace).
+*/
+samplesblock extern;
+
+/*
+The srate variable is set by the system to whatever the current sampling frequency is set to (usually 44100 to 192000). Generally speaking your @init code section
+will be called when this changes, though it's probably a good idea not to depend too much on that.
+*/
+srate extern;
+
+// Internal used string slot count. (VST only)
+str_count extern; // Extended
+
+// The current project tempo, in "bpm". An example value would be 120.0.
+tempo extern;
+
+// The trigger variable provides a facility for triggering effects.
+trigger extern;
+
+/*
+If set to a value greater than -1.0, this will result in the framebuffer being cleared to that color. the color for this one is packed RGB (0..255), i.e.
+red+green*256+blue*65536. The default is 0 (black).
+*/
+gfx_clear extern;
+
+// These represent the current red, green, blue, and alpha components used by drawing operations (0.0..1.0).
+gfx_r extern;
+gfx_g extern;
+gfx_b extern;
+gfx_a extern;
+
+// These are set to the current width and height of the UI framebuffer
+gfx_w extern;
+gfx_h extern;
+
+// These set the "current" graphics position in x,y. You can set these yourselves, and many of the drawing functions update them as well.
+gfx_x extern;
+gfx_y extern;
+
+/*
+Set to 0 for default options. Add 1.0 for additive blend mode (if you wish to do subtractive, set gfx_a to negative and use gfx_mode as additive). Add 2.0 to
+disable source alpha for gfx_blit(). Add 4.0 to disable filtering for gfx_blit().
+*/
+// gfx_mode extern;
+
+// Set to the height of a line of text in the current font. Do not modify this variable.
+gfx_texth extern;
+
+// Sets the refresh update in frames per second. This allows you to throttle the refresh rate for effects that dont
+// constantly animate. The refresh rate is put pack to 30 fps automaticly on mouse events.
+gfx_rate extern; // Extended
+
+// The current font index.
+gfx_getfont = 0; // Extended
+
+// mouse_cap is a bitfield of mouse and keyboard modifier state.
+mouse_cap extern;
+
+// mouse_x and mouse_y are set to the coordinates of the mouse within the graphics area of the window.
+mouse_x extern;
+mouse_y extern;
+
+@init // Functions
+
+//==============================================================================
+// Basic Math Functions
+//==============================================================================
+
+// Returns the absolute value of the parameter.
+function abs(x) global()
+(
+  x < 0 ? -x : x;
+);
+
+// Returns the square of the parameter (similar to x*x, though only evaluating x once).
+function sqr(x) global()
+(
+  x * x;
+);
+
+// Returns the maximum value of the two parameters.
+function max(x, y) global()
+(
+  x > y ? x : y;
+);
+
+// Returns the minimum value of the two parameters.
+function min(x, y) global()
+(
+  x < y ? x : y;
+);
+
+// Returns the sign of the parameter (-1, 0, or 1).
+function sign(x) global()
+(
+  x < 0 ? -1 : x > 0 ? 1 : 0;
+);
+
+// Returns the arc Cosine of the value specified (return value is in radians).
+function acos(x) global()
+(
+  !"acos(x$)";
+);
+
+// Returns the arc Sine of the value specified (return value is in radians).
+function asin(x) global()
+(
+  !"asin(x$)";
+);
+
+// Returns the arc Tangent of the value specified (return value is in radians).
+function atan(x) global()
+(
+  !"atan(x$)";
+);
+
+// Returns the arc Tangent of x divided by y (return value is in radians).
+function atan2(x, y) global()
+(
+  !"atan2(x$, y$)";
+);
+
+// Rounds the value to the highest integer possible (ceil(3.1)==4, ceil(-3.9)==-3).
+function ceil(x) global()
+(
+  !"ceil(x$)";
+);
+
+// Returns the cosine of the angle specified (specified in radians).
+function cos(x) global()
+(
+  !"cos(x$)";
+);
+
+// Returns the number e (approx 2.718) raised to the parameter-th power. This function is significantly faster than pow() or the ^ operator
+function exp(x) global()
+(
+  !"exp(x$)";
+);
+
+// Rounds the value to the lowest integer possible (floor(3.9)==3, floor(-3.1)==-4).
+function floor(x) global()
+(
+  !"floor(x$)";
+);
+
+// Returns the natural logarithm (base e) of the parameter.
+function log(x) global()
+(
+  x > 0 ? !"log(x$)" : 0;
+);
+
+// Returns the logarithm (base 10) of the parameter.
+function log10(x) global()
+(
+  x > 0 ? !"log10(x$)" : 0;
+);
+
+// Returns the first parameter raised to the second parameter-th power. Identical in behavior and performance to the ^ operator.
+function pow(x, y) global()
+(
+  x ^ y;
+);
+
+// Returns a psuedorandom number. (Not standard)
+function rand() global()
+(
+  !"rand()";
+);
+
+// Returns a psuedorandom number between 0 and the parameter.
+function rand(x) global()
+(
+  x * rand() / !"RAND_MAX";
+);
+
+// Returns the sine of the angle specified (specified in radians -- to convert from degrees to radians, multiply by $pi/180, or 0.017453)
+function sin(x) global()
+(
+  !"sin(x$)";
+);
+
+// Returns the square root of the parameter.
+function sqrt(x) global()
+(
+  !"sqrt(fabs(x$))";
+);
+
+// Returns a fast inverse square root (1/sqrt(x)) approximation of the parameter.
+function invsqrt(x) global()
+(
+  1 / sqrt(x);
+);
+
+// Returns the tangent of the angle specified (specified in radians).
+function tan(x) global()
+(
+  !"tan(x$)";
+);
+
+//==============================================================================
+// Time Functions
+//==============================================================================
+
+// Returns the current time as seconds since January 1, 1970. 1 second granularity. If a parameter is specified, it will be set to the timestamp.
+function time() global()
+(
+  !"(EEL_F)time(NULL)";
+);
+
+/*
+Returns a system-specific timestamp in seconds. Granularity is system-defined, but generally much less than 1 millisecond. Useful for benchmarking. If a
+parameter is specified, it will be set to the timestamp.
+*/
+function time(v*) global()
+(
+  v = time();
+);
+
+/*
+Sets the parameter (or a temporary buffer if omitted) to a system-local timestamp in seconds, and returns a reference to that value.
+The granularity of the value returned is system defined (but generally significantly smaller than one second).
+UNTESTED
+*/
+function time_precise() global()
+(
+  !"#ifdef __GNUC__ //";
+  !"struct timeval tm = {0,}";
+  !"gettimeofday(&tm, NULL)";
+  !"return tm.tv_sec + tm.tv_usec * 0.000001";
+  !"#endif //";
+
+  !"#ifdef _WIN32 //";
+  !"LARGE_INTEGER freq, now";
+  !"QueryPerformanceFrequency(&freq)";
+  !"QueryPerformanceCounter(&now)";
+  !"return (EEL_F)now.QuadPart / (EEL_F)freq.QuadPart";
+  !"#endif //";
+
+  0;
+);
+
+function time_precise(v*) global()
+(
+  v = time_precise();
+);
+
+//==============================================================================
+// Memory Functions
+//==============================================================================
+
+// The memcpy() function provides the ability to quickly copy regions of the local memory buffer.
+// If the buffers overlap and either buffer crosses a 65,536 item boundary, the results may be undefined.
+function memcpy(dst, src, len) global()
+(
+  !"FMemory.Copy(EEL_F2I(dst$), EEL_F2I(src$), EEL_F2I(len$))";
+  dst;
+);
+
+// The memset() function provides the ability to quickly set a region of the local memory buffer to a particular value.
+function memset(dst, val, len) global()
+(
+  !"FMemory.Set(EEL_F2I(dst$), val$, EEL_F2I(len$))";
+  dst;
+);
+
+// The freembuf() function provides a facility for you to notify the memory manager that you are no longer using a portion of the local memory buffer.
+function freembuf(len) global()
+(
+  // Jes2Cpp currently doesn't support freembuf.
+  0;
+);
+
+//==============================================================================
+// Multibyte character functions. Not Standard.
+// For internal use only.
+//==============================================================================
+
+function mbc_chr0(mbc) global() ( (mbc>> 0)&0xff; );
+function mbc_chr1(mbc) global() ( (mbc>> 8)&0xff; );
+function mbc_chr2(mbc) global() ( (mbc>>16)&0xff; );
+function mbc_chr3(mbc) global() ( (mbc>>24)&0xff; );
+
+function mbc_find(mbc, chr) global()
+(
+  chr &= 0xff;
+  mbc_chr0(mbc) == chr ? 0 :
+  mbc_chr1(mbc) == chr ? 1 :
+  mbc_chr2(mbc) == chr ? 2 :
+  mbc_chr3(mbc) == chr ? 3 : -1;
+);
+
+function mbc_contains(mbc, chr) global()
+(
+  mbc_find(mbc, chr) >= 0;
+);
+
+//==============================================================================
+// String Functions
+//==============================================================================
+
+// Returns length of 'str'.
+function strlen(str) global()
+(
+  !"GetString(str$).length()";
+);
+
+// Copies the string 'src' into 'dst'. Returns 'dst'.
+function strcpy(dst, src) global()
+(
+  !"GetString(dst$) = GetString(src$)";
+  dst;
+);
+
+// Copies the string 'src' into 'dst', but stops after 'len' bytes. Returns 'dst'.
+function strncpy(dst, src, len) global()
+(
+  !"GetString(dst$) = GetString(src$).substr(0, EEL_F2I(len$))";
+  dst;
+);
+
+// Copies the string 'src' to 'dst', starting 'idx' bytes into 'src'. Returns 'dst'.
+function strcpy_from(dst, src, idx) global()
+(
+  !"GetString(dst$) = GetString(src$).substr(EEL_F2I(idx$))";
+  dst;
+);
+
+// Appends the string 'src' to 'dst'. Returns 'dst'.
+function strcat(dst, src) global()
+(
+  !"GetString(dst$) += GetString(src$)";
+  dst;
+);
+
+// Appends the string 'src' to 'dst', but stops after 'len' bytes of 'src' have been read. Returns 'dst'.
+function strncat(dst, src, len) global()
+(
+  !"GetString(dst$) += GetString(src$).substr(0, EEL_F2I(len$))";
+  dst;
+);
+
+// Compares 'str1' to 'str2', case sensitive. Returns -1, 0, or 1.
+function strcmp(str1, str2) global()
+(
+  sign(!"strcmp(GetString(str1$).c_str(), GetString(str2$).c_str())");
+);
+
+// Compares 'str1' to 'str2', ignoring case. Returns -1, 0, or 1.
+function stricmp(str1, str2) global()
+(
+  sign(!"strcasecmp(GetString(str1$).c_str(), GetString(str2$).c_str())");
+);
+
+// Compares 'str1' to 'str2' up to 'len' bytes, ignoring case. Returns -1, 0, or 1.
+function strnicmp(str1, str2, len) global()
+(
+  sign(!"strncasecmp(GetString(str1$).c_str(), GetString(str2$).c_str(), EEL_F2I(len$))");
+);
+
+// Compares 'str1' to 'str2' up to 'len' bytes, case sensitive. Returns -1, 0, or 1.
+function strncmp(str1, str2, len) global()
+(
+  sign(!"strncmp(GetString(str1$).c_str(), GetString(str2$).c_str(), EEL_F2I(len$))");
+);
+
+/*
+gets the filename if a file-slider, or the string if the slider specifies string translations, otherwise gets an empty string.
+slider can be either an index, or the sliderX variable directly. Returns 'str'.
+*/
+function strcpy_fromslider(str, slider) extern;
+
+/*
+Copies 'src' to 'dst', starting 'idx' bytes into 'src', and up to 'len' bytes. if 'idx' is less than 0, offset is from end of source string.
+If 'len' is less than 0, length is limited to output string length shortened by 'len'. Returns 'dst'.
+*/
+function strcpy_substr(dst, src, idx, len) global()
+(
+  !"GetString(dst$) = GetString(src$).substr(EEL_F2I(idx$), EEL_F2I(len$))";
+  dst;
+);
+
+// Returns 'dst'.
+function strcpy_substr(dst, src, idx) global()
+(
+  !"GetString(dst$) = GetString(src$).substr(EEL_F2I(idx$))";
+  dst;
+);
+
+/*
+returns the data at byte-offset offset of str. if offset is negative, position is relative to end of string.
+Type defaults to signed char, but can be specified to read raw binary data in other formats (note the single quotes, these are single/multi-byte characters)
+*/
+function str_getchar(str, offset) global()
+(
+  !"int LIndex = EEL_F2I(offset$); std::string& LString = GetString(str$)";
+  !"LString[LIndex < 0 ? LString.length() + LIndex : LIndex]";
+);
+
+/*
+Sets the value at byte-offset "offset" of str to value (which may be one or more bytes of data). Returns 'str'.
+If offset is negative, then offset is relative to end of the string. If offset is the length of the string, or between (-0.5,0.0), then the character
+(or multibyte value if type is specified) will be appended to the string.
+*/
+function str_setchar(str, offset, value) global()
+(
+  !"int LIndex = EEL_F2I(offset$); std::string& LString = GetString(str$)";
+  !"if (LIndex >= (int)LString.length()) LString += EEL_F2I(value$)";
+  !"else LString[LIndex < 0 ? LString.length() + LIndex : LIndex] = EEL_F2I(value$)";
+  str;
+);
+
+// copies format to str, converting format strings. Returns 'str'. (NOT COMPLETE)
+function sprintf(str, format, ...) global()
+(
+  !"char LString[512]; va_list LArgs";
+  !"va_start(LArgs, format$)";
+  !"VPrintF(LString, GetString(format$).c_str(), LArgs)";
+  !"va_end(LArgs)";
+  !"GetString(str$) = LString";
+  str;
+);
+
+// search for needle in haystack (NOT IMPLEMENTED)
+function match(needle, haystack, ...) global()
+(
+  0;
+);
+
+// search for needle in haystack (case insensitive) (NOT IMPLEMENTED)
+function matchi(needle, haystack, ...) global()
+(
+  0;
+);
+
+// Undocumented string functions
+
+// Sets length of 'str' (if increasing, will be space-padded). Returns 'str'.
+function str_setlen(str, len) global()
+(
+   !"GetString(str$).resize(EEL_F2I(len$), ' ')";
+   str;
+);
+
+// Deletes 'len' chars from 'str' at 'idx'. Returns 'str'.
+function str_delsub(str, idx, len) global()
+(
+  !"GetString(str$).erase(EEL_F2I(idx$), EEL_F2I(len$))";
+  str;
+);
+
+// Inserts the string 'src' into 'dsc' at position 'idx'. Returns 'dst'.
+function str_insert(dst, src, idx) global()
+(
+  !"GetString(dst$).insert(EEL_F2I(idx$), GetString(src$))";
+  dst;
+);
+
+//==============================================================================
+// MDCT Functions
+//==============================================================================
+
+// NOTE: These functions are very complex, and you should read the Jesusonic Programming Reference before using them.
+
+/*
+Performs a modified DCT (or inverse in the case of imdct()) on the data in the local memory buffer at the offset specified by the first parameter.
+The second parameter controls the size of the MDCT, and it MUST be one of the following: 64, 128, 256, 512, 1024, 2048, or 4096.
+The MDCT takes the number of inputs provided, and replaces the first half of them with the results. The IMDCT takes size/2 inputs, and gives size results.
+*/
+function mdct(idx, len) global()
+(
+  !"js_mdct(&FMemory, EEL_F2I(idx$), EEL_F2I(len$), false)";
+  idx;
+);
+
+function imdct(idx, len) global()
+(
+  !"js_mdct(&FMemory, EEL_F2I(idx$), EEL_F2I(len$), true)";
+  idx;
+);
+
+//==============================================================================
+// FFT Functions
+//==============================================================================
+
+// NOTE: These functions are very complex, and you should read the Jesusonic Programming Reference before using them.
+
+/*
+Performs a FFT (or inverse in the case of ifft()) on the data in the local memory buffer at the offset specified by the first parameter.
+The size of the FFT is specified by the second parameter, which must be 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, or 32768.
+The outputs are permuted, so if you plan to use them in-order, call fft_permute(idx, size) before and fft_ipermute(idx,size)
+after your in-order use. Your inputs or outputs will need to be scaled down by 1/size, if used.
+*/
+function fft(idx, len) global()
+(
+  !"js_fft(&FMemory, EEL_F2I(idx$), EEL_F2I(len$), DIR_FFT)";
+  idx;
+);
+
+function ifft(idx, len) global()
+(
+  !"js_fft(&FMemory, EEL_F2I(idx$), EEL_F2I(len$), DIR_IFFT)";
+  idx;
+);
+
+function fft_permute(idx, len) global()
+(
+  !"js_fft(&FMemory, EEL_F2I(idx$), EEL_F2I(len$), DIR_PERMUTE)";
+  idx;
+);
+
+function fft_ipermute(idx, len) global()
+(
+  !"js_fft(&FMemory, EEL_F2I(idx$), EEL_F2I(len$), DIR_IPERMUTE)";
+  idx;
+);
+
+/*
+Used to convolve two buffers, typically after FFTing them. convolve_c works with complex numbers.
+The sizes specify number of items (the number of complex number pairs).
+Note that the convolution must NOT cross a 65,536 item boundary, so be sure to specify the offset accordingly.
+*/
+function convolve_c(dst, src, len) global()
+(
+  !"js_convolve_c(&FMemory, EEL_F2I(dst$), EEL_F2I(src$), EEL_F2I(len$))";
+  dst;
+);
+
+
+//==============================================================================
+// Midi Functions
+//==============================================================================
+
+/*
+Sends a 2 or 3 byte MIDI message. If only three parameters are specified, the second lowest byte of the third parameter will be used as a third byte in the MIDI
+message. Returns 0 on failure, otherwise msg1.
+*/
+function midisend(offset, msg1, msg2, msg3) global()
+(
+  !"VeST_MidiSend(FVeST, EEL_F2I(offset$), EEL_F2I(msg1$), EEL_F2I(msg2$), EEL_F2I(msg3$))" ? msg1 : 0;
+);
+
+function midisend(offset, msg1, msg23) global()
+(
+  midisend(offset, msg1, msg23 & 0xff, (msg23 >> 8) & 0xff);
+);
+
+/*
+Sends a variable length MIDI message. Can be used to send normal MIDI messages, or SysEx messages. When sending SysEx, logic is used to automatically add
+leading 0xf0 and trailing 0xf7 bytes, if necessary, but if you are sending sysEx and in doubt you should include those bytes (particularly if sending very short SysEx
+messages). Returns the length sent, or 0 on error.
+*/
+function midisend_buf(offset, buf, len) global()
+(
+  !"std::string LMessage";
+  !"GetMemory(LMessage, EEL_F2I(buf$), EEL_F2I(len$))";
+  !"VeST_MidiSysex(FVeST, EEL_F2I(offset$), (char*)LMessage.c_str(), LMessage.length())" ? len : 0;
+);
+
+/*
+Sends a SysEx message -- if the message does not begin with F0 and end with F7, these will be automatically added. If the message crosses any 64k boundaries, it
+will be sent as multiple messages. This function is deprecated, midisend_buf() should probably be used instead.
+*/
+function midisyx(offset, buf, len) global()
+(
+  !"std::string LMessage";
+  !"GetMemory(LMessage, EEL_F2I(buf$), EEL_F2I(len$))";
+  !"if (LMessage.length() < 1 || LMessage[0] != (char)0xf0) LMessage = (char)0xf0 + LMessage";
+  !"if (LMessage[LMessage.length() - 1] != (char)0xf7) LMessage += (char)0xf7";
+  !"VeST_MidiSysex(FVeST, EEL_F2I(offset$), (char*)LMessage.c_str(), LMessage.length())" ? len : 0;
+);
+
+/*
+If only three parameters are passed to midirecv, the third parameter will receive both the second and third bytes of a MIDI message
+(second byte + (third byte * 256)). Returns 'msg1'.
+*/
+function midirecv(offset*, msg1*, msg2*, msg3*) global()
+(
+  !"int LDeltaFrames, LMidiData0, LMidiData1, LMidiData2";
+  !"VeST_MidiRecv(FVeST, &LDeltaFrames, &LMidiData0, &LMidiData1, &LMidiData2)";
+  offset = !"LDeltaFrames";
+  msg3 = !"LMidiData2";
+  msg2 = !"LMidiData1";
+  msg1 = !"LMidiData0";
+);
+
+function midirecv(offset*, msg1*, msg23*) global() local(msg2, msg3)
+(
+  midirecv(offset, msg1, msg2, msg3);
+  msg23 = (msg2 & 0xff) | ((msg3 & 0xff) << 8);
+  msg1;
+);
+
+
+//==============================================================================
+// File Functions
+//==============================================================================
+
+/*
+Opens a file from either the effect filename list or from a file slider, or from a string. Once open, you may use all of the file functions available.
+Close the file handle when done with it, using file_close(). If file_open() fails, it will return < 0 (usually -1).
+*/
+function file_open(handle) extern;
+
+// Closes a file opened with file_open(). Returns -1.
+function file_close(handle*) global()
+(
+  !"GetFile(handle$).Close()";
+  handle = -1;
+);
+
+// Use this to rewind the current file to the beginning, to re-read the file etc. Returns 'handle'.
+function file_rewind(handle) global()
+(
+  !"GetFile(handle$).Rewind()";
+  handle;
+);
+
+// This reads (or writes if in a @serialize write) the variable from(to) the current file.
+function file_var(handle, var*) global()
+(
+  !"GetFile(handle$).StreamValue(var$)";
+);
+
+// This reads (or writes) the block of local memory from(to) the current file. Returns the actual number of items read (or written).
+function file_mem(handle, idx, len) global()
+(
+  !"GetFile(handle$).StreamMemory(&FMemory, idx$, len$)";
+);
+
+/*
+Returns the number of items remaining in the file, if it is in read mode. Returns < 0 if in write mode. If the file is in text mode (file_text(handle) returns TRUE),
+then the return value is simply 0 if EOF, 1 if not EOF.
+*/
+function file_avail(handle) global()
+(
+  !"GetFile(handle$).FMode == FILE_WRITE" ? -1 : !"GetFile(handle$).DataAvaliable()";
+);
+
+// If the file was a RIFF WAV file, or a valid .OGG Vorbis file, this will set the first parameter to the number of channels, and the second to the samplerate.
+function file_riff(handle, channelcount*, samplerate*) global()
+(
+  channelcount = !"GetFile(handle$).FChannelCount";
+  samplerate = !"GetFile(handle$).FSampleRate";
+  1;
+);
+
+/*
+If the file was a text file (and ended in .txt), this will return 1.
+If you need to use different file_avail() logic for text files (you often will),
+you can query it this way.
+*/
+function file_text(handle) global()
+(
+  !"GetFile(handle$).FIsText";
+);
+
+/*
+Reads or writes a string from/to the file handle. If operating on a normal file, the string will be a line of text (possibly including newline or other characters).
+If in @serialize, the string will be encoded as a blob with length, which means that it is binary-safe (you can include NUL characters within the string etc).
+*/
+function file_string(handle, string) global()
+(
+  !"GetFile(handle$).ReadString(GetString(string$))";
+);
+
+// EXPERIMENTAL
+function fopen(filename, mode)
+(
+  !"(intptr_t)fopen(GetString(filename$).c_str(), GetString(mode$).c_str())";
+);
+
+// EXPERIMENTAL
+function fclose(handle)
+(
+  !"fclose((FILE*)(intptr_t)handle$)";
+);
+
+//==============================================================================
+// VeST Support Functions - Internal Use Only
+//==============================================================================
+
+function VeST_SetFillColor() global()
+(
+  !"VeST_SetFillColor(FVeST, EEL_F2PEN(gfx_r$), EEL_F2PEN(gfx_g$), EEL_F2PEN(gfx_b$), EEL_F2PEN(gfx_a$))";
+  0;
+);
+
+function VeST_SetFrameColor() global()
+(
+  !"VeST_SetFrameColor(FVeST, EEL_F2PEN(gfx_r$), EEL_F2PEN(gfx_g$), EEL_F2PEN(gfx_b$), EEL_F2PEN(gfx_a$))";
+  0;
+);
+
+function VeST_SetFontColor() global()
+(
+  !"VeST_SetFontColor(FVeST, EEL_F2PEN(gfx_r$), EEL_F2PEN(gfx_g$), EEL_F2PEN(gfx_b$), EEL_F2PEN(gfx_a$))";
+  0;
+);
+
+//==============================================================================
+// Graphics Functions
+//==============================================================================
+
+/*
+Retreives the dimensions of image (representing a filename: index number) into w and h. Sets these values to 0 if an image failed loading
+(or if the filename index is invalid).
+*/
+function gfx_getimgdim(image, w*, h*) global()
+(
+  !"CJes2CppImage& LImage = GetImage(image$)";
+  w = !"LImage.FWidth";
+  h = !"LImage.FHeight";
+  0;
+);
+
+// Resize image referenced by index 0..127, width and height must be 0-2048. The contents of the image will be undefined after the resize.
+function gfx_setimgdim(image, w, h) global()
+(
+  !"CJes2CppImage& LImage = GetImage(image$)";
+  !"LImage.Clear()";
+  !"LImage.FWidth" = w;
+  !"LImage.FHeight" = h;
+  0;
+);
+
+/*
+Load image from filename (see strings) into slot 0..127 specified by image. Returns the image index if success, otherwise -1 if failure.
+The image will be resized to the dimensions of the image file.
+*/
+function gfx_loadimg(image, filename) global()
+(
+  !"FImages[EEL_F2I(image$)].LoadFromFile(GetFileName(filename$))" ? image : -1;
+);
+
+/*
+Srcx/srcy/srcw/srch specify the source rectangle (if omitted srcw/srch default to image size), destx/desty/destw/desth specify dest rectangle (if not specified,
+these will default to reasonable defaults -- destw/desth default to srcw/srch * scale). (ROTATION/SCALING NOT SUPPORTED)
+*/
+function gfx_blit(image, scale, rotation, srcx, srcy, srcw, srch, destx, desty, destw, desth, rotxoffs, rotyoffs) global()
+(
+  !"double LX1 = destx$, LY1 = desty$, LX2 = destx$ + srcw$, LY2 = desty$ + srch$";
+  !"VeST_BitmapDraw(GetImage(image$).FBitmap, FVeST, LX1, LY1, LX2, LY2, srcx$, srcy$)" == 0 ?
+  (
+    // TODO: Draw error using standard function calls?
+    !"VeST_SetFillColor(FVeST, 255, 0, 0, 255)";
+    !"VeST_DrawRect(FVeST,  LX1, LY1, LX2, LY2, 1)";
+    !"VeST_SetFontColor(FVeST, 255, 255, 0, 255)";
+    !"VeST_DrawString(FVeST, (char*)\"ERROR\", LX1, LY1, LX2, LY2, false, 1)";
+  );
+  0;
+);
+
+function gfx_blit(image, scale, rotation, srcx, srcy, srcw, srch, destx, desty, destw, desth) global()
+(
+  gfx_blit(image, scale, rotation, srcx, srcy, srcw, srch, destx, desty, destw, desth, 0, 0);
+);
+
+function gfx_blit(image, scale, rotation, srcx, srcy, srcw, srch, destx, desty) global()
+(
+  gfx_blit(image, scale, rotation, srcx, srcy, srcw, srch, destx, desty, srcw * scale, srch * scale)
+);
+
+function gfx_blit(image, scale, rotation, srcx, srcy, srcw, srch) global(gfx_x, gfx_y)
+(
+  gfx_blit(image, scale, rotation, srcx, srcy, srcw, srch, gfx_x, gfx_y);
+);
+
+function gfx_blit(image, scale, rotation, srcx, srcy) global() local(srcw, srch)
+(
+  gfx_getimgdim(image, srcw, srch);
+  gfx_blit(image, scale, rotation, srcx, srcy, srcw, srch);
+);
+
+function gfx_blit(image, scale, rotation) global()
+(
+  gfx_blit(image, scale, rotation, 0, 0)
+);
+
+// This is a version of gfx_blit which takes many of its parameters via a buffer rather than direct parameters. (ROTATION NOT SUPPORTED)
+function gfx_blitext(image, list, rotation) global()
+(
+  gfx_blit(image, 1, rotation, list[0], list[1], list[2], list[3], list[4], list[5]);
+);
+
+// Blurs the region of the screen between gfx_x,gfx_y and x,y, and updates gfx_x,gfx_y to x,y. (NOT SUPPORTED)
+function gfx_blurto(x, y) global()
+(
+  0;
+);
+
+// Draws a circle, optionally filling/antialiasing.
+function gfx_circle(x, y, radius, fill, alias) global(gfx_x, gfx_y)
+(
+  fill ? (
+    VeST_SetFillColor();
+    !"VeST_DrawEllipse(FVeST, x$ - radius$, y$ - radius$, x$ + radius$ - 1, y$ + radius$ - 1, 1)";
+  ) : (
+    VeST_SetFrameColor();
+    !"VeST_DrawEllipse(FVeST, x$ - radius$, y$ - radius$, x$ + radius$ - 1, y$ + radius$ - 1, 0)";
+  );
+  gfx_x = x;
+  gfx_y = y;
+  0;
+);
+
+function gfx_circle(x, y, radius, fill) global()
+(
+  gfx_circle(x, y, radius, fill, 1);
+);
+
+function gfx_circle(x, y, radius) global()
+(
+  gfx_circle(x, y, radius, 0);
+);
+
+// Measures the drawing dimensions of a string with the current font (as set by gfx_setfont).
+function gfx_measurestr(str, width*, height*) global(gfx_texth)
+(
+  width = !"VeST_GetStringWidth(FVeST, GetString(str$).c_str())";
+  height = gfx_texth;
+  0;
+);
+
+// Formats and draws a string at gfx_x, gfx_y, and updates gfx_x/gfx_y accordingly (the latter only if the formatted string contains newline).
+function gfx_printf(format, ...) global()
+(
+  !"char LString[512]; va_list LArgs";
+  !"va_start(LArgs, format$)";
+  !"VPrintF(LString, GetString(format$).c_str(), LArgs)";
+  !"va_end(LArgs)";
+  !"DrawString(LString)";
+  0;
+);
+
+// Draws a string at gfx_x, gfx_y, and updates gfx_x/gfx_y so that subsequent draws will occur in a similar place.
+function gfx_drawstr(str) global()
+(
+  !"DrawString(GetString(str$).c_str())";
+  0;
+);
+
+// Draws the character 'c' (can be a numeric ASCII code as well), to gfx_x, gfx_y, and moves gfx_x over by the size of the character.
+function gfx_drawchar(c) global()
+(
+  !"char LString[256]";
+  !"sprintf(LString, \"%c\", EEL_F2I(c$))";
+  !"DrawString(LString)";
+  0;
+);
+
+// Draws the number "n" with "ndigits" of precision to gfx_x, gfx_y, and updates gfx_x to the right side of the drawing. The text height is gfx_texth
+function gfx_drawnumber(n, ndigits) global()
+(
+  !"char LString[256]";
+  !"sprintf(LString, \"%.*f\", EEL_F2I(ndigits$), n$)";
+  !"DrawString(LString)";
+  0;
+);
+
+
+// Writes a pixel of r, g, b to gfx_x, gfx_y.
+function gfx_setpixel(r, g, b) global()
+(
+  !"VeST_DrawPoint(FVeST, gfx_x$, gfx_y$, EEL_F2PEN(r$), EEL_F2PEN(g$), EEL_F2PEN(b$), 255)";
+  0;
+);
+
+// Gets the value of the pixel at gfx_x, gfx_y into r,g,b.
+function gfx_getpixel(r*, g*, b*) global()
+(
+  !"int LR, LG, LB, LA";
+  !"if (!VeST_GetPoint(FVeST, gfx_x$, gfx_y$, &LR, &LG, &LB, &LA)) return 0";
+  r = !"LR / (EEL_F)255";
+  g = !"LG / (EEL_F)255";
+  b = !"LB / (EEL_F)255";
+  1;
+);
+
+// Draws a line from (x1, y1) to (x2, y2). If aa is not specified or 0.5 or greater, it will be antialiased.
+function gfx_line(x1, y1, x2, y2, aa) global()
+(
+  VeST_SetFrameColor();
+  !"VeST_MoveTo(FVeST, x1$, y1$)";
+  !"VeST_LineTo(FVeST, gfx_x$ = x2$, gfx_y$ = y2$)";
+  0;
+);
+
+function gfx_line(x1, y1, x2, y2) global()
+(
+  gfx_line(x1, y1, x2, y2, 1);
+);
+
+// Draws a line from gfx_x, gfx_y to x,y. if aa is 0.5 or greater, then antialiasing is used. Updates gfx_x and gfx_y to x,y.
+function gfx_lineto(x, y, aa) global(gfx_x, gfx_y)
+(
+  gfx_line(gfx_x, gfx_y, x, y, aa);
+);
+
+// Draws a line from gfx_x, gfx_y to x, y. Updates gfx_x and gfx_y to x, y.
+function gfx_lineto(x, y) global()
+(
+  gfx_lineto(x, y, 1);
+);
+
+// Fills a rectngle at x,y, w,h pixels in dimension
+function gfx_rect(x, y, w, h) global(gfx_x, gfx_y)
+(
+  gfx_x = x + w;
+  gfx_y = y + h;
+  VeST_SetFillColor();
+  !"VeST_DrawRect(FVeST, floor(x$), floor(y$), floor(gfx_x$), floor(gfx_y$), 1)";
+  0;
+);
+
+// Fills a rectangle from gfx_x,gfx_y to x,y. Updates gfx_x,gfx_y to x,y.
+function gfx_rectto(x, y) global(gfx_x, gfx_y)
+(
+  gfx_rect(gfx_x, gfx_y, x - gfx_x, y - gfx_y);
+);
+
+
+// VeST doesn't have a round rect function, so here is a simple implementation. (Not optimized).
+function VeST_DrawRoundRect(x1, y1, x2, y2, r) global(gfx_x, gfx_y) local(angle, step)
+(
+  angle = 0;
+  step = $pi / (r / 2);
+  gfx_x = x1 + r; gfx_y = y1;
+  gfx_lineto(x2 - r, y1);
+  while (angle <= $pi * 0.5) (
+    gfx_lineto((x2 - r) + sin(angle) * r, (y1 + r) - cos(angle) * r);
+    angle += step;
+  );
+  gfx_lineto(x2, y2 - r);
+  while (angle <= $pi * 1.0) (
+    gfx_lineto((x2 - r) + sin(angle) * r, (y2 - r) - cos(angle) * r);
+    angle += step;
+  );
+  gfx_lineto(x1 + r, y2);
+  while (angle <= $pi * 1.5) (
+    gfx_lineto((x1 + r) + sin(angle) * r, (y2 - r) - cos(angle) * r);
+    angle += step;
+  );
+  gfx_lineto(x1, y1 + r);
+  while (angle <= $pi * 2.0) (
+    gfx_lineto((x1 + r) + sin(angle) * r, (y1 + r) - cos(angle) * r);
+    angle += step;
+  );
+  0;
+);
+
+// Draws a rectangle with rounded corners.
+function gfx_roundrect(x, y, w, h, r) global()
+(
+  VeST_DrawRoundRect(x, y, x + w, y + h, r);
+);
+
+/*
+Fills a gradient rectangle with the color and alpha specified. drdx-dadx reflect the adjustment (per-pixel) applied for each pixel moved to the right, drdy-dady are
+the adjustment applied for each pixel moved toward the bottom. Normally drdx=adjustamount/w, drdy=adjustamount/h.
+*/
+//function gfx_gradrect(x, y, w, h, r, g, b, a, r1, g1, b1, a1, r2, g2, b2, a2) extern;
+function gfx_gradrect(x, y, w, h, r, g, b, a, rr, gg, bb, aa)
+global(gfx_x, gfx_y, gfx_r, gfx_g, gfx_b, gfx_a)
+(
+  w += x;
+  h += y - 1;
+  gfx_r = r; gfx_g = g; gfx_b = b; gfx_a = a;
+  while (x < w) (
+    gfx_x = x; gfx_y = y;
+    gfx_lineto(x, h);
+    gfx_r += rr; gfx_g += gg; gfx_b += bb; gfx_a += aa;
+    x += 1;
+  );
+);
+
+function gfx_gradrect2(x, y, w, h, r, g, b, a, rr, gg, bb, aa)
+global(gfx_x, gfx_y, gfx_r, gfx_g, gfx_b, gfx_a)
+(
+  w += x - 1;
+  h += y;
+  gfx_r = r; gfx_g = g; gfx_b = b; gfx_a = a;
+  while (y < h) (
+    gfx_x = x; gfx_y = y;
+    gfx_lineto(w, y);
+    gfx_r += rr; gfx_g += gg; gfx_b += bb; gfx_a += aa;
+    y += 1;
+  );
+);
+
+function gfx_gradrect(x, y, w, h, r, g, b, a, r1, g1, b1, a1, r2, g2, b2, a2) global()
+(
+  r1||g1||b1||a1 ? (
+    gfx_gradrect(x, y, w, h, r, g, b, a, r1, g1, b1, a1);
+    r2||g2||b2||a2 ? gfx_gradrect2(x, y, w, h, r, g, b, 0.5, r2, g2, b2, 0);
+  ) : (
+    gfx_gradrect2(x, y, w, h, r, g, b, a, r2, g2, b2, a2);
+  );
+);
+
+/*
+Can select a font and optionally configure it. idx=0 for default bitmapped font, no configuration is possible for this font. idx=1..16 for a configurable font, specify
+fontface such as "Arial", sz of 8-100, and optionally specify flags, which is a multibyte character, which can include 'i' for italics, 'u' for underline, or 'b' for bold.
+These flags may or may not be supported depending on the font and OS. After calling gfx_setfont, gfx_texth may be updated to reflect the new average line
+height.
+*/
+function gfx_setfont(font, name, size, style) global(gfx_getfont)
+(
+  gfx_getfont = font;
+  !"CJes2CppFont& LFont = GetFont(font$)";
+  !"LFont.FName = GetString(name$)";
+  !"LFont.FSize" = size;
+  !"LFont.FStyle = 0";
+  !"int LStyle = EEL_F2I(style$)";
+  !"if (ContainsByte(LStyle, 'b')) LFont.FStyle |= 1";
+  !"if (ContainsByte(LStyle, 'i')) LFont.FStyle |= 2";
+  !"if (ContainsByte(LStyle, 'u')) LFont.FStyle |= 4";
+  !"SetFont(LFont.FName, LFont.FSize, LFont.FStyle)";
+  1;
+);
+
+function gfx_setfont(font, name, size) global()
+(
+  gfx_setfont(font, name, size, 0);
+);
+
+function gfx_setfont(font) global()
+(
+  !"CJes2CppFont& LFont = GetFont(font$)";
+  !"SetFont(LFont.FName, LFont.FSize, LFont.FStyle)";
+  1;
+);
+
+// Returns current font index.
+function gfx_getfont() global(gfx_getfont)
+(
+  gfx_getfont;
+);
+
+@init
+
+//==============================================================================
+// Sliders
+//==============================================================================
+
+/*
+The variables slider1, slider2, ... slider64 allow interaction between the user and the effect, allowing the effects parameters to be adjusted by the user and likewise
+allow the effect to modify the parameters shown to the user. If you modify sliderX in a context other than @slider then you should call sliderchange(sliderX) to notify JS to refresh the control).
+*/
+slider1  extern; slider2  extern; slider3  extern; slider4  extern; slider5  extern; slider6  extern; slider7  extern; slider8  extern;
+slider9  extern; slider10 extern; slider11 extern; slider12 extern; slider13 extern; slider14 extern; slider15 extern; slider16 extern;
+slider17 extern; slider18 extern; slider19 extern; slider20 extern; slider21 extern; slider22 extern; slider23 extern; slider24 extern;
+slider25 extern; slider26 extern; slider27 extern; slider28 extern; slider29 extern; slider30 extern; slider31 extern; slider32 extern;
+slider33 extern; slider34 extern; slider35 extern; slider36 extern; slider37 extern; slider38 extern; slider39 extern; slider40 extern;
+slider41 extern; slider42 extern; slider43 extern; slider44 extern; slider45 extern; slider46 extern; slider47 extern; slider48 extern;
+slider49 extern; slider50 extern; slider51 extern; slider52 extern; slider53 extern; slider54 extern; slider55 extern; slider56 extern;
+slider57 extern; slider58 extern; slider59 extern; slider60 extern; slider61 extern; slider62 extern; slider63 extern; slider64 extern;
+
+/*
+For these functions, the parameter can be the variables slider1-sliderN, in which case that slider is refreshed.
+Otherwise, it can be a bitmask of which sliders have changed, where 1 would be the first slider,
+2 would be the second, 4 would be the third, 32768 being the 16th slider, and so on.
+*/
+
+// NOTE: The Jes2Cpp implementation of sliderchange simply updates the entire display regardless of what slider(s) you request.
+function sliderchange(x) global()
+(
+  !"FUpdateDisplay = true";
+  0;
+);
+
+/*
+The slider_automate() function provides a facility for you to notify REAPER/JS that you have changed a sliderX variable
+so that it can update the display, and record the move as automation.
+*/
+function slider_automate(x) global()
+(
+  !"FUpdateDisplay = true";
+  0;
+);
+
+/*
+If you wish to programmatically choose which slider to access, use this function (rather than sliderX).
+This is slightly slower than sliderX, however has the advantage that you can do slider(variable) (enabling easily configurable slider mappings).
+*/
+function *slider(x) global()
+(
+  !"FSliders[EEL_F2I(x$) & (JES2CPP_SLIDER_COUNT - 1)]";
+);
+
+//==============================================================================
+// Samples
+//==============================================================================
+
+/*
+The variables spl0 ... spl63 represent the current samples in @sample code
+The normal +0dB range is -1.0 .. 1.0, but overs are allowed (and will eventually be clipped if not reduced by a later effect).
+*/
+spl0  extern; spl1  extern; spl2  extern; spl3  extern; spl4  extern; spl5  extern; spl6  extern; spl7  extern;
+spl8  extern; spl9  extern; spl10 extern; spl11 extern; spl12 extern; spl13 extern; spl14 extern; spl15 extern;
+spl16 extern; spl17 extern; spl18 extern; spl19 extern; spl20 extern; spl21 extern; spl22 extern; spl23 extern;
+spl24 extern; spl25 extern; spl26 extern; spl27 extern; spl28 extern; spl29 extern; spl30 extern; spl31 extern;
+spl32 extern; spl33 extern; spl34 extern; spl35 extern; spl36 extern; spl37 extern; spl38 extern; spl39 extern;
+spl40 extern; spl41 extern; spl42 extern; spl43 extern; spl44 extern; spl45 extern; spl46 extern; spl47 extern;
+spl48 extern; spl49 extern; spl50 extern; spl51 extern; spl52 extern; spl53 extern; spl54 extern; spl55 extern;
+spl56 extern; spl57 extern; spl58 extern; spl59 extern; spl60 extern; spl61 extern; spl62 extern; spl63 extern;
+
+/*
+If you wish to programmatically choose which sample to access, use this function (rather than splX).
+This is slightly slower than splX, however has the advantage that you can do spl(variable) (enabling easily configurable channel mappings).
+*/
+function *spl(x) global()
+(
+  !"FSamples[EEL_F2I(x$) & (JES2CPP_SAMPLE_COUNT - 1)]";
+);
+
+@gfx
+
+  gfx_x = gfx_y = 0;
+  gfx_r = gfx_g = gfx_b = gfx_a = 1;
+  gfx_setfont(0, "verdana", 18);
+
+//==============================================================================
+// End of File
+//==============================================================================
+
+// Please comment your functions.
+

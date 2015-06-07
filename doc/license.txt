@@ -1,0 +1,9 @@
+GEEP SOFTWARE LICENCE
+
+Geep software is designed to be free/easy and fun to use. But, as with all software, please note that this software is provided "AS IS" and without warranty of any kind. (Read Below for more information)
+
+NOTE: Although this software has been checked for viruses using AVG 2014, please ensure your virus checker is upto date!
+
+Copyright (c) 2015 Derek John Evans <derek.john.evans@hotmail.com>
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

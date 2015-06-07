@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_workspace_file>
+	<Workspace title="VeST Workspace">
+		<Project filename="vest32/Project.cbp" />
+		<Project filename="vest64/Project.cbp" />
+		<Project filename="vest32.LADSPA/Project.cbp" />
+	</Workspace>
+</CodeBlocks_workspace_file>

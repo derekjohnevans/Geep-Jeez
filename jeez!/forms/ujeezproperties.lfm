@@ -1,0 +1,107 @@
+object JeezProperties: TJeezProperties
+  Left = 867
+  Height = 343
+  Top = 357
+  Width = 527
+  BorderStyle = bsDialog
+  BorderWidth = 8
+  Caption = 'Effect Properties'
+  ClientHeight = 343
+  ClientWidth = 527
+  OnCreate = FormCreate
+  OnShow = FormShow
+  Position = poScreenCenter
+  LCLVersion = '1.4.0.4'
+  object PageControl: TPageControl
+    Left = 8
+    Height = 289
+    Top = 8
+    Width = 511
+    ActivePage = TabSheetSettings
+    Align = alClient
+    TabIndex = 0
+    TabOrder = 0
+    object TabSheetSettings: TTabSheet
+      Caption = 'Description'
+      ClientHeight = 263
+      ClientWidth = 503
+      object EditProductString: TEdit
+        Left = 152
+        Height = 21
+        Hint = 'Product String'
+        Top = 16
+        Width = 336
+        TabOrder = 0
+        Text = 'EditProductString'
+      end
+      object EditEffectName: TEdit
+        Left = 152
+        Height = 21
+        Hint = 'Effect Name'
+        Top = 56
+        Width = 336
+        TabOrder = 1
+        Text = 'EditEffectName'
+      end
+      object EditVendorString: TEdit
+        Left = 152
+        Height = 21
+        Hint = 'Vendor String'
+        Top = 96
+        Width = 336
+        TabOrder = 2
+        Text = 'EditVendorString'
+      end
+      object EditVendorVersion: TSpinEdit
+        Left = 152
+        Height = 21
+        Hint = 'Vendor Version'
+        Top = 136
+        Width = 88
+        MaxValue = 60000
+        TabOrder = 3
+        Value = 1000
+      end
+      object EditPluginInstallPath: TDirectoryEdit
+        Left = 152
+        Height = 21
+        Hint = 'Plugin Install Path'
+        Top = 216
+        Width = 336
+        ShowHidden = False
+        ButtonWidth = 23
+        DirectInput = False
+        NumGlyphs = 1
+        Flat = True
+        MaxLength = 0
+        TabOrder = 5
+        OnChange = EditPluginInstallPathChange
+      end
+      object EditUniqueId: TEdit
+        Left = 152
+        Height = 21
+        Hint = 'Unique Id'#13#10'Unique Id Must be an Integer or a Multbyte Char. eg: ''EFX1'''
+        Top = 176
+        Width = 88
+        TabOrder = 4
+      end
+    end
+  end
+  object ButtonPanel: TButtonPanel
+    Left = 14
+    Height = 26
+    Top = 303
+    Width = 499
+    OKButton.Name = 'OKButton'
+    OKButton.DefaultCaption = True
+    HelpButton.Name = 'HelpButton'
+    HelpButton.DefaultCaption = True
+    CloseButton.Name = 'CloseButton'
+    CloseButton.DefaultCaption = True
+    CancelButton.Name = 'CancelButton'
+    CancelButton.DefaultCaption = True
+    TabOrder = 1
+    ShowButtons = [pbOK, pbCancel]
+    ShowBevel = False
+  end
+end

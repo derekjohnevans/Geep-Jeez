@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="VeST64 (VST)" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Release">
+				<Option output="../vest64" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj/Release/" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-std=c++11" />
+					<Add option="-static" />
+					<Add option="-trigraphs" />
+					<Add option="-fpermissive" />
+					<Add option="-m64" />
+					<Add option="-fno-exceptions" />
+					<Add option="-DWIN32=1" />
+					<Add option="-DVEST_VST" />
+					<Add option="-DVSTGUI_ENABLE_DEPRECATED_METHODS=1" />
+					<Add option="-DVSTGUI_FLOAT_COORDINATES" />
+					<Add directory="../VST3 SDK" />
+					<Add directory="../VST3 SDK/public.sdk/source/vst2.x" />
+					<Add directory="../VST3 SDK/vstgui.sf/vstgui" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-m64" />
+					<Add library="user32" />
+					<Add library="kernel32" />
+					<Add library="ole32" />
+					<Add library="oleaut32" />
+					<Add library="uuid" />
+					<Add library="gdi32" />
+					<Add library="comdlg32" />
+					<Add library="gdiplus" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="../VST3 SDK/public.sdk/source/vst2.x/aeffeditor.h" />
+		<Unit filename="../VST3 SDK/public.sdk/source/vst2.x/audioeffect.cpp" />
+		<Unit filename="../VST3 SDK/public.sdk/source/vst2.x/audioeffect.h" />
+		<Unit filename="../VST3 SDK/public.sdk/source/vst2.x/audioeffectx.cpp" />
+		<Unit filename="../VST3 SDK/public.sdk/source/vst2.x/audioeffectx.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/aeffguieditor.cpp" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/aeffguieditor.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/cdatabrowser.cpp" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/cdatabrowser.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/cfileselector.cpp" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/cfileselector.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/cocoasupport.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/cscrollview.cpp" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/cscrollview.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/ctabview.cpp" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/ctabview.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/ctooltipsupport.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/cvstguitimer.cpp" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/cvstguitimer.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/plugguieditor.cpp" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/plugguieditor.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/vstcontrols.cpp" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/vstcontrols.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/vstgui.cpp" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/vstgui.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/vstguidebug.cpp" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/vstguidebug.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/vstkeycode.h" />
+		<Unit filename="../VST3 SDK/vstgui.sf/vstgui/winfileselector.cpp" />
+		<Unit filename="../readme.txt" />
+		<Unit filename="../vest.cpp" />
+		<Unit filename="../vest.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
