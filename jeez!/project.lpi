@@ -19,7 +19,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="8"/>
-      <BuildNr Value="74"/>
+      <BuildNr Value="86"/>
       <StringTable Comments="Jesusonic Editor + Jes2Cpp Transpiler" CompanyName="Geep Software" FileDescription="The Easy Way to Create Audio Plugins" InternalName="Geep Jeez!" LegalCopyright="Copyright (C) 2015 Derek John Evans" LegalTrademarks="Copyright (C) 2015 Derek John Evans" OriginalFilename="Jeez!.exe" ProductName="Geep Jeez!" ProductVersion="v1.8"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -47,7 +47,7 @@
         <PackageName Value="LCL"/>
       </Item4>
     </RequiredPackages>
-    <Units Count="48">
+    <Units Count="50">
       <Unit0>
         <Filename Value="project.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -58,7 +58,6 @@
         <ComponentName Value="JeezEditor"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Frame"/>
-        <UnitName Value="UJeezEditor"/>
       </Unit1>
       <Unit2>
         <Filename Value="forms\ujeezoptions.pas"/>
@@ -66,7 +65,6 @@
         <ComponentName Value="JeezOptions"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UJeezOptions"/>
       </Unit2>
       <Unit3>
         <Filename Value="utils\jeezutils.pas"/>
@@ -84,7 +82,6 @@
       <Unit6>
         <Filename Value="..\jes2cpp\jes2cpp.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Jes2Cpp"/>
       </Unit6>
       <Unit7>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppdescription.pas"/>
@@ -174,7 +171,6 @@
         <ComponentName Value="JeezProperties"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UJeezProperties"/>
       </Unit26>
       <Unit27>
         <Filename Value="forms\ujeezsplash.pas"/>
@@ -189,7 +185,6 @@
         <ComponentName Value="JeezGuiEditor"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="UJeezGuiEditor"/>
       </Unit28>
       <Unit29>
         <Filename Value="forms\ujeezmessages.pas"/>
@@ -274,6 +269,14 @@
         <Filename Value="..\jes2cpp\j2c.base\jes2cpptoken.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit47>
+      <Unit48>
+        <Filename Value="..\jes2cpp\j2c.components\jes2cppfunctionidentifiers.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit48>
+      <Unit49>
+        <Filename Value="..\jes2cpp\j2c.components\jes2cppcomponent.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit49>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

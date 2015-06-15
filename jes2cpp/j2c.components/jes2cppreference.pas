@@ -31,10 +31,10 @@ unit Jes2CppReference;
 interface
 
 uses
-  Classes, Jes2CppConstants, SysUtils;
+  Classes, Jes2CppComponent, Jes2CppConstants, SysUtils;
 
 type
-  CJes2CppReference = class(TComponent)
+  CJes2CppReference = class(CJes2CppComponent)
   strict private
     FFilePartPath, FFilePartName: TFileName;
     FFileLine: Integer;
@@ -49,7 +49,7 @@ type
     property FileLine: Integer read FFileLine write FFileLine;
   end;
 
-  CJes2CppReferences = class(TComponent)
+  CJes2CppReferences = class(CJes2CppComponent)
   public
     function AddReference(const AFileName: TFileName; const AFileLine: Integer): CJes2CppReference;
     function GetReference(const AIndex: Integer): CJes2CppReference;
@@ -81,14 +81,14 @@ end;
 
 function CJes2CppReferences.AddReference(const AFileName: TFileName; const AFileLine: Integer): CJes2CppReference;
 begin
-  Result := CJes2CppReference.Create(Self);
+  Result := CJes2CppReference.Create(Self, EmptyStr);
   Result.FileName := AFileName;
   Result.FileLine := AFileLine;
 end;
 
 function CJes2CppReferences.GetReference(const AIndex: Integer): CJes2CppReference;
 begin
-  Result := Components[AIndex] as CJes2CppReference;
+  Result := Self[AIndex] as CJes2CppReference;
 end;
 
 end.

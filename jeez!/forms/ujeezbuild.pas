@@ -66,13 +66,13 @@ uses UJeezIde, UJeezMessages, UJeezOptions;
 
 function TJeezBuild.Execute: Boolean;
 begin
-  FCaption := SMsgTypeBuilding + CharSpace + UpperCase(PluginTypeAsString(JeezOptions.GetTypePlugin)) +
+  FCaption := SMsgTypeBuilding + CharSpace + UpperCase(TypePluginAsString(JeezOptions.GetTypePlugin)) +
     CharSpace + GsPlugin + CharSpace + CharOpeningParenthesis;
-  case JeezOptions.GetTypeProcessor of
-    pt32bit: begin
+  case JeezOptions.GetTypeArchitecture of
+    pa32bit: begin
       FCaption += Gs32Bit + CharSpace + SMsgProcessor;
     end;
-    pt64bit: begin
+    pa64bit: begin
       FCaption += Gs64Bit + CharSpace + SMsgProcessor;
     end;
   end;
@@ -106,26 +106,27 @@ end;
 
 procedure TJeezBuild.FormPaint(ASender: TObject);
 var
-  LTranspiler: Jeez_Jes2Cpp;
+  LTranspiler: Transpile;
 begin
   OnPaint := nil;
   ModalResult := mrAbort;
   Refresh;
   Application.ProcessMessages;
   try
-    LTranspiler := Jeez_Jes2Cpp.Create(Self);
+    LTranspiler := Transpile.Create(nil, EmptyStr);
     try
+      LTranspiler.WarningsAsErrors := JeezOptions.EditWarningsAsErrors.Checked;
       LTranspiler.TranspileScript(JeezIde.GetActiveEditor.SynEdit.Lines, JeezIde.GetActiveEditor.Filename,
         JeezOptions.EditDefVendorString.Text, ExtractFileName(JeezIde.GetActiveEditor.Filename), JeezOptions.EditDefProductString.Text,
         JeezOptions.EditDefVendorVersion.Text, JeezOptions.EditDefUniqueId.Text);
-      FCompiler := Jeez_Compile.Create(Self);
+      FCompiler := Compiling.Create(Self);
       try
         FCompiler.SetCompilerOption(coUseLibBass, JeezOptions.EditUseBass.Checked);
         FCompiler.SetCompilerOption(coUseLibSndFile, JeezOptions.EditUseSndFile.Checked);
         FCompiler.SetCompilerOption(coUseFastMath, JeezOptions.EditUseFastMath.Checked);
         FCompiler.SetCompilerOption(coUseInline, JeezOptions.EditUseInlineFunctions.Checked);
         FCompiler.SetCompilerOption(coUseCompression, JeezOptions.EditUseCompression.Checked);
-        FCompiler.TypeProcessor := JeezOptions.GetTypeProcessor;
+        FCompiler.TypeArchitecture := JeezOptions.GetTypeArchitecture;
         FCompiler.TypePrecision := JeezOptions.GetTypePrecision;
         FCompiler.TypePlugin := JeezOptions.GetTypePlugin;
         FOutputFile := FCompiler.Compile(JeezOptions.GetCompiler, LTranspiler.Output);

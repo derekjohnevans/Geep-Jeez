@@ -21,9 +21,10 @@
 					<Add option="-m32" />
 					<Add option="-fno-exceptions" />
 					<Add option="-DWIN32=1" />
-					<Add option="-DVEST_VST" />
+					<Add option="-DVEST_VST=1" />
+					<Add option="-DGDIPLUS=1" />
 					<Add option="-DVSTGUI_ENABLE_DEPRECATED_METHODS=1" />
-					<Add option="-DVSTGUI_FLOAT_COORDINATES" />
+					<Add option="-DVSTGUI_FLOAT_COORDINATES=1" />
 					<Add directory="../VST3 SDK" />
 					<Add directory="../VST3 SDK/public.sdk/source/vst2.x" />
 					<Add directory="../VST3 SDK/vstgui.sf/vstgui" />

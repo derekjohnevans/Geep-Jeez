@@ -31,7 +31,7 @@ unit JeezLabels;
 interface
 
 uses
-  Classes, Controls, EditBtn, ExtCtrls, Graphics, StdCtrls, SysUtils, Types;
+  Classes, Controls, EditBtn, ExtCtrls, Graphics, Jes2CppPlatform, StdCtrls, SysUtils, Types;
 
 const
 
@@ -72,7 +72,10 @@ begin
         LCaption := LHint;
       end;
       AControl.Hint := LHint;
-      AControl.Color := clInfoBlock;
+      if not TJes2CppPlatform.IsWindows9x then
+      begin
+        AControl.Color := clInfoBlock;
+      end;
       Result := TPanel.Create(AControl);
       Result.BoundsRect := LRect;
       Result.BorderWidth := 6;

@@ -58,12 +58,12 @@ implementation
 
 function CJes2CppVariables.GetVariable(const AIndex: Integer): CJes2CppVariable;
 begin
-  Result := Components[AIndex] as CJes2CppVariable;
+  Result := Self[AIndex] as CJes2CppVariable;
 end;
 
 function CJes2CppVariables.FindVariable(const AName: TComponentName): CJes2CppVariable;
 begin
-  Result := FindComponent(AName) as CJes2CppVariable;
+  Result := FindBySameText(AName) as CJes2CppVariable;
 end;
 
 function CJes2CppVariables.FindOrCreateVariable(const AName: TComponentName; const AFileName: TFileName;
@@ -80,7 +80,7 @@ end;
 
 function CJes2CppVariables.AddVariable(const AName: String; const AIdentType: TJes2CppIdentifierType): CJes2CppVariable;
 begin
-  if Assigned(FindComponent(AName)) then
+  if Assigned(FindBySameText(AName)) then
   begin
     raise Exception.Create('Duplicate Variable');
   end;
@@ -93,11 +93,11 @@ var
   LIndex: Integer;
 begin
   Result := EmptyStr;
-  for LIndex := ItemFirst(Self) to ItemLast(Self) do
+  for LIndex := IndexFirst(Self) to IndexLast(Self) do
   begin
     if GetIdentifier(LIndex).IdentType = itInternal then
     begin
-      J2C_StringAppendCSV(Result, CppEncodeVariable(Components[LIndex].Name));
+      J2C_StringAppendCSV(Result, CppEncodeVariable(Self[LIndex].Name));
     end;
   end;
   if Result <> EmptyStr then
@@ -112,9 +112,9 @@ var
   LVariable: CJes2CppVariable;
 begin
   Result := EmptyStr;
-  for LIndex := ItemFirst(Self) to ItemLast(Self) do
+  for LIndex := IndexFirst(Self) to IndexLast(Self) do
   begin
-    LVariable := Components[LIndex] as CJes2CppVariable;
+    LVariable := GetVariable(LIndex);
     if LVariable.IdentType = itInternal then
     begin
       Result += CppEncodeVariable(LVariable.Name) + GsCppEqu + GsCppZero + GsCppLineEnding;
@@ -128,9 +128,9 @@ var
   LVariable: CJes2CppVariable;
 begin
   Result := EmptyStr;
-  for LIndex := ItemFirst(Self) to ItemLast(Self) do
+  for LIndex := IndexFirst(Self) to IndexLast(Self) do
   begin
-    LVariable := Components[LIndex] as CJes2CppVariable;
+    LVariable := GetVariable(LIndex);
     if (LVariable.IdentType = itInternal) and (LVariable.FConstantString <> EmptyStr) then
     begin
       Result += CppEncodeVariable(LVariable.Name) + GsCppEqu + GsFnStr + CharOpeningParenthesis +

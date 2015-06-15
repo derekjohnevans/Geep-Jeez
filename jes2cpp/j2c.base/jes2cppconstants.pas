@@ -37,14 +37,15 @@ const
   M_ZERO = 0;
 
   GiColWidth = 100;
+  GiTabSize = 2;
 
 const
 
   GsJes2CppName = 'Jes2Cpp';
   GsJes2CppSlogan = 'The Easy Way to Create Audio Plugins (VST/LADSPA)';
-  GsJes2CppDescription = 'Jesusonic Script to C++ Transpiler';
-  GsJes2CppVersion = '1.8';
-  GsJes2CppBuildDate = 'BUILD:7thJune2015';
+  GsJes2CppDescription = 'Jesusonic to C++ Transpiler';
+  GsJes2CppVersion = '2.0';
+  GsJes2CppBuildDate = 'BUILD:15thJune2015';
   GsJes2CppTitle = GsJes2CppName + ' (v' + GsJes2CppVersion + ') - ' + GsJes2CppDescription;
   GsJes2CppWebsite = 'http://www.wascal.net/music/';
   GsJes2CppCopyright = 'Copyright (C) 2015 Derek John Evans';
@@ -92,6 +93,7 @@ const
   Gs32Bit = '32bit';
   Gs64Bit = '64bit';
   GsCaption = 'Caption';
+  GsText = 'Text';
   GsClose = 'Close';
   GsCount = 'Count';
   GsCreate = 'Create';
@@ -149,6 +151,7 @@ const
   GsTJes2CppEffectVst = GsTJes2CppEffect + 'Vst';
   GsUniqueId = 'UniqueId';
   GsValue = 'Value';
+  GsSelected = 'Selected';
   GsVendorString = 'VendorString';
   GsVendorVersion = 'VendorVersion';
   GsVST = 'VST';
@@ -169,12 +172,14 @@ resourcestring
   SMsgAlreadyDefinedAsInstance1 = '''%s'' is already defined as an instance.';
   SMsgAlreadyDefinedAsLocal1 = '''%s'' is already defined as local.';
   SMsgAlreadyDefinedAsParameter1 = '''%s'' is already defined as a parameter.';
+  SMsgAlreadyDefinedAsStatic1 = '''%s'' is already defined as a static.';
   SMsgAssignmentsInFunctionCall = 'Assignments in function calls are not portable.';
   SMsgAssignmentsInStatements = 'Assignments in statements are not portable.';
   SMsgCompilationAborted = 'User selected to abort.';
   SMsgCompilationFailed = 'Compilation failed. (Please check message log)';
   SMsgCompilerNotSelected = 'No compiler selected. Note: C++ file has been saved to output folder.';
   SMsgCompilerTerminatedBecause1 = 'Compilation terminated because ''%s''.';
+  SMsgCompressing = 'Compressing';
   SMsgConvertedWith = 'Converted with ';
   SMsgCreateAudioEffectInstance = 'Create Audio Effect Instance.';
   SMsgDefineGlobalVariables = 'Define Global Variables.';
@@ -192,6 +197,7 @@ resourcestring
   SMsgFunctionDefinedInsideFunction = 'Unable to define a function inside a function.';
   SMsgGlobalVariableNotAccessible1 = 'The global variable ''%s'' is not accessible.';
   SMsgIdentifier = 'Identifier';
+  SMsgIdentifierNameIsNotIdentical2 = 'Identifier ''%s'' is not identical to ''%s''.';
   SMsgIncludes = 'Includes';
   SMsgIncompleteStringCharSequence = 'Incomplete string/char sequence.';
   SMsgInvalidFilename = 'Invalid Filename.';
@@ -216,6 +222,7 @@ resourcestring
   SMsgTypeParsing = 'Parsing';
   SMsgTypeSaving = 'Saving';
   SMsgTypeSyntaxChecking = 'SyntaxChecking';
+  SMsgTypeWarning = 'Warning';
   SMsgUnableToCompileIncludeFile = 'Unable to build jsfx-inc file.';
   SMsgUnableToCreateOuputDirectory = 'Unable to create output directory.';
   SMsgUnableToDeleteOutputFile = 'Unable to delete output file.';

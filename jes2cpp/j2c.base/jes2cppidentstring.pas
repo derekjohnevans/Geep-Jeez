@@ -31,30 +31,11 @@ unit Jes2CppIdentString;
 interface
 
 uses
-  Jes2CppConstants, Jes2CppEat, Jes2CppEel, Jes2CppToken, Masks, Math, StrUtils, SysUtils;
+  Jes2CppConstants, Jes2CppEat, Jes2CppEel, Jes2CppToken, Math, StrUtils, SysUtils;
 
 type
 
   TIdentString = type string;
-
-  TIdentArray = object
-  public
-    FItems: array of TIdentString;
-  public
-    function Count: Integer;
-    function IsVariadic: Boolean;
-    function IsCountMatch(const ACount: Integer): Boolean;
-    function IndexOfMatchesMask(const AIdent: TIdentString): Integer;
-    function ExistsMatchesMask(const AIdent: TIdentString): Boolean;
-    function IndexOfSameText(const AIdent: TIdentString): Integer;
-    function ExistsSameText(const AIdent: TIdentString): Boolean;
-    function IndexOfIdent(const AIdent: TIdentString): Integer;
-    function ExistsIdent(const AIdent: TIdentString): Boolean;
-    procedure Append(const AIdent: TIdentString);
-    procedure AppendInstance(const AIdent: TIdentString);
-    function IsNameSpaceMatch(const AIdent: TIdentString): Boolean;
-    function AsString: String;
-  end;
 
 function J2C_IdentIsNameSpace(const AIdent: TIdentString): Boolean; overload;
 function J2C_IdentIsNameSpace(const AIdent, ANameSpace: TIdentString): Boolean; overload;
@@ -68,14 +49,13 @@ function J2C_IdentIsTempString(const AIdent: TIdentString): Boolean;
 function J2C_IdentIsSlider(AIdent: TIdentString; out AIndex: Integer): Boolean;
 function J2C_IdentIsSample(AIdent: TIdentString; out AIndex: Integer): Boolean;
 
+function J2C_IdentRemoveRef(const AIdent: TIdentString): TIdentString;
 function J2C_IdentFixUp(const AIdent: TFileName): TIdentString;
 function J2C_IdentClean(const AIdent: TIdentString): String;
 function J2C_IdentExtractRight(const AIdent: TIdentString): TIdentString;
 function J2C_IdentExtract(const AString: String; const APos: Integer; out AIdent: TIdentString; out AIsFunction: Boolean): Boolean;
 
 implementation
-
-uses Jes2CppStrings;
 
 function J2C_IdentIsNameSpace(const AIdent: TIdentString): Boolean;
 begin
@@ -228,111 +208,6 @@ begin
   if J2C_IdentIsRef(Result) then
   begin
     Delete(Result, Length(Result), 1);
-  end;
-end;
-
-function TIdentArray.Count: Integer;
-begin
-  Result := Length(FItems);
-end;
-
-function TIdentArray.IsVariadic: Boolean;
-begin
-  Result := (Length(FItems) > 0) and (FItems[High(FItems)] = GsEelVariadic);
-end;
-
-function TIdentArray.IsCountMatch(const ACount: Integer): Boolean;
-begin
-  Result := (IsVariadic and (ACount >= High(FItems))) or (ACount = Length(FItems));
-end;
-
-function TIdentArray.IndexOfMatchesMask(const AIdent: TIdentString): Integer;
-begin
-  for Result := Low(FItems) to High(FItems) do
-  begin
-    if MatchesMask(AIdent, FItems[Result]) then
-    begin
-      Exit;
-    end;
-  end;
-  Result := -1;
-end;
-
-function TIdentArray.ExistsMatchesMask(const AIdent: TIdentString): Boolean;
-begin
-  Result := IndexOfMatchesMask(AIdent) >= 0;
-end;
-
-function TIdentArray.IndexOfSameText(const AIdent: TIdentString): Integer;
-begin
-  for Result := Low(FItems) to High(FItems) do
-  begin
-    if SameText(AIdent, FItems[Result]) then
-    begin
-      Exit;
-    end;
-  end;
-  Result := -1;
-end;
-
-function TIdentArray.ExistsSameText(const AIdent: TIdentString): Boolean;
-begin
-  Result := IndexOfSameText(AIdent) >= 0;
-end;
-
-function TIdentArray.IndexOfIdent(const AIdent: TIdentString): Integer;
-begin
-  for Result := Low(FItems) to High(FItems) do
-  begin
-    if SameText(J2C_IdentRemoveRef(AIdent), J2C_IdentRemoveRef(FItems[Result])) then
-    begin
-      Exit;
-    end;
-  end;
-  Result := -1;
-end;
-
-function TIdentArray.ExistsIdent(const AIdent: TIdentString): Boolean;
-begin
-  Result := IndexOfIdent(AIdent) >= 0;
-end;
-
-procedure TIdentArray.Append(const AIdent: TIdentString);
-begin
-  SetLength(FItems, Length(FItems) + 1);
-  FItems[High(FItems)] := AIdent;
-end;
-
-procedure TIdentArray.AppendInstance(const AIdent: TIdentString);
-begin
-  if not ExistsIdent(AIdent) then
-  begin
-    Append(AIdent);
-  end;
-end;
-
-function TIdentArray.IsNameSpaceMatch(const AIdent: TIdentString): Boolean;
-var
-  LNameSpace: TIdentString;
-begin
-  for LNameSpace in FItems do
-  begin
-    if J2C_IdentIsNameSpace(AIdent, LNameSpace) then
-    begin
-      Exit(True);
-    end;
-  end;
-  Result := False;
-end;
-
-function TIdentArray.AsString: String;
-var
-  LIdent: TIdentString;
-begin
-  Result := EmptyStr;
-  for LIdent in FItems do
-  begin
-    J2C_StringAppendCSV(Result, LIdent);
   end;
 end;
 

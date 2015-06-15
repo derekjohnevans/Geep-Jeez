@@ -42,13 +42,13 @@ const
 
 type
 
-  Jeez_Jes2Cpp = class(CJes2Cpp)
+  Transpile = class(CJes2Cpp)
   protected
     procedure LogMessage(const AMessage: String); override;
     procedure LoadStringsFrom(const AStrings: TStrings; const AFileName: TFileName); override;
   end;
 
-  Jeez_Compile = class(CJes2CppCompiler)
+  Compiling = class(CJes2CppCompiler)
   strict private
     FLineBreaker: TStrings;
   protected
@@ -58,6 +58,7 @@ type
     destructor Destroy; override;
   end;
 
+procedure J2C_DrawItemBackground(const ACanvas: TCanvas; const ARect: TRect; const ASelected: Boolean);
 procedure J2C_CanvasDrawItem(const ACanvas: TCanvas; const AString: String; const ARect: TRect; const ASelected: Boolean;
   const AImageList: TCustomImageList; const AImageIndex: Integer);
 procedure J2C_ComboBoxDrawItem(const AComboBox: TComboBox; const AIndex: Integer; const ARect: TRect;
@@ -67,18 +68,24 @@ implementation
 
 uses UJeezBuild, UJeezIde, UJeezMessages, UJeezOptions;
 
-procedure J2C_CanvasDrawItem(const ACanvas: TCanvas; const AString: String; const ARect: TRect; const ASelected: Boolean;
-  const AImageList: TCustomImageList; const AImageIndex: Integer);
+procedure J2C_DrawItemBackground(const ACanvas: TCanvas; const ARect: TRect; const ASelected: Boolean);
 begin
   if ASelected then
   begin
-    ACanvas.Brush.Color := JeezOptions.ColorCurrentLine.Selected;
-    ACanvas.Font.Color := JeezOptions.ColorIdentifiers.Selected;
+    ACanvas.Pen.Color := JeezOptions.ColorLineFrame.Selected;
+    ACanvas.Brush.Color := JeezOptions.ColorLineColor.Selected;
   end else begin
+    ACanvas.Pen.Color := JeezOptions.ColorBackground.Selected;
     ACanvas.Brush.Color := JeezOptions.ColorBackground.Selected;
-    ACanvas.Font.Color := JeezOptions.ColorIdentifiers.Selected;
   end;
-  ACanvas.FillRect(ARect);
+  ACanvas.Rectangle(ARect);
+end;
+
+procedure J2C_CanvasDrawItem(const ACanvas: TCanvas; const AString: String; const ARect: TRect; const ASelected: Boolean;
+  const AImageList: TCustomImageList; const AImageIndex: Integer);
+begin
+  J2C_DrawItemBackground(ACanvas, ARect, ASelected);
+  ACanvas.Font.Color := JeezOptions.ColorIdentifiers.Selected;
   ACanvas.TextRect(ARect, 25, (ARect.Top + ARect.Bottom - ACanvas.TextHeight(AString)) div 2, AString);
   if Assigned(AImageList) then
   begin
@@ -94,12 +101,12 @@ begin
     TTreeNode(AComboBox.Items.Objects[AIndex]).ImageIndex);
 end;
 
-procedure Jeez_Jes2Cpp.LogMessage(const AMessage: String);
+procedure Transpile.LogMessage(const AMessage: String);
 begin
   JeezMessages.LogMessage(ClassName, AMessage);
 end;
 
-procedure Jeez_Jes2Cpp.LoadStringsFrom(const AStrings: TStrings; const AFileName: TFileName);
+procedure Transpile.LoadStringsFrom(const AStrings: TStrings; const AFileName: TFileName);
 var
   LIndex: Integer;
 begin
@@ -112,19 +119,19 @@ begin
   end;
 end;
 
-constructor Jeez_Compile.Create(AOwner: TComponent);
+constructor Compiling.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FLineBreaker := TStringList.Create;
 end;
 
-destructor Jeez_Compile.Destroy;
+destructor Compiling.Destroy;
 begin
   FreeAndNil(FLineBreaker);
   inherited Destroy;
 end;
 
-procedure Jeez_Compile.LogMessage(const AMessage: String);
+procedure Compiling.LogMessage(const AMessage: String);
 var
   LIndex: Integer;
 begin

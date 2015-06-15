@@ -31,8 +31,8 @@ unit Jes2CppParserFunctions;
 interface
 
 uses
-  Jes2CppConstants, Jes2CppEel, Jes2CppFunction, Jes2CppIdentifier, Jes2CppIdentString,
-  Jes2CppParserLoops, Jes2CppStrings, Jes2CppTranslate, Math, StrUtils, SysUtils;
+  Jes2CppConstants, Jes2CppEel, Jes2CppFunction, Jes2CppFunctionIdentifiers, Jes2CppIdentifier, Jes2CppIdentString,
+  Jes2CppIterate, Jes2CppParserLoops, Jes2CppStrings, Jes2CppTranslate, Math, StrUtils, SysUtils;
 
 type
 
@@ -41,10 +41,10 @@ type
     FForceGlobals: Boolean;
   strict private
     function ParseFunctionCall: String;
-    function ParseFunctionCallParameters: TIdentArray;
+    function ParseFunctionCallExpressions: TArrayOfString;
   strict private
     procedure ParseFunctionDefine;
-    procedure ParseVariableDefines(var AArray: TIdentArray; const AIsFunctionParameters, ACanRef: Boolean);
+    procedure ParseVariableDefines(const AIdentifiers: CJes2CppFunctionIdentifiers; const AIsFunctionParameters, ACanRef: Boolean);
   protected
     function ParseElement(const AIsExpected: Boolean): String; override;
     function ParseExpression(const AIsExpected: Boolean): String; override;
@@ -55,7 +55,8 @@ type
 
 implementation
 
-procedure CJes2CppParserFunctions.ParseVariableDefines(var AArray: TIdentArray; const AIsFunctionParameters, ACanRef: Boolean);
+procedure CJes2CppParserFunctions.ParseVariableDefines(const AIdentifiers: CJes2CppFunctionIdentifiers;
+  const AIsFunctionParameters, ACanRef: Boolean);
 var
   LIdent: TIdentString;
 begin
@@ -64,11 +65,11 @@ begin
   begin
     if AIsFunctionParameters and IsToken(GsEelVariadic) then
     begin
-      LogAssert(AArray.Count > 0, SMsgVariadicFunctionsMustHaveAtLeastOneParameter);
-      LogAssert(not AArray.IsVariadic, SMsgVariadicEllipsisHasAlreadyBeenUsed);
+      LogAssert(AIdentifiers.ComponentCount > 0, SMsgVariadicFunctionsMustHaveAtLeastOneParameter);
+      LogAssert(not AIdentifiers.IsVariadic, SMsgVariadicEllipsisHasAlreadyBeenUsed);
       LIdent := PullToken;
     end else begin
-      LogAssert(not AArray.IsVariadic, SMsgVariadicEllipsisMustBeTheLastParameter);
+      LogAssert(not AIdentifiers.IsVariadic, SMsgVariadicEllipsisMustBeTheLastParameter);
       LIdent := PullIdentVariable;
     end;
     if ACanRef and IsToken(CharAsterisk) then
@@ -76,13 +77,14 @@ begin
       LIdent := LIdent + PullToken;
     end;
     LogAssert(not AnsiMatchText(J2C_IdentClean(LIdent), GaEelKeywords), SMsgKeywordsCantBeUsedAsIdentNames);
-    LogAssert(not FCurrentFunction.FGlobals.ExistsSameText(LIdent), Format(SMsgAlreadyDefinedAsGlobal1, [J2C_IdentClean(LIdent)]));
-    LogAssert(not FCurrentFunction.FInstances.ExistsIdent(LIdent), Format(SMsgAlreadyDefinedAsInstance1, [J2C_IdentClean(LIdent)]));
-    LogAssert(not FCurrentFunction.FLocals.ExistsIdent(LIdent), Format(SMsgAlreadyDefinedAsLocal1, [J2C_IdentClean(LIdent)]));
-    LogAssert(not FCurrentFunction.FParams.ExistsIdent(LIdent), Format(SMsgAlreadyDefinedAsParameter1, [J2C_IdentClean(LIdent)]));
-    //LogAssert(not AArray.ExistsIdent(LIdent), Format(SMsgAlreadyDefined1, [J2C_IdentClean(LIdent)]));
+    LogAssert(not FCurrentFunction.ExistsGlobal(LIdent, Self), Format(SMsgAlreadyDefinedAsGlobal1, [J2C_IdentClean(LIdent)]));
+    LogAssert(not FCurrentFunction.ExistsInstanceSelf(LIdent, Self), Format(SMsgAlreadyDefinedAsInstance1, [J2C_IdentClean(LIdent)]));
+    LogAssert(not FCurrentFunction.ExistsLocal(LIdent, Self), Format(SMsgAlreadyDefinedAsLocal1, [J2C_IdentClean(LIdent)]));
+    LogAssert(not FCurrentFunction.ExistsParam(LIdent, Self), Format(SMsgAlreadyDefinedAsParameter1, [J2C_IdentClean(LIdent)]));
+    LogAssert(not FCurrentFunction.ExistsStatic(LIdent, Self), Format(SMsgAlreadyDefinedAsStatic1, [J2C_IdentClean(LIdent)]));
 
-    AArray.Append(LIdent);
+    AIdentifiers.Append(LIdent);
+
     if not IsToken(CharClosingParenthesis) then
     begin
       IsTokenThenPull(CharComma);
@@ -93,33 +95,36 @@ end;
 
 procedure CJes2CppParserFunctions.ParseFunctionDefine;
 var
-  LIsRef, LIsAlias: Boolean;
+  LIsAlias: Boolean;
 begin
   ExpectToken(GsEelFunction);
   LogAssert(not Assigned(FCurrentFunction), SMsgFunctionDefinedInsideFunction);
-  LIsRef := IsTokenThenPull(CharAsterisk);
   LIsAlias := IsTokenThenPull(CharAmpersand);
-  FCurrentFunction := CJes2CppFunction.Create(Functions, PullIdentFunction);
+  LogAssertExpected(IsFunctionHead, SMsgIdentifier);
+  FCurrentFunction := CJes2CppFunction.Create(Functions, PullToken);
   FCurrentFunction.Comment := CurrentComment;
   FCurrentFunction.References.AddReference(FileName, FileLine);
   FCurrentFunction.ForceGlobals := FForceGlobals;
-  FCurrentFunction.IsRef := LIsRef;
+  FCurrentFunction.IsRef := IsTokenThenPull(CharAsterisk);
   try
-    ParseVariableDefines(FCurrentFunction.FParams, True, True);
-    LogAssert(Functions.FindFunction(FCurrentFunction.Name, FCurrentFunction.FParams.Count) = FCurrentFunction,
+    ParseVariableDefines(FCurrentFunction.Params, True, True);
+    LogAssert(Functions.FindFunction(FCurrentFunction.Name, FCurrentFunction.Params.ComponentCount) = FCurrentFunction,
       Format(SMsgFunctionasDuplicateOverloads1, [FCurrentFunction.Name]));
     repeat
       if IsTokenThenPull(GsEelLocal) then
       begin
-        ParseVariableDefines(FCurrentFunction.FLocals, False, False);
+        ParseVariableDefines(FCurrentFunction.Locals, False, False);
+      end else if IsTokenThenPull(GsEelStatic) then
+      begin
+        ParseVariableDefines(FCurrentFunction.Static, False, False);
       end else if IsTokenThenPull(GsEelInstance) then
       begin
-        ParseVariableDefines(FCurrentFunction.FInstances, False, False);
-        FCurrentFunction.FAllInstances.FItems := Copy(FCurrentFunction.FInstances.FItems);
+        ParseVariableDefines(FCurrentFunction.InstancesSelf, False, False);
+        FCurrentFunction.InstancesAll.CopyFrom(FCurrentFunction.InstancesSelf);
       end else if IsTokenThenPull(GsEelGlobal) or IsTokenThenPull(GsEelGlobals) then
       begin
-        ParseVariableDefines(FCurrentFunction.FGlobals, False, True);
-        FCurrentFunction.FHasGlobals := True;
+        ParseVariableDefines(FCurrentFunction.Globals, False, True);
+        FCurrentFunction.HasGlobals := True;
       end else begin
         Break;
       end;
@@ -154,9 +159,9 @@ begin
   until not IsTokenThenPull(CharSemiColon);
 end;
 
-function CJes2CppParserFunctions.ParseFunctionCallParameters: TIdentArray;
+function CJes2CppParserFunctions.ParseFunctionCallExpressions: TArrayOfString;
 begin
-  SetLength(Result.FItems, M_ZERO);
+  SetLength(Result.Items, M_ZERO);
   FParameterAssignmentCount := M_ZERO;
   while not IsToken(CharClosingParenthesis) do
   begin
@@ -176,7 +181,7 @@ function CJes2CppParserFunctions.ParseFunctionCall: String;
 var
   LIndex: Integer;
   LIdent, LFunctName, LNameSpace: TIdentString;
-  LParams: TIdentArray;
+  LExpressions: TArrayOfString;
   LFunction: CJes2CppFunction;
 begin
   if IsToken(GsEelWhile) then
@@ -186,9 +191,9 @@ begin
   begin
     Result := ParseLoop;
   end else begin
-    LIdent := PullIdentFunction;
+    LIdent := PullIdentFunctionCall;
     ExpectToken(CharOpeningParenthesis);
-    if Assigned(FCurrentFunction) and FCurrentFunction.FInstances.IsNameSpaceMatch(LIdent + CharDot) then
+    if Assigned(FCurrentFunction) and FCurrentFunction.InstancesSelf.IsNameSpaceMatch(LIdent + CharDot) then
     begin
       LIdent := GsEelSpaceThis + LIdent;
     end;
@@ -196,36 +201,37 @@ begin
     begin
       Description.FIsSynth := True;
     end;
-    LParams := ParseFunctionCallParameters;
-    LFunction := Functions.FindFunction(LIdent, LNameSpace, LFunctName, LParams.Count);
+    LExpressions := ParseFunctionCallExpressions;
+    LFunction := Functions.FindFunction(LIdent, LNameSpace, LFunctName, LExpressions.Count);
     LogAssert(Assigned(LFunction), Format(SMsgUnableToFindFunction1, [LIdent]));
+    LogWarningCaseCheck(LFunctName, LFunction.Name);
     if not SameText(LNameSpace, LFunction.DefaultNameSpace) and not J2C_IdentIsNameSpaceThis(LNameSpace) and
-      Assigned(FCurrentFunction) and FCurrentFunction.FHasGlobals and not FCurrentFunction.FGlobals.ExistsMatchesMask(LIdent) then
+      Assigned(FCurrentFunction) and FCurrentFunction.HasGlobals and not FCurrentFunction.Globals.ExistsFiltered(LIdent) then
     begin
       LogException(Format(SMsgNamespaceNotAccessible1, [J2C_IdentClean(LNameSpace)]));
     end;
     LFunction.References.AddReference(FileName, FileLine);
     if LFunction.IdentType = itInternal then
     begin
-      for LIndex := Low(LFunction.FAllInstances.FItems) to High(LFunction.FAllInstances.FItems) do
+      for LIndex := IndexFirst(LFunction.InstancesAll) to IndexLast(LFunction.InstancesAll) do
       begin
         if Assigned(FCurrentFunction) and J2C_IdentIsNameSpaceThis(LNameSpace) then
         begin
-          FCurrentFunction.FAllInstances.AppendInstance(Copy(LNameSpace, Length(GsEelSpaceThis) + 1, MaxInt) +
-            LFunction.FAllInstances.FItems[LIndex]);
+          FCurrentFunction.AppendInstance(Copy(LNameSpace, Length(GsEelSpaceThis) + 1, MaxInt) +
+            LFunction.InstancesAll[LIndex].Name, Self);
         end else begin
-          Variables.FindOrCreateVariable(LNameSpace + LFunction.FAllInstances.FItems[LIndex], FileName, FileLine, CurrentComment);
+          FindOrCreateVariable(LNameSpace + LFunction.InstancesAll[LIndex].Name, FileName, FileLine, CurrentComment);
         end;
       end;
     end;
     Result := EmptyStr;
-    for LIndex := Low(LParams.FItems) to High(LParams.FItems) do
+    for LIndex := Low(LExpressions.Items) to High(LExpressions.Items) do
     begin
-      J2C_StringAppendCSV(Result, LParams.FItems[LIndex]);
+      J2C_StringAppendCSV(Result, LExpressions.Items[LIndex]);
     end;
-    for LIndex := Low(LFunction.FAllInstances.FItems) to High(LFunction.FAllInstances.FItems) do
+    for LIndex := IndexFirst(LFunction.InstancesAll) to IndexLast(LFunction.InstancesAll) do
     begin
-      J2C_StringAppendCSV(Result, CppEncodeVariable(LNameSpace + LFunction.FAllInstances.FItems[LIndex]));
+      J2C_StringAppendCSV(Result, CppEncodeVariable(LNameSpace + LFunction.InstancesAll[LIndex].Name));
     end;
     Result := CppEncodeFunction(LFunctName) + CharOpeningParenthesis + Result + CharClosingParenthesis;
     ExpectToken(CharClosingParenthesis);
@@ -236,7 +242,7 @@ function CJes2CppParserFunctions.ParseElement(const AIsExpected: Boolean): Strin
 begin
   if IsTokenThenPull(CharExclamation) then
   begin
-    if IsConstantString then
+    if IsStringHead then
     begin
       Result := ParseRawString;
     end else begin
@@ -252,7 +258,7 @@ begin
     if IsToken(CharOpeningParenthesis) then
     begin
       Result += ParseParenthesis;
-    end else if IsConstantNumber then
+    end else if IsNumberHead then
     begin
       Result += ParseConstantNumber;
     end else if IsToken(CharHash) then
@@ -261,13 +267,13 @@ begin
     end else if IsVariable then
     begin
       Result += ParseVariable;
-    end else if IsFunction then
+    end else if IsFunctionCall then
     begin
       Result += ParseFunctionCall;
-    end else if IsConstantString then
+    end else if IsStringHead then
     begin
       Result += ParseConstantString;
-    end else if IsConstantChar then
+    end else if IsCharHead then
     begin
       Result += ParseConstantChar;
     end;

@@ -50,8 +50,10 @@ type
     function ParseHashSpecial: String;
     function ParseVariable: String;
     procedure ParseArrayIndex(var AResult: String);
+    function FindOrCreateVariable(const AName: TComponentName; const AFileName: TFileName; const AFileLine: Integer;
+      const AComment: String): CJes2CppVariable;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
   public
     property Functions: CJes2CppFunctions read FFunctions;
     property Variables: CJes2CppVariables read FVariables;
@@ -59,22 +61,22 @@ type
 
 implementation
 
-constructor CJes2CppParserElements.Create(AOwner: TComponent);
+constructor CJes2CppParserElements.Create(const AOwner: TComponent; const AName: TComponentName);
 begin
-  inherited Create(AOwner);
-  FFunctions := CJes2CppFunctions.Create(Self);
-  FVariables := CJes2CppVariables.Create(Self);
+  inherited Create(AOwner, AName);
+  FFunctions := CJes2CppFunctions.Create(Self, EmptyStr);
+  FVariables := CJes2CppVariables.Create(Self, EmptyStr);
 end;
 
 function CJes2CppParserElements.ParseConstantChar: String;
 begin
-  LogAssertExpected(IsConstantChar, 'Char');
+  LogAssertExpected(IsCharHead, 'Char');
   Result := Format(GsCppFunct2, [GsFnChr, PullToken]);
 end;
 
 function CJes2CppParserElements.ParseConstantNumber: String;
 begin
-  LogAssertExpected(IsConstantNumber, 'Number');
+  LogAssertExpected(IsNumberHead, 'Number');
   try
     Result := CppEncodeFloat(CurrentToken);
   except
@@ -90,8 +92,7 @@ begin
   LogAssertExpected(IsTokenThenPull(CharHash), 'Hash Symbol');
   Inc(FStringTempCount);
   // TODO: This should always be a new variable.
-  LVariable := Variables.FindOrCreateVariable(GsEelSpaceTempString + IntToHex(FStringTempCount, 4) + CharDot,
-    FileName, FileLine, CurrentComment);
+  LVariable := FindOrCreateVariable(GsEelSpaceTempString + IntToHex(FStringTempCount, 4) + CharDot, FileName, FileLine, CurrentComment);
   LVariable.FConstantString := CharQuoteDouble + CharQuoteDouble;
   Result := CppEncodeVariable(LVariable.Name);
 end;
@@ -100,13 +101,13 @@ function CJes2CppParserElements.ParseConstantString: String;
 var
   LVariable: CJes2CppVariable;
 begin
-  LogAssertExpected(IsConstantString, 'String');
+  LogAssertExpected(IsStringHead, 'String');
   Inc(FStringConstCount);
   // TODO: This should always be a new variable.
-  LVariable := Variables.FindOrCreateVariable(GsEelSpaceConstString + IntToHex(FStringConstCount, 4) + CharDot,
+  LVariable := FindOrCreateVariable(GsEelSpaceConstString + IntToHex(FStringConstCount, 4) + CharDot,
     FileName, FileLine, CurrentComment);
   LVariable.FConstantString := PullToken;
-  while IsConstantString do
+  while IsStringHead do
   begin
     LVariable.FConstantString += LineEnding + PullToken;
   end;
@@ -127,6 +128,13 @@ begin
   end;
 end;
 
+function CJes2CppParserElements.FindOrCreateVariable(const AName: TComponentName; const AFileName: TFileName;
+  const AFileLine: Integer; const AComment: String): CJes2CppVariable;
+begin
+  Result := FVariables.FindOrCreateVariable(AName, AFileName, AFileLine, AComment);
+  LogWarningCaseCheck(AName, Result.Name);
+end;
+
 function CJes2CppParserElements.ParseVariable: String;
 var
   LIndex: Integer;
@@ -135,26 +143,26 @@ begin
   Result := PullIdentVariable;
   if Assigned(FCurrentFunction) then
   begin
-    if FCurrentFunction.FInstances.IsNameSpaceMatch(Result) then
+    if FCurrentFunction.InstancesSelf.IsNameSpaceMatch(Result) then
     begin
       Result := GsEelSpaceThis + Result;
     end;
     if J2C_IdentIsNameSpaceThis(Result) then
     begin
-      FCurrentFunction.FAllInstances.AppendInstance(Copy(Result, Length(GsEelSpaceThis) + 1, MaxInt));
+      FCurrentFunction.AppendInstance(Copy(Result, Length(GsEelSpaceThis) + 1, MaxInt), Self);
     end;
   end;
-  if Assigned(FCurrentFunction) and FCurrentFunction.IsNameLocal(Result) then
+  if Assigned(FCurrentFunction) and FCurrentFunction.IsNameLocal(Result, Self) then
   begin
     Result := CppEncodeVariable(Result);
   end else begin
     LogAssert(not AnsiMatchText(J2C_IdentClean(Result), GaEelKeywords), SMsgKeywordsCantBeUsedAsIdentNames);
-    if Assigned(FCurrentFunction) and (FCurrentFunction.ForceGlobals or FCurrentFunction.FHasGlobals) and
-      not FCurrentFunction.FGlobals.ExistsMatchesMask(Result) then
+    if Assigned(FCurrentFunction) and (FCurrentFunction.ForceGlobals or FCurrentFunction.HasGlobals) and
+      not FCurrentFunction.Globals.ExistsFiltered(Result) then
     begin
       LogException(Format(SMsgGlobalVariableNotAccessible1, [J2C_IdentClean(Result)]));
     end;
-    LVariable := FVariables.FindOrCreateVariable(Result, FileName, FileLine, CurrentComment);
+    LVariable := FindOrCreateVariable(Result, FileName, FileLine, CurrentComment);
     if IsTokenThenPull(GsEelExtern) then
     begin
       LVariable.IdentType := itExternal;

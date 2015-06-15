@@ -947,6 +947,15 @@ extern "C" {
 #endif // VEST_VST
   }
 
+  VEST_SETDRAWMODE {
+#ifdef VEST_VST
+    CVeST* LVeST = Get_VeST_DrawContext(AVeST);
+    return LVeST->GetDrawContext()->setDrawMode((CDrawMode)AMode), true;
+#else
+    return false;
+#endif // VEST_VST
+  }
+
   VEST_SETFONTCOLOR {
 #ifdef VEST_VST
     CVeST* LVeST = Get_VeST_DrawContext(AVeST);

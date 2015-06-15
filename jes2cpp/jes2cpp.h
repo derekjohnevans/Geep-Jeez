@@ -87,15 +87,6 @@ typedef std::vector<int> TIntegerDynArray;
 typedef std::vector<float> TSingleDynArray;
 typedef std::vector<double> TDoubleDynArray;
 
-inline int Max(int AX, int AY)
-{
-  return AX > AY ? AX : AY;
-}
-inline int Min(int AX, int AY)
-{
-  return AX < AY ? AX : AY;
-}
-
 class TStringMap
 {
   private:
@@ -210,18 +201,13 @@ extern std::string FileNameResolve(const std::string& AFileName);
 // Expand safe operators to C++ operators
 
 #define CHR(AX) (AX)
-#define OR(AX, AY) (EEL_F)((EEL_I)(AX) | (EEL_I)(AY))
-#define AND(AX, AY) (EEL_F)((EEL_I)(AX) & (EEL_I)(AY))
-#define XOR(AX, AY) (EEL_F)((EEL_I)(AX) ^ (EEL_I)(AY))
-#define SHL(AX, AY) (EEL_F)((EEL_I)(AX) << (EEL_I)(AY))
-#define SHR(AX, AY) (EEL_F)((EEL_I)(AX) >> (EEL_I)(AY))
+#define OR(AX, AY) (EEL_F)((int32_t)(AX) | (int32_t)(AY))
+#define AND(AX, AY) (EEL_F)((int32_t)(AX) & (int32_t)(AY))
+#define XOR(AX, AY) (EEL_F)((int32_t)(AX) ^ (int32_t)(AY))
+#define SHL(AX, AY) (EEL_F)((int32_t)(AX) << (int32_t)(AY))
+#define SHR(AX, AY) (EEL_F)((int32_t)(AX) >> (int32_t)(AY))
 
 // Unsafe operators are implemented as inline functions.
-
-inline int MinMax(int AX, int AMin, int AMax)
-{
-return Min(Max(AX, AMin), AMax);
-}
 
 inline EEL_F VAL(int AX)
 {
@@ -269,19 +255,19 @@ return AX -= AY, AX < M_EPSILON && AX > -M_EPSILON ? M_FALSE : M_TRUE;
 
 // EEL_F type convertion functions.
 
-inline EEL_I EEL_F2I(EEL_F AX)
+inline int EEL_F2I(EEL_F AX)
 {
-return AX < 0 ? (EEL_I)(AX - (EEL_F)0.0001) : (EEL_I)(AX + (EEL_F)0.0001);
+return AX < 0 ? (int)(AX - (EEL_F)0.0001) : (int)(AX + (EEL_F)0.0001);
 }
 
-inline EEL_I EEL_F2I16(EEL_F AX)
+inline int EEL_F2I16(EEL_F AX)
 {
-return (EEL_I)(AX * 0x10000);
+return (int)(AX * 0x10000);
 }
 
-inline EEL_I EEL_F2PEN(EEL_F AX)
+inline int EEL_F2PEN(EEL_F AX)
 {
-return MinMax(EEL_F2I(AX * 255), 0, 255);
+return std::min<int>(std::max<int>(EEL_F2I(AX * 255), 0), 255);
 }
 
 class CJes2CppParameter
@@ -313,10 +299,21 @@ public:
     FLabel = ALabel;
     FName = AName;
   }
-
-  EEL_F ToSlider(EEL_F AValue);
-  EEL_F FromSlider(EEL_F AValue);
-  int GetOptionIndex(EEL_F AValue);
+  // Returns a slider value, given a parameter value.
+  inline EEL_F Param2Slider(EEL_F AValue)
+  {
+    return floor((FMinValue + (FMaxValue - FMinValue) * AValue + (FStepValue / 2)) / FStepValue) * FStepValue;
+  }
+  // Returns a parameter value given a slider value.
+  inline EEL_F Slider2Param(EEL_F AValue)
+  {
+   return (AValue - FMinValue) / (FMaxValue - FMinValue);
+  }
+  // Returns a option index given a slider value. Returns -1 on error.
+  inline int Slider2Option(EEL_F AValue)
+  {  
+    return std::min<int>(std::max<int>((int)((AValue - FMinValue) * (FOptions.size() - 1) / (FMaxValue - FMinValue)), 0), FOptions.size() - 1);
+  }
   void GetDisplayFromSliderValue(char* AString, EEL_F AValue);
 
   void Init();
@@ -332,6 +329,7 @@ public:
   {
     return FMemory[EEL_F2I(ABase + AOffset)];
   }
+  // Extracts a string of bytes from array buffer.
   void GetMemory(std::string& ADst, int ASrc, int ALength)
   {
     ADst.resize(ALength);
@@ -468,7 +466,7 @@ public:
   }
   void SetParameterValue(int AIndex, EEL_F AValue)
   {
-    AValue = FParameters[AIndex].ToSlider(AValue);
+    AValue = FParameters[AIndex].Param2Slider(AValue);
     if (NEQ(AValue, FSliders[FParameters[AIndex].FIndex])) {
       FSliders[FParameters[AIndex].FIndex] = AValue;
       if (FParameters[AIndex].FVariable) {
@@ -479,7 +477,7 @@ public:
   }
   EEL_F GetParameterValue(int AIndex)
   {
-    return FParameters[AIndex].FromSlider(FSliders[FParameters[AIndex].FIndex]);
+    return FParameters[AIndex].Slider2Param(FSliders[FParameters[AIndex].FIndex]);
   }
   void GetParameterName(int AIndex, char* AString)
   {
@@ -516,7 +514,7 @@ public:
 };
 
 // These constants were taken from WDL's "eel_strings.h".
-// There are here mostly for reference.
+// They are here mostly for reference.
 
 #ifndef EEL_STRING_MAX_USER_STRINGS
 // strings 0...x-1
@@ -549,7 +547,7 @@ private:
 
 public:
 
-  EEL_F str_count$;
+  EEL_F jes2cpp$str_count$;
 
   CJes2CppStrings()
   {
@@ -563,7 +561,7 @@ public:
   inline std::string& GetString(int AKey)
   {
     std::string& LString = FStringMap.GetString(AKey);
-    str_count$ = (EEL_F)FStringMap.Count();
+    jes2cpp$str_count$ = (EEL_F)FStringMap.Count();
     return LString;
   }
   inline std::string& GetString(EEL_F AKey)
@@ -741,7 +739,7 @@ class CJes2CppGraphics : public CJes2CppFonts
 public:
 
   TDynMap<int, CJes2CppImage> FImages;
-  EEL_F gfx_clear$, gfx_r$, gfx_g$, gfx_b$, gfx_a$, gfx_x$, gfx_y$, gfx_w$, gfx_h$, gfx_rate$;
+  EEL_F gfx_clear$, gfx_r$, gfx_g$, gfx_b$, gfx_a$, gfx_x$, gfx_y$, gfx_w$, gfx_h$, jes2cpp$gfx_rate$;
 
   CJes2CppGraphics();
 
@@ -758,6 +756,13 @@ public:
   CJes2CppMouse()
   {
     mouse_cap$ = mouse_x$ = mouse_y$ = 0;
+  }
+  void SetMouse(double AX, double AY, int AButtons)
+  {
+    mouse_cap$ = ((AButtons&2)>>1)|((AButtons&4)<<4)|((AButtons&8)>>1);
+    mouse_x$ = AX;
+    mouse_y$ = AY;
+    jes2cpp$gfx_rate$ = std::max<EEL_F>(jes2cpp$gfx_rate$, GFX_RATE);
   }
 };
 

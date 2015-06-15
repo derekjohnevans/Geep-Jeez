@@ -31,7 +31,7 @@ unit Jes2CppLoop;
 interface
 
 uses
-  Jes2CppConstants, Jes2CppEel, Jes2CppFunction, Jes2CppIdentifier, Jes2CppIdentString, Jes2CppTranslate, SysUtils;
+  Jes2CppConstants, Jes2CppEel, Jes2CppFunction, Jes2CppIdentifier, Jes2CppTranslate, SysUtils;
 
 type
 
@@ -71,37 +71,13 @@ begin
 end;
 
 function CJes2CppLoop.CppParameters(const AIsDefine: Boolean): String;
-
-  procedure LAppendParams(const LParameters: TIdentArray; const AIsInstance: Boolean);
-  var
-    LIndex: Integer;
-  begin
-    for LIndex := Low(LParameters.FItems) to High(LParameters.FItems) do
-    begin
-      if Result <> EmptyStr then
-      begin
-        Result += GsCppCommaSpace;
-      end;
-      if AIsDefine then
-      begin
-        Result += GsCppEelF + CharAmpersand + CharSpace;
-      end;
-      if AIsInstance then
-      begin
-        Result += CppEncodeVariable(GsEelSpaceThis + LParameters.FItems[LIndex]);
-      end else begin
-        Result += CppEncodeVariable(LParameters.FItems[LIndex]);
-      end;
-    end;
-  end;
-
 begin
   Result := EmptyStr;
   if Assigned(FFunction) then
   begin
-    LAppendParams(FFunction.FParams, False);
-    LAppendParams(FFunction.FLocals, False);
-    LAppendParams(FFunction.FAllInstances, True);
+    FFunction.Params.AppendParams(Result, AIsDefine, False);
+    FFunction.Locals.AppendParams(Result, AIsDefine, False);
+    FFunction.InstancesAll.AppendParams(Result, AIsDefine, True);
   end;
 end;
 
@@ -112,7 +88,7 @@ end;
 
 function CJes2CppLoop.CppDefineHead: String;
 begin
-  Result := GsCppInlineSpace + GsCppEelF + CharSpace + Name + '(' + CppParameters(True) + ')' + LineEnding;
+  Result := GsCppJes2CppInlineSpace + GsCppEelF + CharSpace + Name + '(' + CppParameters(True) + ')' + LineEnding;
 end;
 
 function CJes2CppLoop.CppDefine: String;
@@ -138,7 +114,7 @@ end;
 
 function CJes2CppLoops.GetLoop(const AIndex: Integer): CJes2CppLoop;
 begin
-  Result := Components[AIndex] as CJes2CppLoop;
+  Result := Self[AIndex] as CJes2CppLoop;
 end;
 
 end.

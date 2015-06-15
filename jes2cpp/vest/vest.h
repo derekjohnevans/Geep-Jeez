@@ -166,6 +166,9 @@ typedef struct {
   TVeST_SetChunk* OnSetChunk;
 } TVeSTCallBacks;
 
+#define VEST_DRAWMODE_COPY 0
+#define VEST_DRAWMODE_ANTIALIAS 3
+
 #define VEST_INIT VEST_EXPORT HVEST VEST_WINAPI VeST_Init(HVEST_DATA AData, TVeSTCallBacks* AVeSTCallBacks, HVEST_AUDIOMASTER AAudioMaster, int AProgramCount, int AParamCount)
 #define VEST_GETDATA VEST_EXPORT HVEST_DATA VEST_WINAPI VeST_GetData(HVEST AVeST)
 #define VEST_GETNUMINPUTS VEST_EXPORT int VEST_WINAPI VeST_GetNumInputs(HVEST AVeST)
@@ -196,6 +199,7 @@ typedef struct {
 #define VEST_MIDISEND VEST_EXPORT bool VEST_WINAPI VeST_MidiSend(HVEST AVeST, int ADeltaFrames, int AMidiData0, int AMidiData1, int AMidiData2)
 #define VEST_MIDISYSEX VEST_EXPORT bool VEST_WINAPI VeST_MidiSysex(HVEST AVeST, int ADeltaFrames, char* AData, int ALength)
 #define VEST_MIDIRECV VEST_EXPORT bool VEST_WINAPI VeST_MidiRecv(HVEST AVeST, int* ADeltaFrames, int* AMidiData0, int* AMidiData1, int* AMidiData2)
+#define VEST_SETDRAWMODE VEST_EXPORT bool VEST_WINAPI VeST_SetDrawMode(HVEST AVeST, int AMode)
 #define VEST_SETFONTCOLOR VEST_EXPORT bool VEST_WINAPI VeST_SetFontColor(HVEST AVeST, int AR, int AG, int AB, int AA)
 #define VEST_SETFILLCOLOR VEST_EXPORT bool VEST_WINAPI VeST_SetFillColor(HVEST AVeST, int AR, int AG, int AB, int AA)
 #define VEST_SETFRAMECOLOR VEST_EXPORT bool VEST_WINAPI VeST_SetFrameColor(HVEST AVeST, int AR, int AG, int AB, int AA)
@@ -285,6 +289,7 @@ VEST_BITMAP_DRAW_TRANSPARENT;
 VEST_MASTERIDLE;
 VEST_PROGRAMSARECHUNKS;
 VEST_GETPOINT;
+VEST_SETDRAWMODE;
 
 // Define entry points for supported plugin types.
 

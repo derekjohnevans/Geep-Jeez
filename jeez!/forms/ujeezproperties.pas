@@ -40,12 +40,14 @@ type
 
   TJeezProperties = class(TForm)
     ButtonPanel: TButtonPanel;
-    EditUniqueId: TEdit;
+    EditEffectName: TEdit;
     EditPluginInstallPath: TDirectoryEdit;
     EditProductString: TEdit;
-    EditEffectName: TEdit;
+    EditUniqueId: TEdit;
     EditVendorString: TEdit;
     EditVendorVersion: TSpinEdit;
+    GroupBoxDescription: TGroupBox;
+    GroupBoxInstall: TGroupBox;
     PageControl: TPageControl;
     TabSheetSettings: TTabSheet;
     procedure EditPluginInstallPathChange(ASender: TObject);
@@ -66,7 +68,7 @@ uses UJeezOptions;
 
 procedure TJeezProperties.FormCreate(ASender: TObject);
 begin
-  J2C_ScrollingWinControlPrepare(Self);
+  TJes2CppPlatform.ScrollingWinControlPrepare(Self);
   PageControl.PageIndex := 0;
 end;
 

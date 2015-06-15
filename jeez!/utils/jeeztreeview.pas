@@ -31,7 +31,7 @@ unit JeezTreeView;
 interface
 
 uses
-  ComCtrls, Graphics, ImgList, Jes2CppConstants, Math, StrUtils, SysUtils, Types;
+  ComCtrls, Graphics, ImgList, JeezUtils, Jes2CppConstants, Math, StrUtils, SysUtils, Types;
 
 const
 
@@ -249,14 +249,9 @@ begin
   LCanvas := ATreeNode.TreeView.Canvas;
   LTreeView := ATreeNode.TreeView as TTreeView;
   LImageList := LTreeView.Images;
-  if ATreeNode.Selected then
-  begin
-    LCanvas.Brush.Color := JeezOptions.ColorCurrentLine.Selected;
-  end else begin
-    LCanvas.Brush.Color := LTreeView.BackgroundColor;
-  end;
-  LRect := ATreeNode.DisplayRect(False);
-  LCanvas.FillRect(LRect);
+
+  J2C_DrawItemBackground(LCanvas, ATreeNode.DisplayRect(False), ATreeNode.Selected);
+
   LRect := ATreeNode.DisplayRect(True);
   if ATreeNode.Level <> 1 then
   begin

@@ -45,6 +45,7 @@ const
   GsEelLocal = 'local';
   GsEelLoop = 'loop';
   GsEelReturn = 'return'; // Not a standard keyword.
+  GsEelStatic = 'static';
   GsEelThis = 'this';
   GsEelTrue = 'true';
   GsEelWhile = 'while';
@@ -69,7 +70,6 @@ const
 
 const
 
-
   GsEelSectionBlock = 'block';
   GsEelSectionDesc = 'desc';
   GsEelSectionGfx = 'gfx';
@@ -81,7 +81,7 @@ const
 
 var
 
-  GaEelKeywords: array[0..8] of String = (GsEelLoop, GsEelWhile, GsEelFunction, GsEelLocal, GsEelInstance,
+  GaEelKeywords: array[0..9] of String = (GsEelLoop, GsEelWhile, GsEelFunction, GsEelLocal, GsEelStatic, GsEelInstance,
     GsEelGlobal, GsEelGlobals, GsEelThis, GsEelExtern);
   GaEelSpecial: array[0..19] of String = (GsEelFalse, GsEelTrue, GsEffectName, GsVendorString, GsVendorVersion,
     GsUniqueId, GsInstallPath, GsEelReturn, GsEelDescDesc, GsEelDescImport, GsEelDescOptions, GsEelSectionInit,
@@ -111,7 +111,7 @@ const
   GsEelVarMouseX = 'mouse_x' + CharDot;
   GsEelVarMouseY = 'mouse_y' + CharDot;
 
-  // String Functions
+  // Eel Functions
 
   GsEelFnStrCpy = 'strcpy';
   GsEelFnStrCat = 'strcat';

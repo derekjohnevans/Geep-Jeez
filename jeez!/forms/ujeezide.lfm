@@ -1,13 +1,13 @@
 object JeezIde: TJeezIde
-  Left = 505
-  Height = 402
-  Top = 273
+  Left = 829
+  Height = 411
+  Top = 373
   Width = 668
   AllowDropFiles = True
-  ClientHeight = 382
+  ClientHeight = 391
   ClientWidth = 668
-  Constraints.MinHeight = 402
-  Constraints.MinWidth = 326
+  Constraints.MinHeight = 400
+  Constraints.MinWidth = 450
   Menu = MainMenu
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -18,7 +18,7 @@ object JeezIde: TJeezIde
   object StatusBar: TStatusBar
     Left = 0
     Height = 23
-    Top = 359
+    Top = 368
     Width = 668
     Panels = <    
       item
@@ -34,15 +34,16 @@ object JeezIde: TJeezIde
   end
   object ToolBar: TToolBar
     Left = 0
+    Height = 40
     Top = 0
     Width = 668
     AutoSize = True
-    ButtonHeight = 32
-    ButtonWidth = 75
+    ButtonHeight = 40
+    ButtonWidth = 5
     EdgeBorders = []
     EdgeInner = esNone
     EdgeOuter = esNone
-    Images = JeezData.ImageList16
+    Images = JeezData.ImageList32
     Indent = 0
     List = True
     ShowCaptions = True
@@ -56,7 +57,7 @@ object JeezIde: TJeezIde
       OnClick = MenuFileNewClick
     end
     object ButtonOpen: TToolButton
-      Left = 75
+      Left = 64
       Top = 0
       Caption = 'Open'
       DropdownMenu = MenuRecentFiles
@@ -65,70 +66,70 @@ object JeezIde: TJeezIde
       Style = tbsDropDown
     end
     object ButtonSave: TToolButton
-      Left = 162
+      Left = 144
       Top = 0
       Caption = 'Save'
       ImageIndex = 2
       OnClick = MenuFileSaveClick
     end
     object ButtonBuildPlugin: TToolButton
-      Left = 312
+      Left = 289
       Top = 0
       Caption = 'Build Plugin'
-      ImageIndex = 8
+      ImageIndex = 4
       OnClick = MenuToolsBuildPluginClick
     end
     object ButtonOptions: TToolButton
-      Left = 237
+      Left = 211
       Top = 0
       Caption = 'Options'
-      ImageIndex = 11
+      ImageIndex = 3
       OnClick = MenuToolsOptionsClick
     end
     object ButtonShowOutput: TToolButton
-      Left = 393
+      Left = 386
       Top = 0
-      Caption = 'Show Output'
-      ImageIndex = 10
-      OnClick = MenuToolsOpenOutputFolderClick
+      Caption = 'Output Folder'
+      ImageIndex = 5
+      OnClick = MenuToolsShowOutputFolderClick
     end
     object ButtonBuildAndInstallPlugin: TToolButton
-      Left = 481
+      Left = 492
       Top = 0
-      Caption = 'Install Plugin'
-      ImageIndex = 21
+      Caption = 'Build and Install'
+      ImageIndex = 6
       OnClick = MenuToolsBuildAndInstallPluginClick
     end
   end
   object PanelBody: TPanel
     Left = 0
-    Height = 327
-    Top = 32
+    Height = 328
+    Top = 40
     Width = 668
     Align = alClient
     BevelOuter = bvNone
-    BorderWidth = 8
-    ClientHeight = 327
+    BorderWidth = 6
+    ClientHeight = 328
     ClientWidth = 668
     Color = clBtnFace
     ParentColor = False
     TabOrder = 2
     object PanelBottom: TPanel
-      Left = 8
+      Left = 6
       Height = 200
-      Top = 119
-      Width = 652
+      Top = 122
+      Width = 656
       Align = alBottom
       BevelOuter = bvNone
       ClientHeight = 200
-      ClientWidth = 652
+      ClientWidth = 656
       Constraints.MinHeight = 32
       TabOrder = 0
       object PageControlSystem: TPageControl
         Left = 0
         Height = 200
         Top = 0
-        Width = 652
+        Width = 656
         TabStop = False
         ActivePage = TabSheetMessages
         Align = alClient
@@ -144,28 +145,28 @@ object JeezIde: TJeezIde
     end
     object SplitterBottom: TSplitter
       Cursor = crVSplit
-      Left = 8
+      Left = 6
       Height = 4
-      Top = 115
-      Width = 652
+      Top = 118
+      Width = 656
       Align = alBottom
       ResizeAnchor = akBottom
     end
     object PanelClient: TPanel
-      Left = 8
-      Height = 107
-      Top = 8
-      Width = 652
+      Left = 6
+      Height = 112
+      Top = 6
+      Width = 656
       Align = alClient
       BevelOuter = bvNone
-      ClientHeight = 107
-      ClientWidth = 652
+      ClientHeight = 112
+      ClientWidth = 656
       TabOrder = 2
       object PageControl: TPageControl
         Left = 0
-        Height = 107
+        Height = 112
         Top = 0
-        Width = 652
+        Width = 656
         TabStop = False
         Align = alClient
         Images = JeezData.ImageListTabSheet
@@ -200,6 +201,7 @@ object JeezIde: TJeezIde
       end
       object MenuFileOpenReaper: TMenuItem
         Caption = 'Open Effect ... (From Reaper Effects)'
+        ImageIndex = 41
         OnClick = MenuFileOpenReaperClick
       end
       object MenuFileSep5: TMenuItem
@@ -235,6 +237,7 @@ object JeezIde: TJeezIde
       end
       object MenuFileCloseAllOtherPages: TMenuItem
         Caption = 'Close All Other Pages'
+        ImageIndex = 42
         OnClick = MenuFileCloseAllOtherPagesClick
       end
       object MenuFileCloseAll: TMenuItem
@@ -404,10 +407,10 @@ object JeezIde: TJeezIde
       object MenuToolsSep1: TMenuItem
         Caption = '-'
       end
-      object MenuToolsOpenOutputFolder: TMenuItem
-        Caption = 'Open Output &Folder ...'
+      object MenuToolsShowOutputFolder: TMenuItem
+        Caption = 'Show Output &Folder ...'
         ImageIndex = 10
-        OnClick = MenuToolsOpenOutputFolderClick
+        OnClick = MenuToolsShowOutputFolderClick
       end
       object MenuToolsOpenCppOutputFile: TMenuItem
         Caption = 'Open Last C++ Output File'
@@ -431,18 +434,41 @@ object JeezIde: TJeezIde
     end
     object MenuHelp: TMenuItem
       Caption = '&Help'
-      object MenuHelpGotoJeezOnline: TMenuItem
-        Caption = 'Goto Jeez! Online ...'
-        ImageIndex = 24
-        OnClick = MenuHelpGotoJeezOnlineClick
+      object MenuHelpAboutJeez: TMenuItem
+        Caption = '&About Geep Jeez! ...'
+        ImageIndex = 12
+        OnClick = MenuHelpAboutJeezClick
       end
       object MenuHelpSep1: TMenuItem
         Caption = '-'
       end
-      object MenuHelpAboutJeez: TMenuItem
-        Caption = '&About Jeez! ...'
-        ImageIndex = 12
-        OnClick = MenuHelpAboutJeezClick
+      object MenuHelpGotoJeezOnline: TMenuItem
+        Caption = 'Geep Jeez! (online) ...'
+        ImageIndex = 24
+        OnClick = MenuHelpGotoJeezOnlineClick
+      end
+      object MenuHelpJsFxReferenceOnline: TMenuItem
+        Caption = 'JSFX Programming Reference (online) ...'
+        ImageIndex = 24
+        OnClick = MenuHelpJsFxReferenceOnlineClick
+      end
+      object MenuHelpReaperOnline: TMenuItem
+        Caption = 'Cockos REAPER (online) ...'
+        ImageIndex = 24
+        OnClick = MenuHelpReaperOnlineClick
+      end
+      object MenuHelpSaviHost: TMenuItem
+        Caption = 'SAVIHost (online) ...'
+        ImageIndex = 24
+        OnClick = MenuHelpSaviHostClick
+      end
+      object MenuHelpSep2: TMenuItem
+        Caption = '-'
+      end
+      object MenuHelpFatcowOnline: TMenuItem
+        Caption = 'FatCow - Farm Fresh Icons (online) ...'
+        ImageIndex = 40
+        OnClick = MenuHelpFatcowOnlineClick
       end
     end
   end
@@ -501,6 +527,43 @@ object JeezIde: TJeezIde
     end
     object MenuPopupCloseAllOtherPages: TMenuItem
       Caption = 'Close All Other Pages'
+      Bitmap.Data = {
+        36040000424D3604000000000000360000002800000010000000100000000100
+        2000000000000004000064000000640000000000000000000000000000000000
+        00000000000B0000003300000033000000330000003300000033000000330000
+        0033000000330000002F00000000000000000000000000000000BB871F00BB87
+        1F007050105BB88114FFB67E0FFFB57D0DFFB57D0CFFB67D0DFFB67E0FFFB77F
+        11FFB77F11FFB58016EE0000001ABB871F00BB871F00BB871F00BB871F00BB86
+        1D00B47F15EDDCC189FFF5F0E0FFF4EDDBFFF4EDDBFFF5EFDDFFF7F2E3FFDFCA
+        99FFFCFAF7FFCFAB60FF9D6F1399BB861D00BB871F00BB871F00BB871F00BA86
+        1D00B78012FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE9D9B7FFBB86
+        1DFFF5EFDEFFF6F1E2FFB17B0EE8BA851C00BB871F00BB871F00000000070000
+        00339569128F8A5E0982B17C0FE2C0902FFFBF8D2BFFBF8E2CFFC08F2EFFD8BB
+        7FFFF1E8D2FFFFFFFFFFBC8A23FF00000006BB871F00BB871F005E430E43B881
+        14FFB67E0EFFB57B09FFB67F10FFFFFFFFFFF3EDDBFFF3EDDAFFF3ECDAFFF2EA
+        D6FFF0E8D1FFFFFFFFFFC99F4CFF79560E2FBB861E00BB871E00AC7A14CADCC1
+        89FFF6F1E1FFF5EFDFFFD5B878FFF2E9D4FFF7F3E7FFF4EDDBFFF3EDDBFFF3EC
+        DAFFF3ECD9FFFEFFFDFFDEC491FF9C6D0F67BA851C00BD8C2800B78012FFFFFF
+        FFFFFFFFFFFFFFFFFFFFEEE2C9FFDDC28EFFFDFDF9FFF6F0E2FFF6F0E2FFF6F0
+        E2FFF6F0E1FFFBF9F2FFF2EAD6FF926509910000003300000033B98419FFB67E
+        0EFFB67F11FFC19132FFC09131FFC39438FFFFFFFFFFF9F6EDFFF9F5EBFFF9F5
+        EBFFF9F5ECFFFBF8F1FFFFFFFFFFB27802FFBA851CFFBC8922FFBB871E00B984
+        1900B28220A4FFFFFFFFF5F1E3FFBB871EFFFFFFFEFFFEFDFAFFFDFCF8FFFDFC
+        F9FFFDFCF9FFFEFDFBFFFFFFFFFFC59940FFECDFC2FFC19234FFBB871F00BA85
+        1C00AC770C71F5EFDFFFFAF7F0FFD2B06BFFF0E5CFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFFFFFFFFFFFFFFFFFE9DABAFFEEE2C9FFB67F14BFBB871F00BA86
+        1D00B7801133E1CA9BFFFFFFFFFFF5EFDFFFBB861EFFBE8C28FFC4973CFFB37A
+        07FFB07300FFB27702FFB47A08FFB67E0EFFB88114FFBA851B22BB871F00BB87
+        1E00B8821600C89B45FFFFFFFFFFFBF9F2FFFCFBF7FFF3EBD9FFEADBBAFFECDE
+        C1FFF3E9D5FFB37A06FFB9851BFFBB8822FFBA851C00BB871E00BB871F00BB87
+        1F00B9841A00B27907E5FFFFFFFFFFFFFCFFFEFDFBFFFFFFFDFFFFFFFFFFFFFF
+        FFFFFFFFFFFFC59B42FFECDFC3FFC19336FFBA851C00BB871F00BB871F00BB87
+        1F00BA861D00B67F1083F5EEDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+        FFFFFFFFFFFFEADABAFFEEE2C9FFB78014E8BA861D00BB871F00BB871F00BB87
+        1F00BB871E00B9841900B67D0DEAC4963BFFC89E4BFFB88215FFB37A06FFB47B
+        08FFB57C0AFFB67F0FFFB88114FFBA851B22BB871E00BB871F00
+      }
+      ImageIndex = 42
       OnClick = MenuFileCloseAllOtherPagesClick
     end
     object MenuPopupSep2: TMenuItem
@@ -552,6 +615,43 @@ object JeezIde: TJeezIde
     end
     object MenuPopupOpenContainingFolder: TMenuItem
       Caption = 'Open Containing Folder'
+      Bitmap.Data = {
+        36040000424D3604000000000000360000002800000010000000100000000100
+        2000000000000004000064000000640000000000000000000000000000000000
+        00000000000000000000000000000000000000000000000000000000000A0000
+        002A000000330000002A0000000A000000000000000000000000469AD300469A
+        D300469AD300449AD500399BE100CF9044000000001200000031674D2B59B586
+        4AD9C18F4FFFB6864AD9684D2B590000003100000012C2915200469AD3000000
+        000B0000000A0000000A00000008000000338C683879BC8B4CF8D5A263FFF7C0
+        82FFFFDDB3FFE6B77FFFC59356FFBC8B4BF88B683A7A000000330000002F2959
+        7A5F2655755C2553745A1C4C6F55CD8E42FFD8A262FFF4BE81FFF8C182FFF3BA
+        79FFFBE1C1FFFBCF9BFFFFD6A5FFF3C690FFD8AA6FFFBD8C4CFF4598D0F14398
+        D2FF4094D0FF3D92D1FF3395DDFFCA8B3FFFF4BD7DFFECB676FFE6B06FFFECBD
+        84FFFDF0DEFFFFC890FFF6C892FFF7CC99FFFFD4A2FFD9A76FFF4499D2FF3F94
+        D0FFABFBFFFF9AF4FFFF89F6FFFFC6863BFFE3AC6AFFE1B882FFEFE0C3FFDDD1
+        B8FFE0D3B6FFE4E7D7FFEED2AAFFF4C693FFF1C591FFD7A56BFF4397D1FF56AC
+        DDFF8EDAF5FFA1EFFFFF7BECFFFFC98D47FFEDDDBDFFDFD0B3FFE0B380FFF0CC
+        A5FFFFDDB8FFFFD3A4FFEDD1ABFFE8EDDCFFF0E8CEFFD9A469FF4296D1FF71C4
+        EAFF6CBCE6FFBBF3FFFF6FE3FFFFC0863EFFE4AF73FFFFECCFFFFFDBB0FFFFCA
+        92FFD5A76EFFFFE9CEFFFFD9AFFFFFCB92FFEDBB80FFE5A663FF4095D0FF90DD
+        F8FF44A0D8FFDCFDFFFFD8FCFFFFD4FFFFFFCED1BFFFC7A169FFE8B178FFFFEB
+        CEFFFFDBB1FFFFCB92FFE0A768FFCD9E61FF8FABADFF2470A6683E93CFFFB2F6
+        FFFF51ACDEFF358ACBFF348BCBFF338CCEFF328DD2FF52C2F6FF79C6D4FFCAA4
+        70FFE7AF70FFC79E65FF7BCBE0FF79E2FFFFA5E2FDFF378AC4C63D92CFFFB8F3
+        FFFF77DFFEFF7BE0FEFF7CE1FFFF7CE1FFFF7DE2FFFF50ACE0FF51BBEFFFD1FB
+        FFFFCCF2FDFFCDF9FFFFD0F8FFFFD3F8FFFFDAFDFFFF3E94D1FF3C92CFFFC0F3
+        FFFF70D9FBFF73DAFBFF74DAFBFF74DAFBFF74DBFBFF76DEFDFF4FAADDFF358C
+        CCFF338CCDFF328CCDFF328CCDFF3790CEFF3D94D0FF4398D2AE3B92CFFFCAF6
+        FFFF69D5F9FF6CD5F9FF6AD4F9FF69D4F9FF69D5F9FF6AD6FAFF6BD8FBFF6BD9
+        FCFF6BDAFDFF69DAFDFFDAFDFFFF3C93D0FF367BAA2F469AD3003B92CFFFD5F7
+        FFFF60D1F9FF61D0F8FFB4EBFDFFD9F6FFFFDAF8FFFFDAF8FFFFDAF9FFFFDBF9
+        FFFFDAF9FFFFDAFAFFFFDFFEFFFF3D94D0FF4599D335469AD3003D94D0FFDCFC
+        FFFFD8F7FFFFD8F7FFFFDBFAFFFF358ECDFF3991CEFF3A92CFFF3A92CFFF3A92
+        CFFF3A92CFFF3A92CFFF3D94D0FF4298D2EA469AD300469AD3004398D2EF3D94
+        D0FF3A92CFFF3A92CFFF3D94D0FF4197D1E44398D22B4498D2324498D2334498
+        D2334498D2334499D2334499D337459AD300469AD300469AD300
+      }
+      ImageIndex = 1
       OnClick = MenuPopupOpenContainingFolderClick
     end
   end

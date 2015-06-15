@@ -70,6 +70,11 @@ type
     MenuHelpGotoJeezOnline: TMenuItem;
     MenuHelpSep1: TMenuItem;
     MenuFileSep6: TMenuItem;
+    MenuHelpFatcowOnline: TMenuItem;
+    MenuHelpReaperOnline: TMenuItem;
+    MenuHelpSep2: TMenuItem;
+    MenuHelpJsFxReferenceOnline: TMenuItem;
+    MenuHelpSaviHost: TMenuItem;
     MenuToolsOpenPluginInHost: TMenuItem;
     MenuToolsSep4: TMenuItem;
     MenuRecentFile: TMenuItem;
@@ -95,7 +100,7 @@ type
     MenuToolsBuildAndInstallPlugin: TMenuItem;
     MenuToolsOptions: TMenuItem;
     MenuToolsSep2: TMenuItem;
-    MenuToolsOpenOutputFolder: TMenuItem;
+    MenuToolsShowOutputFolder: TMenuItem;
     MenuPageControl: TPopupMenu;
     MenuRecentFiles: TPopupMenu;
     PanelBody: TPanel;
@@ -146,8 +151,12 @@ type
     procedure MenuFileSaveAsClick(ASender: TObject);
     procedure MenuFileSaveClick(ASender: TObject);
     procedure MenuHelpAboutJeezClick(ASender: TObject);
+    procedure MenuHelpFatcowOnlineClick(Sender: TObject);
     procedure MenuHelpGotoJeezOnlineClick(ASender: TObject);
     procedure MenuFileOpenReaperClick(ASender: TObject);
+    procedure MenuHelpReaperOnlineClick(Sender: TObject);
+    procedure MenuHelpJsFxReferenceOnlineClick(Sender: TObject);
+    procedure MenuHelpSaviHostClick(Sender: TObject);
     procedure MenuToolsOpenPluginInHostClick(ASender: TObject);
     procedure MenuPopupOpenContainingFolderClick(ASender: TObject);
     procedure MenuRecentFilesPopup(ASender: TObject);
@@ -157,7 +166,7 @@ type
     procedure MenuToolsEditSlidersClick(ASender: TObject);
     procedure MenuToolsConvertEffectToImportModuleClick(ASender: TObject);
     procedure MenuToolsOpenCppOutputFileClick(ASender: TObject);
-    procedure MenuToolsOpenOutputFolderClick(ASender: TObject);
+    procedure MenuToolsShowOutputFolderClick(ASender: TObject);
     procedure MenuToolsOptionsClick(ASender: TObject);
     procedure MenuToolsSyntaxCheckClick(ASender: TObject);
     procedure PageControlCloseTabClicked(ASender: TObject);
@@ -196,8 +205,8 @@ end;
 
 procedure TJeezIde.FormCreate(ASender: TObject);
 begin
-  J2C_SingleInstanceInit(Handle, GsJeezTitle, PlatformLoadFromFile);
-  J2C_ScrollingWinControlPrepare(Self);
+  TJes2CppPlatform.SingleInstanceInit(Handle, GsJeezTitle, PlatformLoadFromFile);
+  TJes2CppPlatform.ScrollingWinControlPrepare(Self);
   // We must set the default size here so form centering is correct.
   Width := GiFormWidth;
   Height := GiFormHeight;
@@ -222,11 +231,14 @@ begin
 {$ELSE}
 {$ERROR}
 {$ENDIF}
-  for LIndex := 0 to ToolBar.ButtonCount - 1 do
+
+  for LIndex := IndexFirst(ToolBar) to IndexLast(ToolBar) do
   begin
     ToolBar.Buttons[LIndex].Caption := CharSpace + Trim(ToolBar.Buttons[LIndex].Caption) + CharSpace;
   end;
+
   PanelBottom.Height := GiDefaultMessageLogHeight;
+
   JeezMessages.Parent := TabSheetMessages;
   JeezMessages.Visible := True;
 
@@ -246,7 +258,7 @@ begin
       end;
     end;
   end;
-  if ItemCount(PageControl) = M_ZERO then
+  if IndexCount(PageControl) = M_ZERO then
   begin
     MenuFileNew.Click;
   end;
@@ -393,14 +405,14 @@ end;
 procedure TJeezIde.MenuFileClick(ASender: TObject);
 begin
   MenuFileSave.Enabled := GetActiveEditor.SynEdit.Modified;
-  MenuFileCloseAllOtherPages.Enabled := ItemCount(PageControl) > 1;
+  MenuFileCloseAllOtherPages.Enabled := IndexCount(PageControl) > 1;
 end;
 
 procedure TJeezIde.MenuFileCloseAllClick(ASender: TObject);
 var
   LIndex: Integer;
 begin
-  for LIndex := ItemLast(PageControl) downto ItemFirst(PageControl) do
+  for LIndex := IndexLast(PageControl) downto IndexFirst(PageControl) do
   begin
     PageControl.PageIndex := LIndex;
     MenuFileClose.Click;
@@ -413,7 +425,7 @@ var
   LTabSheet: TTabSheet;
 begin
   LTabSheet := PageControl.ActivePage;
-  for LIndex := ItemLast(PageControl) downto ItemFirst(PageControl) do
+  for LIndex := IndexLast(PageControl) downto IndexFirst(PageControl) do
   begin
     if PageControl.Pages[LIndex] <> LTabSheet then
     begin
@@ -440,7 +452,7 @@ begin
     end;
   end;
   PageControl.ActivePage.Free;
-  if ItemCount(PageControl) = M_ZERO then
+  if IndexCount(PageControl) = M_ZERO then
   begin
     MenuFileExit.Click;
   end;
@@ -455,14 +467,14 @@ procedure TJeezIde.MenuFileExportCodeAsHtmlClick(ASender: TObject);
 begin
   if JeezData.SaveDialogHtml.Execute then
   begin
-    TJeezSynEdit.SynCustomHighlighterExport(GetActiveEditor.SynEdit.Highlighter, GetActiveEditor.SynEdit.Lines,
+    TJeezSynEdit.SynEditExport(GetActiveEditor.SynEdit, GetActiveEditor.SynEdit.Lines,
       JeezData.SaveDialogHtml.Filename);
   end;
 end;
 
 procedure TJeezIde.MenuFileNewClick(ASender: TObject);
 begin
-  NewEditor('untitled' + GsFileExtJsFx);
+  NewEditor(GsFilePartUntitled + GsFileExtJsFx);
 end;
 
 procedure TJeezIde.MenuFileOpenClick(ASender: TObject);
@@ -504,9 +516,29 @@ begin
     LineEnding + LineEnding + GsJes2CppLicense + LineEnding + LineEnding + GsJes2CppWebsite);
 end;
 
+procedure TJeezIde.MenuHelpFatcowOnlineClick(Sender: TObject);
+begin
+  OpenUrl(TJes2CppUrls.FatCow);
+end;
+
+procedure TJeezIde.MenuHelpReaperOnlineClick(Sender: TObject);
+begin
+  OpenUrl(TJes2CppUrls.REAPER);
+end;
+
+procedure TJeezIde.MenuHelpJsFxReferenceOnlineClick(Sender: TObject);
+begin
+  OpenUrl(TJes2CppUrls.JSFXReference);
+end;
+
+procedure TJeezIde.MenuHelpSaviHostClick(Sender: TObject);
+begin
+  OpenUrl(TJes2CppUrls.SAVIHost);
+end;
+
 procedure TJeezIde.MenuHelpGotoJeezOnlineClick(ASender: TObject);
 begin
-  OpenUrl(GsJes2CppWebsite);
+  OpenUrl(TJes2CppUrls.GeepJeez);
 end;
 
 procedure TJeezIde.MenuFileOpenReaperClick(ASender: TObject);
@@ -539,7 +571,7 @@ begin
     LMenuItem.OnClick := MenuFileOpenClick;
     LMenuItem.ImageIndex := MenuFileOpen.ImageIndex;
     MenuRecentFiles.Items.Add(LMenuItem);
-    for LIndex := ItemFirst(JeezOptions.EditRecentFiles.Items) to ItemLast(JeezOptions.EditRecentFiles.Items) do
+    for LIndex := IndexFirst(JeezOptions.EditRecentFiles.Items) to IndexLast(JeezOptions.EditRecentFiles.Items) do
     begin
       LMenuItem := TMenuItem.Create(MenuRecentFiles);
       LMenuItem.Caption := JeezOptions.EditRecentFiles.Items[LIndex];
@@ -578,8 +610,6 @@ procedure TJeezIde.DoTabSheetShow(ASender: TObject);
 begin
   UpdateTabSheet(ASender as TTabSheet);
   HidePopupNotifier;
-  //GetActiveEditor.TimerCodeInsight.Enabled := False;
-  //GetActiveEditor.TimerCodeInsight.Enabled := True;
 end;
 
 function TJeezIde.GetEditor(const AIndex: Integer): TJeezEditor;
@@ -599,6 +629,10 @@ var
 begin
   LTabSheet := PageControl.AddTabSheet;
   LTabSheet.OnShow := DoTabSheetShow;
+  LTabSheet.BorderSpacing.Left := 0;
+  LTabSheet.BorderSpacing.Right := 2;
+  LTabSheet.BorderSpacing.Top := 2;
+  LTabSheet.BorderSpacing.Bottom := 2;
   Result := TJeezEditor.Create(LTabSheet);
   Result.Name := Result.ClassName;
   Result.Align := alClient;
@@ -609,7 +643,7 @@ end;
 
 function TJeezIde.GetPageIndexByFileName(const AFileName: TFileName): Integer;
 begin
-  for Result := ItemFirst(PageControl) to ItemLast(PageControl) do
+  for Result := IndexFirst(PageControl) to IndexLast(PageControl) do
   begin
     if SameFilename(GetEditor(Result).Filename, AFileName) then
     begin
@@ -643,6 +677,9 @@ end;
 function TJeezIde.LoadFromFile(const AFileName: TFileName; const ACaretY: Integer): TJeezEditor;
 begin
   Result := LoadFromFile(AFileName);
+  // TODO: This is the only way I know to center caret in window.
+  Result.SynEdit.CaretY := ACaretY - (Result.SynEdit.LinesInWindow div 2) + 1;
+  Result.SynEdit.CaretY := ACaretY + (Result.SynEdit.LinesInWindow div 2) - 1;
   Result.SynEdit.CaretY := ACaretY;
 end;
 
@@ -665,7 +702,7 @@ procedure TJeezIde.MenuToolsOpenPluginInHostClick(ASender: TObject);
 var
   LFileName: TFileName;
 begin
-  LFileName := GetActiveEditor.GetPluginFileName;
+  LFileName := GetActiveEditor.GetFileNamePlugin;
   if not FileExists(LFileName) then
   begin
     if MessageDlg(Format(SMsgPluginDoesNotExistWouldYouLikeToBuildInstallIt1, [LFileName]), mtConfirmation,
@@ -680,7 +717,7 @@ begin
   with TProcess.Create(Self) do
   begin
     try
-      Executable := TJes2CppFileNames.FileNameSaviHost(JeezOptions.GetTypeProcessor = pt64bit);
+      Executable := TJes2CppFileNames.FileNameSaviHost(JeezOptions.GetTypeArchitecture = pa64bit);
       Parameters.Add(LFileName);
       Execute;
     finally
@@ -689,7 +726,7 @@ begin
   end;
 end;
 
-procedure TJeezIde.MenuToolsOpenOutputFolderClick(ASender: TObject);
+procedure TJeezIde.MenuToolsShowOutputFolderClick(ASender: TObject);
 begin
   OpenUrl(TJes2CppFileNames.PathToTempBuild);
 end;
@@ -713,7 +750,7 @@ end;
 
 procedure TJeezIde.MenuPageControlPopup(ASender: TObject);
 begin
-  MenuPopupCloseAllOtherPages.Enabled := ItemCount(PageControl) > 1;
+  MenuPopupCloseAllOtherPages.Enabled := IndexCount(PageControl) > 1;
   MenuPopupSave.Caption := GsSave + CharSpace + QuotedStr(ExtractFilename(GetActiveEditor.Filename));
   MenuPopupOpenContainingFolder.Enabled := DirectoryExists(ExtractFilePath(GetActiveEditor.Filename));
 end;
@@ -730,9 +767,9 @@ end;
 
 procedure TJeezIde.MenuToolsBuildPluginClick(ASender: TObject);
 begin
-  while SameText(ExtractFileExt(GetActiveEditor.Filename), GsFileExtJsFxInc) do
+  while GetActiveEditor.IsFileNameInclude do
   begin
-    if PageControl.ActivePageIndex = 0 then
+    if PageControl.ActivePageIndex = M_ZERO then
     begin
       JeezMessages.LogException(SMsgUnableToCompileIncludeFile);
     end else begin
@@ -751,7 +788,6 @@ end;
 procedure TJeezIde.MenuToolsClick(ASender: TObject);
 begin
   MenuToolsOpenCppOutputFile.Enabled := FileExists(TJes2CppFileNames.FileNameOutputCpp);
-  //MenuToolsOpenPluginInHost.Enabled := FileExists(GetActiveEditor.GetPluginFileName);
 end;
 
 procedure TJeezIde.MenuToolsEditSlidersClick(ASender: TObject);
@@ -782,7 +818,7 @@ begin
   MenuToolsBuildPlugin.Click;
   Screen.Cursor := crHourGlass;
   try
-    LFileName := GetActiveEditor.GetPluginFileName;
+    LFileName := GetActiveEditor.GetFileNamePlugin;
     try
       if not FileUtil.CopyFile(JeezBuild.OutputFile, LFileName) then
       begin
@@ -808,7 +844,7 @@ begin
   JeezOptions.ApplySynCppSyn(JeezData.SynCppSyn);
   JeezOptions.ApplySynEdit(JeezMessages.SynEdit, JeezOptions.ColorInfoBlocks.Selected);
   JeezOptions.ApplySynAnySyn(JeezMessages.SynAnySyn, True);
-  for LIndex := ItemFirst(PageControl) to ItemLast(PageControl) do
+  for LIndex := IndexFirst(PageControl) to IndexLast(PageControl) do
   begin
     GetEditor(LIndex).ApplyColors;
   end;

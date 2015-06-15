@@ -33,6 +33,16 @@ interface
 uses
   Classes, Jes2CppConstants, Jes2CppEel, Jes2CppFileNames, Jes2CppTranslate, StrUtils, SysUtils;
 
+type
+
+  TArrayOfString = object
+  public
+    Items: array of String;
+  public
+    function Count: Integer;
+    procedure Append(const AIdent: String);
+  end;
+
 function J2C_StringLine(const ALength: Integer = GiColWidth): String;
 function J2C_StringIsSpace(const AString: String): Boolean;
 procedure J2C_StringAppendCSV(var AString: String; const AValue: String);
@@ -48,6 +58,17 @@ procedure J2C_StringsSetValue(const AStrings: TStrings; const AName, AValue: Str
 procedure J2C_StringsTrim(const AStrings: TStrings);
 
 implementation
+
+function TArrayOfString.Count: Integer;
+begin
+  Result := Length(Items);
+end;
+
+procedure TArrayOfString.Append(const AIdent: String);
+begin
+  SetLength(Items, Length(Items) + 1);
+  Items[High(Items)] := AIdent;
+end;
 
 function J2C_StringIsSpace(const AString: String): Boolean;
 var

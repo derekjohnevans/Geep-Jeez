@@ -53,7 +53,7 @@ void TJes2Cpp::DoResume()
   }
   DoInit();
   DoSlider();
-  VeST_SetInitialDelay(FVeST, (int)pdc_delay$);
+  VeST_SetInitialDelay(FVeST, EEL_F2I(pdc_delay$));
 }
 
 void TJes2Cpp::DoInit()
@@ -97,13 +97,13 @@ void TJes2Cpp::DoGfx()
     gfx_w$ = (EEL_F)LWidth;
     gfx_h$ = (EEL_F)LHeight;
   }
-  gfx_rate$ = GFX_RATE;
+  jes2cpp$gfx_rate$ = std::min<EEL_F>(jes2cpp$gfx_rate$, GFX_RATE);
 }
 
 void TJes2Cpp::DoIdle()
 {
-  if (gfx_rate$ > 0) {
-    if ((clock() - FClockInvalidate) > (CLOCKS_PER_SEC / gfx_rate$)) {
+  if (jes2cpp$gfx_rate$ > 0) {
+    if ((clock() - FClockInvalidate) > (CLOCKS_PER_SEC / jes2cpp$gfx_rate$)) {
       VeST_InvalidateGraphics(FVeST);
       FClockInvalidate = clock();
     }
@@ -300,24 +300,9 @@ void CJes2CppParameter::Init()
   }
 }
 
-EEL_F CJes2CppParameter::ToSlider(EEL_F AValue)
-{
-  return floor((FMinValue + (FMaxValue - FMinValue) * AValue + (FStepValue / 2)) / FStepValue) * FStepValue;
-}
-
-EEL_F CJes2CppParameter::FromSlider(EEL_F AValue)
-{
-  return (AValue - FMinValue) / (FMaxValue - FMinValue);
-}
-
-int CJes2CppParameter::GetOptionIndex(EEL_F AValue)
-{
-  return MinMax((int)((AValue - FMinValue) * (FOptions.size() - 1) / (FMaxValue - FMinValue)), 0, FOptions.size() - 1);
-}
-
 void CJes2CppParameter::GetDisplayFromSliderValue(char* AString, EEL_F AValue)
 {
-  int LIndex = GetOptionIndex(AValue);
+  int LIndex = Slider2Option(AValue);
   if (LIndex >= 0 && LIndex < (int)FOptions.size()) {
     strcpy(AString, FOptions[LIndex].c_str());
   } else {
@@ -343,7 +328,7 @@ void CJes2CppStream::Clear()
 
 bool CJes2CppStream::Write(EEL_F AValue)
 {
-  FBuffer.resize(Max(FBuffer.size(), FPosition + 1));
+  FBuffer.resize(std::max<int>(FBuffer.size(), FPosition + 1));
   FBuffer[FPosition++] = (float)AValue;
   return true;
 }
@@ -394,6 +379,10 @@ bool CJes2CppStream::LoadFromFileBin(const std::string& AFileName)
   }
   return false;
 }
+
+//bool SimpleWaveLoad(const std::string& AFilename, std::vector<float>& ASamples, int& AChannelCount, int& ASampleRate)
+//{
+//}
 
 bool CJes2CppStream::LoadFromFileSnd(const std::string& AFileName, int& AChannelCount, int& ASampleRate)
 {
@@ -565,7 +554,7 @@ int CJes2CppFile::StreamMemory(CMemory* AMemory, EEL_F AIndex, EEL_F ALength)
       }
     }
     if (FMode == FILE_READ) {
-      LLength = Min(LLength, FStream.DataAvaliable());
+      LLength = std::min<int>(LLength, FStream.DataAvaliable());
       for (; LLength-- > 0; LCount++) {
         FStream.Read((*AMemory)[LIndex++]);
       }
@@ -674,7 +663,7 @@ void CJes2CppStrings::ClearStrings()
 {
   FStringMap.Clear();
   FStringLiteralBase = EEL_STRING_LITERAL_BASE;
-  str_count$ = (EEL_F)FStringMap.Count();
+  jes2cpp$str_count$ = (EEL_F)FStringMap.Count();
 }
 
 void CJes2CppStrings::VPrintF(char* AString, const char* AFormat, va_list AArgs)
@@ -760,7 +749,7 @@ bool CJes2CppImage::LoadFromFile(const std::string& AFileName)
 
 CJes2CppGraphics::CJes2CppGraphics()
 {
-  gfx_rate$ = M_ZERO;
+  jes2cpp$gfx_rate$ = M_ZERO;
   gfx_clear$ = M_ZERO;
   gfx_r$ = M_ZERO;
   gfx_g$ = M_ZERO;
@@ -775,10 +764,9 @@ CJes2CppGraphics::CJes2CppGraphics()
 void CJes2CppGraphics::DrawString(const char* AString)
 {
   VeST_SetFontColor(FVeST, EEL_F2PEN(gfx_r$), EEL_F2PEN(gfx_g$), EEL_F2PEN(gfx_b$), EEL_F2PEN(gfx_a$));
-  double LX2 = gfx_x$ + VeST_GetStringWidth(FVeST, AString);
-  double LY2 = gfx_y$ + gfx_texth$;
-  VeST_DrawString(FVeST, AString, gfx_x$, gfx_y$, LX2, LY2, false, 0);
-  gfx_x$ = LX2;
+  double LWidth = VeST_GetStringWidth(FVeST, AString);
+  VeST_DrawString(FVeST, AString, gfx_x$, gfx_y$, gfx_x$ + LWidth, gfx_y$ + gfx_texth$, false, 0);
+  gfx_x$ += LWidth;
 }
 
 CJes2CppImage& CJes2CppGraphics::GetImage(EEL_F AIndex)

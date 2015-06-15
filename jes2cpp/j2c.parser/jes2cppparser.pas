@@ -49,15 +49,16 @@ type
     function PullToken: String;
     function PullIdent: String;
     function PullIdentVariable: String;
-    function PullIdentFunction: String;
+    function PullIdentFunctionCall: String;
   protected
     function IsEol: Boolean;
-    function IsFunction: Boolean;
-    function IsIdent: Boolean;
+    function IsFunctionCall: Boolean;
+    function IsFunctionHead: Boolean;
+    function IsIdentHead: Boolean;
     function IsNull: Boolean;
-    function IsConstantNumber: Boolean;
-    function IsConstantString: Boolean;
-    function IsConstantChar: Boolean;
+    function IsNumberHead: Boolean;
+    function IsStringHead: Boolean;
+    function IsCharHead: Boolean;
     function IsOperator: Boolean;
     function IsToken(const AToken: String): Boolean;
     function IsTokenThenPull(const AToken: String): Boolean;
@@ -162,7 +163,7 @@ end;
 
 function CJes2CppParser.PullIdent: String;
 begin
-  LogAssertExpected(IsIdent, SMsgIdentifier);
+  LogAssertExpected(IsIdentHead, SMsgIdentifier);
   Result := PullToken;
 end;
 
@@ -176,9 +177,9 @@ begin
   end;
 end;
 
-function CJes2CppParser.PullIdentFunction: String;
+function CJes2CppParser.PullIdentFunctionCall: String;
 begin
-  LogAssertExpected(IsFunction, SMsgIdentifier);
+  LogAssertExpected(IsFunctionCall, SMsgIdentifier);
   Result := PullToken;
 end;
 
@@ -206,22 +207,22 @@ begin
   Result := FToken[0] in CharSetEol;
 end;
 
-function CJes2CppParser.IsIdent: Boolean;
+function CJes2CppParser.IsIdentHead: Boolean;
 begin
   Result := FToken[0] in CharSetIdentHead;
 end;
 
-function CJes2CppParser.IsConstantNumber: Boolean;
+function CJes2CppParser.IsNumberHead: Boolean;
 begin
-  Result := FToken[0] in CharSetNumber1;
+  Result := FToken[0] in CharSetNumberHead;
 end;
 
-function CJes2CppParser.IsConstantString: Boolean;
+function CJes2CppParser.IsStringHead: Boolean;
 begin
   Result := FToken[0] = CharQuoteDouble;
 end;
 
-function CJes2CppParser.IsConstantChar: Boolean;
+function CJes2CppParser.IsCharHead: Boolean;
 begin
   Result := FToken[0] = CharQuoteSingle;
 end;
@@ -233,10 +234,15 @@ end;
 
 function CJes2CppParser.IsVariable: Boolean;
 begin
-  Result := IsIdent and (FTokenNext[0] <> CharOpeningParenthesis);
+  Result := IsIdentHead and (FTokenNext[0] <> CharOpeningParenthesis);
 end;
 
-function CJes2CppParser.IsFunction: Boolean;
+function CJes2CppParser.IsFunctionHead: Boolean;
+begin
+  Result := FToken[0] in CharSetFunctHead;
+end;
+
+function CJes2CppParser.IsFunctionCall: Boolean;
 begin
   Result := (FToken[0] in CharSetFunctHead) and (FTokenNext[0] = CharOpeningParenthesis);
 end;
@@ -260,9 +266,9 @@ end;
 
 function CJes2CppParser.ParseRawString: String;
 begin
-  LogAssertExpected(IsConstantString, 'String');
+  LogAssertExpected(IsStringHead, 'String');
   Result := CppDecodeString(PullToken);
-  while IsConstantString do
+  while IsStringHead do
   begin
     Result += LineEnding + CppDecodeString(PullToken);
   end;
@@ -303,13 +309,13 @@ begin
       (FToken[3] = CharQuoteSingle) then
     begin
       Inc(FTokenEnd, 4);
-    end else if IsConstantNumber then
+    end else if IsNumberHead then
     begin
       repeat
         Inc(FTokenEnd);
-      until not (FTokenEnd[0] in CharSetNumber2);
+      until not (FTokenEnd[0] in CharSetNumberBody);
     end else begin
-      if IsIdent then
+      if IsIdentHead then
       begin
         repeat
           Inc(FTokenEnd);

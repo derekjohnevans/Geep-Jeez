@@ -31,30 +31,36 @@ unit Jes2CppMessageLog;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppFileNames, Jes2CppStrings, SysUtils;
+  Classes, Jes2CppComponent, Jes2CppConstants, Jes2CppFileNames, Jes2CppIdentString, Jes2CppStrings, SysUtils;
 
 type
 
-  CJes2CppMessageLog = class(TComponent)
+  CJes2CppMessageLog = class(CJes2CppComponent)
   strict private
+    FWarningsAsErrors: Boolean;
     FFileName: TFileName;
     FFileLine: Integer;
   protected
     procedure LogAssert(const ATrue: Boolean; const AMessage: String);
-    procedure LogException(AMessage: String);
+    procedure LogWarning(const AMessage: String);
+    procedure LogException(const AMessage: String);
     procedure LogExpected(const AExpected: String);
     procedure LogExpectNotEmptyStr(const AString, AExpected: String);
     procedure LogIfExpectNotEmptyStr(const ATrue: Boolean; const AString, AExpected: String);
     procedure LogAssertExpected(const ATrue: Boolean; const AExpected: String);
     procedure LogFileName(const AType, AFileName: String);
     procedure LogMessage(const AMessage: String); virtual; overload;
-    procedure LogMessage(const AType, AMessage: String); overload;
+    procedure LogMessage(const AType, AMessage: String; const AAddReference: Boolean = False; const AException: Boolean = False); overload;
+  public
+    procedure LogWarningCaseCheck(const A, B: TIdentString);
   protected
     function IsJes2CppInc: Boolean;
     function CurrentToken: String; virtual; abstract;
   protected
     property FileName: TFileName read FFileName write FFileName;
     property FileLine: Integer read FFileLine write FFileLine;
+  public
+    property WarningsAsErrors: Boolean read FWarningsAsErrors write FWarningsAsErrors;
   end;
 
 function J2C_StringLogMessage(const AType, AMessage: String): String;
@@ -85,9 +91,21 @@ begin
 
 end;
 
-procedure CJes2CppMessageLog.LogMessage(const AType, AMessage: String);
+procedure CJes2CppMessageLog.LogMessage(const AType, AMessage: String; const AAddReference, AException: Boolean);
+var
+  LMessage: String;
 begin
-  LogMessage(J2C_StringLogMessage(AType, AMessage));
+  if AAddReference and (FFileName <> EmptyStr) then
+  begin
+    LMessage := Format(GsErrorLineFile3, [AMessage, FFileLine, FFileName]);
+  end else begin
+    LMessage := AMessage;
+  end;
+  LogMessage(J2C_StringLogMessage(AType, LMessage));
+  if AException then
+  begin
+    raise Exception.Create(LMessage);
+  end;
 end;
 
 procedure CJes2CppMessageLog.LogFileName(const AType, AFileName: String);
@@ -95,14 +113,22 @@ begin
   LogMessage(J2C_StringLogFileName(AType, AFileName));
 end;
 
-procedure CJes2CppMessageLog.LogException(AMessage: String);
+procedure CJes2CppMessageLog.LogException(const AMessage: String);
 begin
-  if FFileName <> EmptyStr then
+  LogMessage(SMsgTypeException, AMessage, True, True);
+end;
+
+procedure CJes2CppMessageLog.LogWarning(const AMessage: String);
+begin
+  LogMessage(SMsgTypeWarning, AMessage, True, FWarningsAsErrors);
+end;
+
+procedure CJes2CppMessageLog.LogWarningCaseCheck(const A, B: TIdentString);
+begin
+  if J2C_IdentRemoveRef(A) <> J2C_IdentRemoveRef(B) then
   begin
-    AMessage := Format(GsErrorLineFile3, [AMessage, FFileLine, FFileName]);
+    LogWarning(Format(SMsgIdentifierNameIsNotIdentical2, [J2C_IdentClean(A), J2C_IdentClean(B)]));
   end;
-  LogMessage(SMsgTypeException, AMessage);
-  raise Exception.Create(AMessage);
 end;
 
 procedure CJes2CppMessageLog.LogAssert(const ATrue: Boolean; const AMessage: String);

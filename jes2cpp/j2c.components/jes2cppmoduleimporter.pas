@@ -82,7 +82,7 @@ begin
   try
     J2C_ExtractSection(ASectionName, LSection, ASrc, EmptyStr, False, LSectionHeader);
     LSection.Insert(0, EelSectionName(GsEelSectionInit));
-    with CJes2Cpp.Create(nil) do
+    with CJes2Cpp.Create(nil, EmptyStr) do
     begin
       try
         TranspileScript(LSection, AFileName);
@@ -90,7 +90,7 @@ begin
         ADst.AddText(WrapText(GsEelFunction + CharSpace + J2C_IdentFixUp(ASectionName + CharUnderscore +
           ChangeFileExt(ExtractFileName(AFileName), EmptyStr)) + CharOpeningParenthesis + CharClosingParenthesis, GiColWidth));
         LInstances := EmptyStr;
-        for LIndex := ItemFirst(Variables) to ItemLast(Variables) do
+        for LIndex := IndexFirst(Variables) to IndexLast(Variables) do
         begin
           LVariable := Variables.GetVariable(LIndex);
           if not LVariable.IsSystem or ((LVariable.References.ComponentCount > 1) and

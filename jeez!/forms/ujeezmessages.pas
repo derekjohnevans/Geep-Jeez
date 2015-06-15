@@ -93,8 +93,8 @@ begin
   end;
   with SynAnySyn.KeyWords do
   begin
-    Add(UpperCase(Jeez_Jes2Cpp.ClassName));
-    Add(UpperCase(Jeez_Compile.ClassName));
+    Add(UpperCase(Transpile.ClassName));
+    Add(UpperCase(Compiling.ClassName));
   end;
 end;
 

@@ -31,7 +31,7 @@ unit JeezSynEdit;
 interface
 
 uses
-  Classes, Jes2CppEel, SynEdit, SynEditHighlighter, SynExportHTML,
+  Classes, Graphics, Jes2CppEel, SynEdit, SynEditHighlighter, SynExportHTML,
   SynHighlighterAny, SysUtils;
 
 type
@@ -45,15 +45,23 @@ type
 {$ERROR}
 {$ENDIF}
   public
-    class procedure _SynJsFxInit(const ASynAnySyn: TSynAnySyn);
+    class procedure SynJsFxInit(const ASynAnySyn: TSynAnySyn);
     class procedure SynEditSectionPrev(const ASynEdit: TSynEdit);
     class procedure SynEditSectionNext(const ASynEdit: TSynEdit);
-    class procedure SynCustomHighlighterExport(const AHighlighter: TSynCustomHighlighter; const AStrings: TStrings; const AFileName: TFileName);
+    class procedure SynEditExport(const ASynEdit: TSynEdit; const AStrings: TStrings; const AFileName: TFileName);
   end;
+
+procedure SetHighlighterAttri(const A: TSynHighlighterAttributes; const AForeground: TColor);
 
 implementation
 
-class procedure TJeezSynEdit._SynJsFxInit(const ASynAnySyn: TSynAnySyn);
+procedure SetHighlighterAttri(const A: TSynHighlighterAttributes; const AForeground: TColor);
+begin
+  A.Foreground := AForeground;
+  A.Style := [];
+end;
+
+class procedure TJeezSynEdit.SynJsFxInit(const ASynAnySyn: TSynAnySyn);
 var
   LString: String;
 begin
@@ -98,7 +106,7 @@ begin
   ASynEdit.CaretY := LIndex;
 end;
 
-class procedure TJeezSynEdit.SynCustomHighlighterExport(const AHighlighter: TSynCustomHighlighter; const AStrings: TStrings; const AFileName: TFileName);
+class procedure TJeezSynEdit.SynEditExport(const ASynEdit: TSynEdit; const AStrings: TStrings; const AFileName: TFileName);
 const
 
   LHead = '<!--StartFragment-->';
@@ -110,7 +118,7 @@ begin
   with  TSynExporterHTML.Create(nil) do
   begin
     try
-      Highlighter := AHighlighter;
+      Highlighter := ASynEdit.Highlighter;
       ExportAll(AStrings);
       LStringStream := TStringStream.Create(EmptyStr);
       try
@@ -120,8 +128,9 @@ begin
         with TStringList.Create do
         begin
           try
-            Text := '<div style="border-style:inset;border-width:2px;background-color:#000000;padding:6px">' +
-              Copy(LStringStream.DataString, LPos, LEnd - LPos) + '</div>';
+            Text := '<div style="border-style:inset;border-width:2px;background-color:#' +
+              (IntToHex(Red(ASynEdit.Color), 2) + IntToHex(Green(ASynEdit.Color), 2) + IntToHex(Blue(ASynEdit.Color), 2)) +
+              ';padding:6px">' + Copy(LStringStream.DataString, LPos, LEnd - LPos) + '</div>';
             SaveToFile(AFileName);
           finally
             Free;

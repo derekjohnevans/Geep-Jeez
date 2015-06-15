@@ -65,6 +65,11 @@ type
 
 implementation
 
+function Dos2Unix(const AFileName: TFileName): TFileName;
+begin
+  Result := ReplaceStr(AFileName, CharSlashBackward, CharSlashForward);
+end;
+
 function StreamReadChunk(const AStream: TStream): String;
 var
   LBuffer: array[byte] of Char;
@@ -118,7 +123,7 @@ end;
 
 procedure CJes2CppProcess.AddInputFile(const AFileName: TFileName);
 begin
-  Parameters.Add(AFileName);
+  Parameters.Add(Dos2Unix(AFileName));
 end;
 
 procedure CJes2CppProcess.AddInputFile(const AFileName: TFileName; const ASHA1String: String);
@@ -141,12 +146,12 @@ end;
 procedure CJes2CppProcess.AddOutputFile(const AFileName: TFileName);
 begin
   AddOption('o');
-  Parameters.Add(AFileName);
+  Parameters.Add(Dos2Unix(AFileName));
 end;
 
 procedure CJes2CppProcess.AddIncludePath(const APath: String);
 begin
-  AddOption('I', ReplaceStr(APath, '\', '\\'));
+  AddOption('I', Dos2Unix(APath));
 end;
 
 procedure CJes2CppProcess.AddLibrary(const AName: String);

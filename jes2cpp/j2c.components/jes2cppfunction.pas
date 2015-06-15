@@ -31,29 +31,48 @@ unit Jes2CppFunction;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppIdentifier, Jes2CppIdentString, Jes2CppIterate, Jes2CppStrings,
-  Jes2CppTranslate, StrUtils, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppFunctionIdentifiers, Jes2CppIdentifier, Jes2CppIdentString,
+  Jes2CppIterate, Jes2CppMessageLog, Jes2CppStrings, Jes2CppTranslate, StrUtils, SysUtils;
 
 type
 
+
   CJes2CppFunction = class(CJes2CppIdentifier)
+  strict private
+    FForceGlobals, FHasGlobals, FIsRef: Boolean;
+    FParams, FStatic, FLocals, FGlobals, FInstancesSelf, FInstancesAll: CJes2CppFunctionIdentifiers;
   public
     FBody, FReturnExpression: String;
-    FParams, FLocals, FGlobals, FInstances, FAllInstances: TIdentArray;
-    FForceGlobals, FHasGlobals, FIsRef: Boolean;
   strict private
-    function CppParameters: String;
-    function CppLocalVars: String;
+    function CppEncodeParameters: String;
+    function CppEncodeLocalVars: String;
+    function CppEncodeStaticVars: String;
   public
-    function EelDefine: String;
+    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
+  public
+    function ExistsGlobal(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+    function ExistsInstanceSelf(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+    function ExistsLocal(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+    function ExistsParam(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+    function ExistsStatic(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+  public
+    procedure AppendInstance(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog);
     function CppDefine: String;
-    function GetTitle: String;
-    function IsNameLocal(const AName: TComponentName): Boolean;
-    function IsInternalAndUsed: Boolean;
     function DefaultNameSpace: String;
+    function EelDefine: String;
+    function GetTitle: String;
+    function IsInternalAndUsed: Boolean;
+    function IsNameLocal(const AName: TComponentName; const AMessageLog: CJes2CppMessageLog): Boolean;
   public
+    property HasGlobals: Boolean read FHasGlobals write FHasGlobals;
     property ForceGlobals: Boolean read FForceGlobals write FForceGlobals;
     property IsRef: Boolean read FIsRef write FIsRef;
+    property Params: CJes2CppFunctionIdentifiers read FParams;
+    property Static: CJes2CppFunctionIdentifiers read FStatic;
+    property Locals: CJes2CppFunctionIdentifiers read FLocals;
+    property Globals: CJes2CppFunctionIdentifiers read FGlobals;
+    property InstancesSelf: CJes2CppFunctionIdentifiers read FInstancesSelf;
+    property InstancesAll: CJes2CppFunctionIdentifiers read FInstancesAll;
   end;
 
   CJes2CppFunctions = class(CJes2CppIdentifiers)
@@ -66,6 +85,56 @@ type
 
 implementation
 
+constructor CJes2CppFunction.Create(const AOwner: TComponent; const AName: TComponentName);
+begin
+  inherited Create(AOwner, AName);
+  FParams := CJes2CppFunctionIdentifiers.Create(Self, EmptyStr);
+  FStatic := CJes2CppFunctionIdentifiers.Create(Self, EmptyStr);
+  FLocals := CJes2CppFunctionIdentifiers.Create(Self, EmptyStr);
+  FGlobals := CJes2CppFunctionIdentifiers.Create(Self, EmptyStr);
+  FInstancesSelf := CJes2CppFunctionIdentifiers.Create(Self, EmptyStr);
+  FInstancesAll := CJes2CppFunctionIdentifiers.Create(Self, EmptyStr);
+end;
+
+function CJes2CppFunction.ExistsLocal(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+begin
+  Result := FLocals.ExistsIdent(AIdent, AMessageLog);
+end;
+
+function CJes2CppFunction.ExistsParam(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+begin
+  Result := FParams.ExistsIdent(AIdent, AMessageLog);
+end;
+
+function CJes2CppFunction.ExistsStatic(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+begin
+  Result := FStatic.ExistsIdent(AIdent, AMessageLog);
+end;
+
+function CJes2CppFunction.ExistsGlobal(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+begin
+  Result := FGlobals.ExistsSameText(AIdent);
+end;
+
+function CJes2CppFunction.ExistsInstanceSelf(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+begin
+  Result := FInstancesSelf.ExistsIdent(AIdent, AMessageLog);
+end;
+
+procedure CJes2CppFunction.AppendInstance(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog);
+var
+  LIndex: Integer;
+begin
+  Assert(Assigned(AMessageLog));
+  LIndex := FInstancesAll.IndexOfIdent(AIdent);
+  if LIndex < 0 then
+  begin
+    FInstancesAll.Append(AIdent);
+  end else begin
+    AMessageLog.LogWarningCaseCheck(AIdent, FInstancesAll[LIndex].Name);
+  end;
+end;
+
 function CJes2CppFunction.GetTitle: String;
 begin
   Result := GsEelFunction + CharSpace + EelDefine + LineEnding + Comment + LineEnding;
@@ -77,61 +146,77 @@ end;
 
 function CJes2CppFunction.EelDefine: String;
 var
-  LIdent: TIdentString;
+  LIndex: Integer;
 begin
   Result := EmptyStr;
-  for LIdent in FParams.FItems do
+  for LIndex := IndexFirst(FParams) to IndexLast(FParams) do
   begin
-    J2C_StringAppendCSV(Result, J2C_IdentClean(LIdent));
+    J2C_StringAppendCSV(Result, J2C_IdentClean(FParams[LIndex].Name));
   end;
   Result := Name + CharOpeningParenthesis + Result + CharClosingParenthesis;
 end;
 
-function CJes2CppFunction.CppParameters: String;
+function CJes2CppFunction.CppEncodeParameters: String;
 var
-  LIdent: TIdentString;
+  LIndex: Integer;
 begin
   Result := EmptyStr;
-  for LIdent in FParams.FItems do
+  for LIndex := IndexFirst(FParams) to IndexLast(FParams) do
   begin
-    if LIdent = GsEelVariadic then
+    if FParams[LIndex].Name = GsEelVariadic then
     begin
       J2C_StringAppendCSV(Result, GsEelVariadic);
     end else begin
-      J2C_StringAppendCSV(Result, CppEncodeEelF(CppEncodeVariable(LIdent), False));
+      J2C_StringAppendCSV(Result, CppEncodeEelF(CppEncodeVariable(FParams[LIndex].Name), False));
     end;
   end;
-  for LIdent in FAllInstances.FItems do
+  for LIndex := IndexFirst(FInstancesAll) to IndexLast(FInstancesAll) do
   begin
-    J2C_StringAppendCSV(Result, CppEncodeEelF(CppEncodeVariable(GsEelSpaceThis + LIdent), True));
+    J2C_StringAppendCSV(Result, CppEncodeEelF(CppEncodeVariable(GsEelSpaceThis + FInstancesAll[LIndex].Name), True));
   end;
 end;
 
-function CJes2CppFunction.CppLocalVars: String;
+function CJes2CppFunction.CppEncodeLocalVars: String;
 var
-  LIdent: TIdentString;
+  LIndex: Integer;
 begin
   Result := EmptyStr;
-  if FLocals.Count > M_ZERO then
+  if FLocals.ComponentCount > M_ZERO then
   begin
-    for LIdent in FLocals.FItems do
+    for LIndex := IndexFirst(FLocals) to IndexLast(FLocals) do
     begin
-      J2C_StringAppendCSV(Result, CppEncodeVariable(LIdent) + GsCppEqu + GsCppZero);
+      J2C_StringAppendCSV(Result, CppEncodeVariable(FLocals[LIndex].Name) + GsCppEqu + GsCppZero);
     end;
     Result := GsCppEelF + CharSpace + Result + GsCppLineEnding;
+  end;
+
+end;
+
+function CJes2CppFunction.CppEncodeStaticVars: String;
+var
+  LIndex: Integer;
+begin
+  Result := EmptyStr;
+  if FStatic.ComponentCount > M_ZERO then
+  begin
+    for LIndex := IndexFirst(FStatic) to IndexLast(FStatic) do
+    begin
+      J2C_StringAppendCSV(Result, CppEncodeVariable(FStatic[LIndex].Name) + GsCppEqu + GsCppZero);
+    end;
+    Result := GsCppStatic + CharSpace + GsCppEelF + CharSpace + Result + GsCppLineEnding;
   end;
 end;
 
 function CJes2CppFunction.CppDefine: String;
 begin
-  Result := Format(GsCppInlineSpace + GsCppFunct2 + LineEnding + '{' + LineEnding + '%s',
-    [CppEncodeEelF(CppEncodeFunction(Name), FIsRef), CppParameters, CppLocalVars]);
-  Result += FBody + GsCppReturnSpace + FReturnExpression + GsCppLineEnding + '}' + LineEnding;
+  Result := GsCppJes2CppInlineSpace + Format(GsCppFunct2, [CppEncodeEelF(CppEncodeFunction(Name), FIsRef), CppEncodeParameters]) +
+    LineEnding + CharOpeningBrace + LineEnding + CppEncodeLocalVars + CppEncodeStaticVars + FBody +
+    GsCppReturnSpace + FReturnExpression + GsCppLineEnding + CharClosingBrace + LineEnding;
 end;
 
-function CJes2CppFunction.IsNameLocal(const AName: TComponentName): Boolean;
+function CJes2CppFunction.IsNameLocal(const AName: TComponentName; const AMessageLog: CJes2CppMessageLog): Boolean;
 begin
-  Result := J2C_IdentIsNameSpaceThis(AName) or FParams.ExistsIdent(AName) or FLocals.ExistsIdent(AName);
+  Result := J2C_IdentIsNameSpaceThis(AName) or FParams.ExistsIdent(AName, AMessageLog) or FLocals.ExistsIdent(AName, AMessageLog);
 end;
 
 function CJes2CppFunction.IsInternalAndUsed: Boolean;
@@ -148,17 +233,17 @@ end;
 
 function CJes2CppFunctions.GetFunction(const AIndex: Integer): CJes2CppFunction;
 begin
-  Result := Components[AIndex] as CJes2CppFunction;
+  Result := Self[AIndex] as CJes2CppFunction;
 end;
 
 function CJes2CppFunctions.FindFunction(const AIdent: TIdentString; const ACount: Integer): CJes2CppFunction;
 var
   LIndex: Integer;
 begin
-  for LIndex := ItemFirst(Self) to ItemLast(Self) do
+  for LIndex := IndexFirst(Self) to IndexLast(Self) do
   begin
     Result := GetFunction(LIndex);
-    if Result.IsIdent(AIdent) and Result.FParams.IsCountMatch(ACount) then
+    if Result.IsIdent(AIdent) and Result.Params.IsCountMatch(ACount) then
     begin
       Exit;
     end;

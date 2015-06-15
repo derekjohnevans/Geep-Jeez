@@ -16,6 +16,16 @@
 // Use the variable 'jes2cpp' to determine if running as a plugin.
 jes2cpp = 1;
 
+// Sets the refresh update in frames per second. This allows you to throttle the refresh rate for effects that dont
+// constantly animate. The refresh rate is put pack to 30 fps automaticly on mouse events.
+jes2cpp.gfx_rate extern;
+
+// The current font index.
+jes2cpp.gfx_getfont = 0;
+
+// Internal used string slot count.
+jes2cpp.str_count extern;
+
 // The current playback position (as of last @block) in REAPER, in beats (beats = quarternotes in /4 time signatures).
 beat_position extern;
 
@@ -59,9 +69,6 @@ will be called when this changes, though it's probably a good idea not to depend
 */
 srate extern;
 
-// Internal used string slot count. (VST only)
-str_count extern; // Extended
-
 // The current project tempo, in "bpm". An example value would be 120.0.
 tempo extern;
 
@@ -96,13 +103,6 @@ disable source alpha for gfx_blit(). Add 4.0 to disable filtering for gfx_blit()
 
 // Set to the height of a line of text in the current font. Do not modify this variable.
 gfx_texth extern;
-
-// Sets the refresh update in frames per second. This allows you to throttle the refresh rate for effects that dont
-// constantly animate. The refresh rate is put pack to 30 fps automaticly on mouse events.
-gfx_rate extern; // Extended
-
-// The current font index.
-gfx_getfont = 0; // Extended
 
 // mouse_cap is a bitfield of mouse and keyboard modifier state.
 mouse_cap extern;
@@ -165,7 +165,7 @@ function atan(x) global()
   !"atan(x$)";
 );
 
-// Returns the arc Tangent of x divided by y (return value is in radians).
+// Returns the arc Tangent of (x) divided by (y). (return value is in radians).
 function atan2(x, y) global()
 (
   !"atan2(x$, y$)";
@@ -300,10 +300,29 @@ function time_precise(v*) global()
 // Memory Functions
 //==============================================================================
 
-// The memcpy() function provides the ability to quickly copy regions of the local memory buffer.
-// If the buffers overlap and either buffer crosses a 65,536 item boundary, the results may be undefined.
+/*
+The memcpy() function provides the ability to quickly copy regions of the local memory buffer.
+If the buffers overlap and either buffer crosses a 65,536 item boundary, the results may be undefined.
+*/
 function memcpy(dst, src, len) global()
 (
+  /*
+  dst < src ? (
+    while (len > 0)
+    (
+      len -= 1;
+      dst[] = src[];
+      dst += 1;
+      src += 1;
+    );
+  ) : (
+    while (len > 0)
+    (
+      len -= 1;
+      dst[len] = src[len];
+    );
+  );
+  */
   !"FMemory.Copy(EEL_F2I(dst$), EEL_F2I(src$), EEL_F2I(len$))";
   dst;
 );
@@ -311,6 +330,13 @@ function memcpy(dst, src, len) global()
 // The memset() function provides the ability to quickly set a region of the local memory buffer to a particular value.
 function memset(dst, val, len) global()
 (
+  /*
+  while (len > 0)
+  (
+    len -= 1;
+    dst[len] = val;
+  );
+  */
   !"FMemory.Set(EEL_F2I(dst$), val$, EEL_F2I(len$))";
   dst;
 );
@@ -350,66 +376,66 @@ function mbc_contains(mbc, chr) global()
 // String Functions
 //==============================================================================
 
-// Returns length of 'str'.
+// Returns length of (str).
 function strlen(str) global()
 (
   !"GetString(str$).length()";
 );
 
-// Copies the string 'src' into 'dst'. Returns 'dst'.
+// Copies the string (src) into (dst). Returns (dst).
 function strcpy(dst, src) global()
 (
   !"GetString(dst$) = GetString(src$)";
   dst;
 );
 
-// Copies the string 'src' into 'dst', but stops after 'len' bytes. Returns 'dst'.
+// Copies the string (src) into (dst), but stops after (len) bytes. Returns (dst).
 function strncpy(dst, src, len) global()
 (
   !"GetString(dst$) = GetString(src$).substr(0, EEL_F2I(len$))";
   dst;
 );
 
-// Copies the string 'src' to 'dst', starting 'idx' bytes into 'src'. Returns 'dst'.
+// Copies the string (src) to (dst), starting (idx) bytes into (src). Returns (dst).
 function strcpy_from(dst, src, idx) global()
 (
   !"GetString(dst$) = GetString(src$).substr(EEL_F2I(idx$))";
   dst;
 );
 
-// Appends the string 'src' to 'dst'. Returns 'dst'.
+// Appends the string (src) to (dst). Returns (dst).
 function strcat(dst, src) global()
 (
   !"GetString(dst$) += GetString(src$)";
   dst;
 );
 
-// Appends the string 'src' to 'dst', but stops after 'len' bytes of 'src' have been read. Returns 'dst'.
+// Appends the string (src) to (dst), but stops after (len) bytes of (src) have been read. Returns (dst).
 function strncat(dst, src, len) global()
 (
   !"GetString(dst$) += GetString(src$).substr(0, EEL_F2I(len$))";
   dst;
 );
 
-// Compares 'str1' to 'str2', case sensitive. Returns -1, 0, or 1.
+// Compares (str1) to (str2), case sensitive. Returns -1, 0, or 1.
 function strcmp(str1, str2) global()
 (
   sign(!"strcmp(GetString(str1$).c_str(), GetString(str2$).c_str())");
 );
 
-// Compares 'str1' to 'str2', ignoring case. Returns -1, 0, or 1.
+// Compares (str1) to (str2), ignoring case. Returns -1, 0, or 1.
 function stricmp(str1, str2) global()
 (
   sign(!"strcasecmp(GetString(str1$).c_str(), GetString(str2$).c_str())");
 );
 
-// Compares 'str1' to 'str2' up to 'len' bytes, ignoring case. Returns -1, 0, or 1.
+// Compares (str1) to (str2) up to (len) bytes, ignoring case. Returns -1, 0, or 1.
 function strnicmp(str1, str2, len) global()
 (
   sign(!"strncasecmp(GetString(str1$).c_str(), GetString(str2$).c_str(), EEL_F2I(len$))");
 );
 
-// Compares 'str1' to 'str2' up to 'len' bytes, case sensitive. Returns -1, 0, or 1.
+// Compares (str1) to (str2) up to (len) bytes, case sensitive. Returns -1, 0, or 1.
 function strncmp(str1, str2, len) global()
 (
   sign(!"strncmp(GetString(str1$).c_str(), GetString(str2$).c_str(), EEL_F2I(len$))");
@@ -417,13 +443,13 @@ function strncmp(str1, str2, len) global()
 
 /*
 gets the filename if a file-slider, or the string if the slider specifies string translations, otherwise gets an empty string.
-slider can be either an index, or the sliderX variable directly. Returns 'str'.
+slider can be either an index, or the sliderX variable directly. Returns (str).
 */
 function strcpy_fromslider(str, slider) extern;
 
 /*
-Copies 'src' to 'dst', starting 'idx' bytes into 'src', and up to 'len' bytes. if 'idx' is less than 0, offset is from end of source string.
-If 'len' is less than 0, length is limited to output string length shortened by 'len'. Returns 'dst'.
+Copies (src) to (dst), starting (idx) bytes into (src), and up to (len) bytes. if (idx) is less than 0, offset is from end of source string.
+If (len) is less than 0, length is limited to output string length shortened by (len). Returns (dst).
 */
 function strcpy_substr(dst, src, idx, len) global()
 (
@@ -431,7 +457,7 @@ function strcpy_substr(dst, src, idx, len) global()
   dst;
 );
 
-// Returns 'dst'.
+// Returns (dst).
 function strcpy_substr(dst, src, idx) global()
 (
   !"GetString(dst$) = GetString(src$).substr(EEL_F2I(idx$))";
@@ -439,7 +465,7 @@ function strcpy_substr(dst, src, idx) global()
 );
 
 /*
-returns the data at byte-offset offset of str. if offset is negative, position is relative to end of string.
+Returns the data at byte-offset (offset) of (str). if (offset) is negative, position is relative to end of string.
 Type defaults to signed char, but can be specified to read raw binary data in other formats (note the single quotes, these are single/multi-byte characters)
 */
 function str_getchar(str, offset) global()
@@ -449,7 +475,7 @@ function str_getchar(str, offset) global()
 );
 
 /*
-Sets the value at byte-offset "offset" of str to value (which may be one or more bytes of data). Returns 'str'.
+Sets the value at byte-offset (offset) of (str) to value (which may be one or more bytes of data). Returns (str).
 If offset is negative, then offset is relative to end of the string. If offset is the length of the string, or between (-0.5,0.0), then the character
 (or multibyte value if type is specified) will be appended to the string.
 */
@@ -461,7 +487,7 @@ function str_setchar(str, offset, value) global()
   str;
 );
 
-// copies format to str, converting format strings. Returns 'str'. (NOT COMPLETE)
+// copies (format) to (str), converting format strings. Returns (str). (NOT COMPLETE)
 function sprintf(str, format, ...) global()
 (
   !"char LString[512]; va_list LArgs";
@@ -472,13 +498,13 @@ function sprintf(str, format, ...) global()
   str;
 );
 
-// search for needle in haystack (NOT IMPLEMENTED)
+// Search for (needle) in (haystack) (NOT IMPLEMENTED)
 function match(needle, haystack, ...) global()
 (
   0;
 );
 
-// search for needle in haystack (case insensitive) (NOT IMPLEMENTED)
+// Search for (needle) in (haystack) (case insensitive) (NOT IMPLEMENTED)
 function matchi(needle, haystack, ...) global()
 (
   0;
@@ -486,21 +512,21 @@ function matchi(needle, haystack, ...) global()
 
 // Undocumented string functions
 
-// Sets length of 'str' (if increasing, will be space-padded). Returns 'str'.
+// Sets the length (len) of (str) (if increasing, will be space-padded). Returns (str).
 function str_setlen(str, len) global()
 (
    !"GetString(str$).resize(EEL_F2I(len$), ' ')";
    str;
 );
 
-// Deletes 'len' chars from 'str' at 'idx'. Returns 'str'.
+// Deletes (len) chars from (str) at (idx). Returns (str).
 function str_delsub(str, idx, len) global()
 (
   !"GetString(str$).erase(EEL_F2I(idx$), EEL_F2I(len$))";
   str;
 );
 
-// Inserts the string 'src' into 'dsc' at position 'idx'. Returns 'dst'.
+// Inserts the string (src) into (dsc) at position (idx). Returns (dst).
 function str_insert(dst, src, idx) global()
 (
   !"GetString(dst$).insert(EEL_F2I(idx$), GetString(src$))";
@@ -731,22 +757,29 @@ function fclose(handle)
 // VeST Support Functions - Internal Use Only
 //==============================================================================
 
-function VeST_SetFillColor() global()
+// If (aa) is 0.5 or greater, antialiased will be enabled.
+function VeST_SetDrawMode(aa) global()
+(
+  aa < 0.5 ? !"VeST_SetDrawMode(FVeST, 0)" : !"VeST_SetDrawMode(FVeST, 3)";
+  0;
+);
+
+function VeST_SetFillColor(aa) global()
 (
   !"VeST_SetFillColor(FVeST, EEL_F2PEN(gfx_r$), EEL_F2PEN(gfx_g$), EEL_F2PEN(gfx_b$), EEL_F2PEN(gfx_a$))";
-  0;
+  VeST_SetDrawMode(aa);
 );
 
-function VeST_SetFrameColor() global()
+function VeST_SetFrameColor(aa) global()
 (
   !"VeST_SetFrameColor(FVeST, EEL_F2PEN(gfx_r$), EEL_F2PEN(gfx_g$), EEL_F2PEN(gfx_b$), EEL_F2PEN(gfx_a$))";
-  0;
+  VeST_SetDrawMode(aa);
 );
 
-function VeST_SetFontColor() global()
+function VeST_SetFontColor(aa) global()
 (
   !"VeST_SetFontColor(FVeST, EEL_F2PEN(gfx_r$), EEL_F2PEN(gfx_g$), EEL_F2PEN(gfx_b$), EEL_F2PEN(gfx_a$))";
-  0;
+  VeST_SetDrawMode(aa);
 );
 
 //==============================================================================
@@ -754,7 +787,7 @@ function VeST_SetFontColor() global()
 //==============================================================================
 
 /*
-Retreives the dimensions of image (representing a filename: index number) into w and h. Sets these values to 0 if an image failed loading
+Retreives the dimensions of (image) (representing a filename: index number) into (w) and (h). Sets these values to 0 if an image failed loading
 (or if the filename index is invalid).
 */
 function gfx_getimgdim(image, w*, h*) global()
@@ -765,7 +798,7 @@ function gfx_getimgdim(image, w*, h*) global()
   0;
 );
 
-// Resize image referenced by index 0..127, width and height must be 0-2048. The contents of the image will be undefined after the resize.
+// Resize image referenced by (index) 0..127, width and height must be 0-2048. The contents of the image will be undefined after the resize.
 function gfx_setimgdim(image, w, h) global()
 (
   !"CJes2CppImage& LImage = GetImage(image$)";
@@ -834,21 +867,21 @@ function gfx_blitext(image, list, rotation) global()
   gfx_blit(image, 1, rotation, list[0], list[1], list[2], list[3], list[4], list[5]);
 );
 
-// Blurs the region of the screen between gfx_x,gfx_y and x,y, and updates gfx_x,gfx_y to x,y. (NOT SUPPORTED)
+// Blurs the region of the screen between (gfx_x, gfx_y) and (x, y), and updates (gfx_x, gfx_y) to (x, y). (NOT SUPPORTED)
 function gfx_blurto(x, y) global()
 (
   0;
 );
 
-// Draws a circle, optionally filling/antialiasing.
-function gfx_circle(x, y, radius, fill, alias) global(gfx_x, gfx_y)
+// Draws a circle at (x, y) of given (radius), optionally filling (fill) and/or antialiasing (aa).
+function gfx_circle(x, y, radius, fill, aa) global(gfx_x, gfx_y)
 (
   fill ? (
-    VeST_SetFillColor();
-    !"VeST_DrawEllipse(FVeST, x$ - radius$, y$ - radius$, x$ + radius$ - 1, y$ + radius$ - 1, 1)";
+    VeST_SetFillColor(aa);
+    !"VeST_DrawEllipse(FVeST, x$ - radius$, y$ - radius$, x$ + radius$ + 1, y$ + radius$ + 1, 1)";
   ) : (
-    VeST_SetFrameColor();
-    !"VeST_DrawEllipse(FVeST, x$ - radius$, y$ - radius$, x$ + radius$ - 1, y$ + radius$ - 1, 0)";
+    VeST_SetFrameColor(aa);
+    !"VeST_DrawEllipse(FVeST, x$ - radius$, y$ - radius$, x$ + radius$ + 1, y$ + radius$ + 1, 0)";
   );
   gfx_x = x;
   gfx_y = y;
@@ -873,7 +906,7 @@ function gfx_measurestr(str, width*, height*) global(gfx_texth)
   0;
 );
 
-// Formats and draws a string at gfx_x, gfx_y, and updates gfx_x/gfx_y accordingly (the latter only if the formatted string contains newline).
+// Formats and draws a string at (gfx_x, gfx_y), and updates (gfx_x, gfx_y) accordingly (the latter only if the formatted string contains newline).
 function gfx_printf(format, ...) global()
 (
   !"char LString[512]; va_list LArgs";
@@ -884,14 +917,14 @@ function gfx_printf(format, ...) global()
   0;
 );
 
-// Draws a string at gfx_x, gfx_y, and updates gfx_x/gfx_y so that subsequent draws will occur in a similar place.
+// Draws a string at (gfx_x, gfx_y), and updates (gfx_x, gfx_y) so that subsequent draws will occur in a similar place.
 function gfx_drawstr(str) global()
 (
   !"DrawString(GetString(str$).c_str())";
   0;
 );
 
-// Draws the character 'c' (can be a numeric ASCII code as well), to gfx_x, gfx_y, and moves gfx_x over by the size of the character.
+// Draws the character (c) (can be a numeric ASCII code as well), to (gfx_x, gfx_y), and moves gfx_x over by the size of the character.
 function gfx_drawchar(c) global()
 (
   !"char LString[256]";
@@ -900,7 +933,7 @@ function gfx_drawchar(c) global()
   0;
 );
 
-// Draws the number "n" with "ndigits" of precision to gfx_x, gfx_y, and updates gfx_x to the right side of the drawing. The text height is gfx_texth
+// Draws the number (n) with (ndigits) of precision to (gfx_x, gfx_y), and updates gfx_x to the right side of the drawing. The text height is gfx_texth.
 function gfx_drawnumber(n, ndigits) global()
 (
   !"char LString[256]";
@@ -910,14 +943,14 @@ function gfx_drawnumber(n, ndigits) global()
 );
 
 
-// Writes a pixel of r, g, b to gfx_x, gfx_y.
+// Writes a pixel of (r, g, b) to (gfx_x, gfx_y).
 function gfx_setpixel(r, g, b) global()
 (
   !"VeST_DrawPoint(FVeST, gfx_x$, gfx_y$, EEL_F2PEN(r$), EEL_F2PEN(g$), EEL_F2PEN(b$), 255)";
   0;
 );
 
-// Gets the value of the pixel at gfx_x, gfx_y into r,g,b.
+// Gets the value of the pixel at (gfx_x, gfx_y) into (r, g, b).
 function gfx_getpixel(r*, g*, b*) global()
 (
   !"int LR, LG, LB, LA";
@@ -928,10 +961,10 @@ function gfx_getpixel(r*, g*, b*) global()
   1;
 );
 
-// Draws a line from (x1, y1) to (x2, y2). If aa is not specified or 0.5 or greater, it will be antialiased.
+// Draws a line from (x1, y1) to (x2, y2). If (aa) is not specified or 0.5 or greater, it will be antialiased.
 function gfx_line(x1, y1, x2, y2, aa) global()
 (
-  VeST_SetFrameColor();
+  VeST_SetFrameColor(aa);
   !"VeST_MoveTo(FVeST, x1$, y1$)";
   !"VeST_LineTo(FVeST, gfx_x$ = x2$, gfx_y$ = y2$)";
   0;
@@ -942,29 +975,29 @@ function gfx_line(x1, y1, x2, y2) global()
   gfx_line(x1, y1, x2, y2, 1);
 );
 
-// Draws a line from gfx_x, gfx_y to x,y. if aa is 0.5 or greater, then antialiasing is used. Updates gfx_x and gfx_y to x,y.
+// Draws a line from (gfx_x, gfx_y) to (x, y). if (aa) is 0.5 or greater, then antialiasing is used. Updates (gfx_x, gfx_y) to (x, y).
 function gfx_lineto(x, y, aa) global(gfx_x, gfx_y)
 (
   gfx_line(gfx_x, gfx_y, x, y, aa);
 );
 
-// Draws a line from gfx_x, gfx_y to x, y. Updates gfx_x and gfx_y to x, y.
+// Draws a line from (gfx_x, gfx_y) to (x, y). Updates (gfx_x, gfx_y) to (x, y).
 function gfx_lineto(x, y) global()
 (
   gfx_lineto(x, y, 1);
 );
 
-// Fills a rectngle at x,y, w,h pixels in dimension
+// Fills a rectngle at (x, y) and (w, h) pixels in dimension.
 function gfx_rect(x, y, w, h) global(gfx_x, gfx_y)
 (
   gfx_x = x + w;
   gfx_y = y + h;
-  VeST_SetFillColor();
+  VeST_SetFillColor(0);
   !"VeST_DrawRect(FVeST, floor(x$), floor(y$), floor(gfx_x$), floor(gfx_y$), 1)";
   0;
 );
 
-// Fills a rectangle from gfx_x,gfx_y to x,y. Updates gfx_x,gfx_y to x,y.
+// Fills a rectangle from (gfx_x, gfx_y) to (x, y). Updates (gfx_x, gfx_y) to (x, y).
 function gfx_rectto(x, y) global(gfx_x, gfx_y)
 (
   gfx_rect(gfx_x, gfx_y, x - gfx_x, y - gfx_y);
@@ -1055,9 +1088,9 @@ fontface such as "Arial", sz of 8-100, and optionally specify flags, which is a 
 These flags may or may not be supported depending on the font and OS. After calling gfx_setfont, gfx_texth may be updated to reflect the new average line
 height.
 */
-function gfx_setfont(font, name, size, style) global(gfx_getfont)
+function gfx_setfont(font, name, size, style) global(jes2cpp.gfx_getfont)
 (
-  gfx_getfont = font;
+  jes2cpp.gfx_getfont = font;
   !"CJes2CppFont& LFont = GetFont(font$)";
   !"LFont.FName = GetString(name$)";
   !"LFont.FSize" = size;
@@ -1083,9 +1116,9 @@ function gfx_setfont(font) global()
 );
 
 // Returns current font index.
-function gfx_getfont() global(gfx_getfont)
+function gfx_getfont() global(jes2cpp.gfx_getfont)
 (
-  gfx_getfont;
+  jes2cpp.gfx_getfont;
 );
 
 @init
@@ -1134,7 +1167,7 @@ function slider_automate(x) global()
 If you wish to programmatically choose which slider to access, use this function (rather than sliderX).
 This is slightly slower than sliderX, however has the advantage that you can do slider(variable) (enabling easily configurable slider mappings).
 */
-function *slider(x) global()
+function slider*(x) global()
 (
   !"FSliders[EEL_F2I(x$) & (JES2CPP_SLIDER_COUNT - 1)]";
 );
@@ -1160,7 +1193,7 @@ spl56 extern; spl57 extern; spl58 extern; spl59 extern; spl60 extern; spl61 exte
 If you wish to programmatically choose which sample to access, use this function (rather than splX).
 This is slightly slower than splX, however has the advantage that you can do spl(variable) (enabling easily configurable channel mappings).
 */
-function *spl(x) global()
+function spl*(x) global()
 (
   !"FSamples[EEL_F2I(x$) & (JES2CPP_SAMPLE_COUNT - 1)]";
 );

@@ -31,22 +31,19 @@ unit Jes2CppIdentifier;
 interface
 
 uses
-  Classes, Dialogs, Jes2CppFileNames, Jes2CppIdentString, Jes2CppReference, SysUtils;
+  Classes, Jes2CppComponent, Jes2CppFileNames, Jes2CppIdentString, Jes2CppReference, SysUtils;
 
 type
 
   TJes2CppIdentifierType = (itInternal, itExternal);
 
-  CJes2CppIdentifier = class(TComponent)
+  CJes2CppIdentifier = class(CJes2CppComponent)
   strict private
     FComment: String;
     FIdentType: TJes2CppIdentifierType;
     FReferences: CJes2CppReferences;
-  protected
-    function GetName: TComponentName;
-    procedure SetName(const AName: TComponentName); override;
   public
-    constructor Create(const AOwner: TComponent; const AName: TComponentName); virtual; reintroduce;
+    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
   public
     function IsSystem: Boolean;
     function IsIdent(const AIdent: TIdentString): Boolean;
@@ -57,41 +54,30 @@ type
     property Name: TComponentName read GetName;
   end;
 
-  CJes2CppIdentifiers = class(TComponent)
+  CJes2CppIdentifiers = class(CJes2CppComponent)
   public
     function GetIdentifier(const AIndex: Integer): CJes2CppIdentifier;
   end;
 
-  // Unused. Doesn't seem to help much.
+  (*
   CJes2CppIdentifiersFastFind = class(CJes2CppIdentifiers)
   strict private
     FNames: TStringList;
   protected
     procedure Notification(AComponent: TComponent; AOperation: TOperation); override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
     destructor Destroy; override;
   public
     function FindComponent(const AName: TComponentName): TComponent;
   end;
-
+  *)
 implementation
 
 constructor CJes2CppIdentifier.Create(const AOwner: TComponent; const AName: TComponentName);
 begin
-  SetName(AName);
-  inherited Create(AOwner);
-  FReferences := CJes2CppReferences.Create(Self);
-end;
-
-function CJes2CppIdentifier.GetName: TComponentName;
-begin
-  Result := inherited Name;
-end;
-
-procedure CJes2CppIdentifier.SetName(const AName: TComponentName);
-begin
-  ChangeName(AName);
+  inherited Create(AOwner, AName);
+  FReferences := CJes2CppReferences.Create(Self, EmptyStr);
 end;
 
 function CJes2CppIdentifier.IsSystem: Boolean;
@@ -107,16 +93,17 @@ end;
 
 function CJes2CppIdentifiers.GetIdentifier(const AIndex: Integer): CJes2CppIdentifier;
 begin
-  Result := Components[AIndex] as CJes2CppIdentifier;
+  Result := Self[AIndex] as CJes2CppIdentifier;
 end;
 
-constructor CJes2CppIdentifiersFastFind.Create(AOwner: TComponent);
+(*
+constructor CJes2CppIdentifiersFastFind.Create(const AOwner: TComponent; const AName: TComponentName);
 begin
   FNames := TStringList.Create;
   FNames.Sorted := True;
   FNames.Duplicates := dupError;
   FNames.CaseSensitive := False;
-  inherited Create(AOwner);
+  inherited Create(AOwner, AName);
 end;
 
 destructor CJes2CppIdentifiersFastFind.Destroy;
@@ -157,5 +144,6 @@ begin
     Result := inherited FindComponent(AName);
   end;
 end;
+*)
 
 end.

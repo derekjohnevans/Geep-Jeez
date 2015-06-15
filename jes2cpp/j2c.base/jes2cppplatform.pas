@@ -60,18 +60,20 @@ const
 
 type
 
-  TProcLoadFromFile = procedure(const AFileName: TFileName);
-
-procedure J2C_ScrollingWinControlPrepare(const AScrollingWinControl: TScrollingWinControl);
-function J2C_GetSpecialDir(const AIndex: Integer): TFileName;
-procedure J2C_SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String; const ALoader: TProcLoadFromFile);
+  TJes2CppPlatform = object
+    type TProcLoadFromFile = procedure(const AFileName: TFileName);
+    class function IsWindows9x: Boolean;
+    class function GetSpecialDir(const AIndex: Integer): TFileName;
+    class procedure SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String; const ALoader: TProcLoadFromFile);
+    class procedure ScrollingWinControlPrepare(const AScrollingWinControl: TScrollingWinControl);
+  end;
 
 implementation
 
 {$IF DEFINED(WINDOWS)}
 uses MMSystem, Windows;
 
-function J2C_GetSpecialDir(const AIndex: Integer): TFileName;
+class function TJes2CppPlatform.GetSpecialDir(const AIndex: Integer): TFileName;
 begin
   Result := GetWindowsSpecialDir(AIndex);
 end;
@@ -83,7 +85,7 @@ end;
 
 var
   GPrevWndProc: WNDPROC;
-  GpLoader: TProcLoadFromFile;
+  GpLoader: TJes2CppPlatform.TProcLoadFromFile;
 
 function J2C_WindowCallback(AHwnd: HWND; AMessage: UINT; AWParam: WParam; ALParam: LParam): LRESULT; stdcall;
 var
@@ -137,7 +139,8 @@ begin
   end;
 end;
 
-procedure J2C_SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String; const ALoader: TProcLoadFromFile);
+class procedure TJes2CppPlatform.SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String;
+  const ALoader: TProcLoadFromFile);
 begin
   if J2C_WindowSendParams(AMainWindow, AWindowCaption) then
   begin
@@ -149,12 +152,13 @@ begin
 end;
 
 {$ELSEIF DEFINED(LINUX)}
-procedure J2C_SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String; const ALoader: TProcLoadFromFile);
+class procedure TJes2CppPlatform.SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String;
+  const ALoader: TProcLoadFromFile);
 begin
   Application.MainForm.Caption := AWindowCaption;
 end;
 
-function J2C_GetSpecialDir(const AIndex: Integer): TFileName;
+class function TJes2CppPlatform.GetSpecialDir(const AIndex: Integer): TFileName;
 begin
   Result := EmptyStr;
   case AIndex of
@@ -175,12 +179,21 @@ end;
 {$ERROR}
 {$ENDIF}
 
-procedure J2C_ScrollingWinControlPrepare(const AScrollingWinControl: TScrollingWinControl);
+class procedure TJes2CppPlatform.ScrollingWinControlPrepare(const AScrollingWinControl: TScrollingWinControl);
 begin
 {$IFDEF WINDOWS}
   AScrollingWinControl.Font.Quality := fqProof;
   AScrollingWinControl.Font.Size := 10;
   AScrollingWinControl.Font.Name := 'verdana';
+{$ENDIF}
+end;
+
+class function TJes2CppPlatform.IsWindows9x: Boolean;
+begin
+{$IFDEF WINDOWS}
+  Result := Win32Platform = 1;
+{$ELSE}
+  Result := False;
 {$ENDIF}
 end;
 

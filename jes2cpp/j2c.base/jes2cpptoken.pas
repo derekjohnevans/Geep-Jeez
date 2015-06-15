@@ -51,8 +51,8 @@ const
   CharSetIdentBody = CharSetAlpha + CharSetDigit + ['_', '.'];
   CharSetIdentFull = CharSetIdentHead + CharSetIdentBody;
 
-  CharSetNumber1 = CharSetDigit + ['.', '$'];
-  CharSetNumber2 = CharSetDigit + CharSetAlpha + ['~', '.', 'x', 'X', 'e', 'E', ''''];
+  CharSetNumberHead = CharSetDigit + ['.', '$'];
+  CharSetNumberBody = CharSetDigit + CharSetAlpha + ['~', '.', 'x', 'X', 'e', 'E', ''''];
 
   CharSetOperator1 = ['=', '*', '/', '%', '^', '+', '-', '|', '&', '!', '<', '>', '~'];
   CharSetOperator2 = ['<', '>', '&', '|', '='];

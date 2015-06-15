@@ -96,22 +96,22 @@ begin
 
   if not FIsNoOutput then
   begin
-    if ItemCount(Variables) > M_ZERO then
+    if IndexCount(Variables) > M_ZERO then
     begin
       PrintTitle(SMsgDefineGlobalVariables);
       Print(Variables.CppDefineVariables);
       PrintBlankLine;
     end;
-    if ItemCount(Loops) > M_ZERO then
+    if IndexCount(Loops) > M_ZERO then
     begin
       PrintTitle(SMsgDefineInnerLoops);
-      for LIndex := ItemFirst(Loops) to ItemLast(Loops) do
+      for LIndex := IndexFirst(Loops) to IndexLast(Loops) do
       begin
         Print(Loops.GetLoop(LIndex).CppDefine);
       end;
     end;
     PrintTitle(SMsgDefineInternalFunctions);
-    for LIndex := ItemFirst(Functions) to ItemLast(Functions) do
+    for LIndex := IndexFirst(Functions) to IndexLast(Functions) do
     begin
       if Functions.GetFunction(LIndex).IsInternalAndUsed then
       begin
@@ -143,12 +143,21 @@ procedure CJes2Cpp.PrintAudioEffectCallBacks;
     Print('TJes2Cpp* LJes2Cpp = ((TJes2Cpp*)VeST_GetData(AVeST));');
   end;
 
+  procedure LPrintJes2Cpp(const AFuncCall: String);
+  begin
+    Print('((TJes2Cpp*)VeST_GetData(AVeST))->' + AFuncCall);
+  end;
+
+  procedure LPrintJes2CppReturn(const AFuncCall: String);
+  begin
+    Print('return ((TJes2Cpp*)VeST_GetData(AVeST))->' + AFuncCall);
+  end;
+
   procedure LPrintFunctionNotify(const AName: String);
   begin
     Print(GsCppVoidSpace + 'VEST_WINAPI EffectDo%s(HVEST AVeST)', [AName]);
     Print(CharOpeningBrace);
-    LPrintDefineLJes2Cpp;
-    Print('LJes2Cpp->Do%s();', [AName]);
+    LPrintJes2Cpp('Do' + AName + '();');
     Print(CharClosingBrace);
   end;
 
@@ -156,8 +165,7 @@ procedure CJes2Cpp.PrintAudioEffectCallBacks;
   begin
     Print(GsCppVoidSpace + 'VEST_WINAPI %s(HVEST AVeST, %s** AInputs, %s** AOutputs, int ASampleFrames)', [AName, AFloatType, AFloatType]);
     Print(CharOpeningBrace);
-    LPrintDefineLJes2Cpp;
-    Print('LJes2Cpp->%s(AInputs, AOutputs, ASampleFrames);', [GsDoSample]);
+    LPrintJes2Cpp(GsDoSample + '(AInputs, AOutputs, ASampleFrames);');
     Print(CharClosingBrace);
   end;
 
@@ -183,21 +191,15 @@ begin
   LPrintFunctionNotify(GsResume);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoIdle(HVEST AVeST)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->%s();', [GsDoIdle]);
+  LPrintJes2Cpp(GsDoIdle + '();');
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoDraw(HVEST AVeST, double AWidth, double AHeight)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->%s();', [GsDoGfx]);
+  LPrintJes2Cpp(GsDoGfx + '();');
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoMouseMoved(HVEST AVeST, double AX, double AY, int AButtons)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->%s = ((AButtons&2)>>1)|((AButtons&4)<<4)|((AButtons&8)>>1);', [CppEncodeVariable(GsEelVarMouseCap)]);
-  Print('LJes2Cpp->%s = AX;', [CppEncodeVariable(GsEelVarMouseX)]);
-  Print('LJes2Cpp->%s = AY;', [CppEncodeVariable(GsEelVarMouseY)]);
-  Print('LJes2Cpp->%s = GFX_RATE;', [CppEncodeVariable(GsEelVarGfxRate)]);
+  LPrintJes2Cpp('SetMouse(AX, AY, AButtons);');
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoMouseDown(HVEST AVeST, double AX, double AY, int AButtons)');
   Print(CharOpeningBrace);
@@ -217,36 +219,30 @@ begin
   Print(CharClosingBrace);
   Print('int VEST_WINAPI EffectDoGetVendorVersion(HVEST AVeST)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('return LJes2Cpp->GetVendorVersion();');
+  LPrintJes2CppReturn('GetVendorVersion();');
   Print(CharClosingBrace);
   Print('bool VEST_WINAPI EffectDoGetVendorString(HVEST AVeST, char* AString)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->GetVendorString(AString);');
+  LPrintJes2Cpp('GetVendorString(AString);');
   Print('return true;');
   Print(CharClosingBrace);
   Print('bool VEST_WINAPI EffectDoGetProductString(HVEST AVeST, char* AString)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->GetProductString(AString);');
+  LPrintJes2Cpp('GetProductString(AString);');
   Print('return true;');
   Print(CharClosingBrace);
   Print('bool VEST_WINAPI EffectDoGetEffectName(HVEST AVeST, char* AString)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->GetEffectName(AString);');
+  LPrintJes2Cpp('GetEffectName(AString);');
   Print('return true;');
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoSetProgramName(HVEST AVeST, char* AString)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->SetProgramName(AString);');
+  LPrintJes2Cpp('SetProgramName(AString);');
   Print(CharClosingBrace);
   Print('bool VEST_WINAPI EffectDoGetProgramName(HVEST AVeST, char* AString)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->GetProgramName(AString);');
+  LPrintJes2Cpp('GetProgramName(AString);');
   Print('return true;');
   Print(CharClosingBrace);
   Print('bool VEST_WINAPI EffectDoGetProgramNameIndexed(HVEST AVeST, int ACategory, int AIndex, char* AString)');
@@ -255,31 +251,26 @@ begin
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoSetParameter(HVEST AVeST, int AIndex, double AValue)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->SetParameterValue(AIndex, AValue);');
+  LPrintJes2Cpp('SetParameterValue(AIndex, AValue);');
   Print(CharClosingBrace);
   Print('double VEST_WINAPI EffectDoGetParameter(HVEST AVeST, int AIndex)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('return LJes2Cpp->GetParameterValue(AIndex);');
+  LPrintJes2CppReturn('GetParameterValue(AIndex);');
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoGetParameterName(HVEST AVeST, int AIndex, char* AString)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->GetParameterName(AIndex, AString);');
+  LPrintJes2Cpp('GetParameterName(AIndex, AString);');
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoGetParameterLabel(HVEST AVeST, int AIndex, char* AString)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->GetParameterLabel(AIndex, AString);');
+  LPrintJes2Cpp('GetParameterLabel(AIndex, AString);');
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoGetParameterDisplay(HVEST AVeST, int AIndex, char* AString)');
   Print(CharOpeningBrace);
-  LPrintDefineLJes2Cpp;
-  Print('LJes2Cpp->GetParameterDisplay(AIndex, AString);');
+  LPrintJes2Cpp('GetParameterDisplay(AIndex, AString);');
   Print(CharClosingBrace);
-  LPrintProcessReplacing('EffectDoProcessReplacing', 'float');
-  LPrintProcessReplacing('EffectDoProcessDoubleReplacing', 'double');
+  LPrintProcessReplacing('EffectDoProcessReplacing', GsCppFloat);
+  LPrintProcessReplacing('EffectDoProcessDoubleReplacing', GsCppDouble);
 end;
 
 procedure CJes2Cpp.PrintAudioEffectSetupCallBacks;
@@ -338,12 +329,26 @@ procedure CJes2Cpp.PrintAudioEffectEntryPoint;
     Print(CharClosingBrace);
   end;
 
+  procedure LPrintAlias(const APlatform, AName: String);
+  begin
+    Print('#if (%s)', [APlatform]);
+    Print('JES2CPP_EXPORT VEST_HANDLE %s(HVEST_AUDIOMASTER AAudioMaster)', [AName]);
+    Print(CharOpeningBrace);
+    Print('return VSTPluginMain(AAudioMaster);');
+    Print(CharClosingBrace);
+    Print('#endif');
+  end;
+
 begin
   PrintTitle('Define VSTPluginMain() - VST Entry Point');
   print('#ifdef VEST_VST');
   PrintExternCHead;
   Print('JES2CPP_EXPORT VEST_HANDLE VSTPluginMain(HVEST_AUDIOMASTER AAudioMaster)');
   LPrintEntryPointBody('AAudioMaster', 'VeST_GetAEffect');
+  Print('// Support for old hosts not looking for VSTPluginMain');
+  LPrintAlias('TARGET_API_MAC_CARBON && __ppc__', 'main_macho');
+  LPrintAlias(GsCppWin32, 'MAIN');
+  LPrintAlias(GsCppBeos, 'main_plugin');
   PrintExternCFoot;
   print('#endif // VEST_VST');
 
@@ -399,8 +404,8 @@ begin
     begin
       PrintTitle(SMsgConvertedWith + GsJes2CppTitle);
       PrintOriginalComments(Description.AtDescription);
-      PrintTitle('Include Jes2Cpp Header');
-      Print('#include "jes2cpp.h"');
+      PrintTitle('Include ' + GsJes2CppName + ' Header');
+      Print('#include "' + GsFilePartJes2Cpp + GsFileExtH + '"');
     end;
     PrintScriptClass(AFileNameSrc);
     if not FIsNoOutput then
@@ -437,7 +442,7 @@ end;
 procedure Jes2CppTranspile(const AFileNameDst, AFileNameSrc: TFileName;
   const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String);
 begin
-  with CJes2Cpp.Create(nil) do
+  with CJes2Cpp.Create(nil, EmptyStr) do
   begin
     try
       TranspileScriptFromFile(AFileNameSrc, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId);
@@ -453,7 +458,7 @@ function Jes2CppTranspileCompile(const AFileName: TFileName;
 var
   LJes2Cpp: CJes2Cpp;
 begin
-  LJes2Cpp := CJes2Cpp.Create(nil);
+  LJes2Cpp := CJes2Cpp.Create(nil, EmptyStr);
   try
     LJes2Cpp.TranspileScriptFromFile(AFileName, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId);
     with CJes2CppCompiler.Create(nil) do

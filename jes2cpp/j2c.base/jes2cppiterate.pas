@@ -33,69 +33,68 @@ interface
 uses
   Classes, ComCtrls;
 
-function ItemCount(const AList: TStrings): Integer; overload;
-function ItemCount(const AList: TComponent): Integer; overload;
-function ItemCount(const AList: TPageControl): Integer; overload;
+function IndexFirst(const AList: TObject): Integer; overload;
 
-function ItemFirst(const AList: TStrings): Integer; overload;
-function ItemFirst(const AList: TComponent): Integer; overload;
-function ItemFirst(const AList: TPageControl): Integer; overload;
+function IndexCount(const AList: TStrings): Integer; overload;
+function IndexCount(const AList: TComponent): Integer; overload;
+function IndexCount(const AList: TPageControl): Integer; overload;
+function IndexCount(const AList: TToolBar): Integer; overload;
 
-function ItemLast(const AList: TStrings): Integer; overload;
-function ItemLast(const AList: TComponent): Integer; overload;
-function ItemLast(const AList: TPageControl): Integer; overload;
+function IndexLast(const AList: TStrings): Integer; overload;
+function IndexLast(const AList: TComponent): Integer; overload;
+function IndexLast(const AList: TPageControl): Integer; overload;
+function IndexLast(const AList: TToolBar): Integer; overload;
 
 implementation
 
-function ItemCount(const AList: TStrings): Integer;
+function IndexFirst(const AList: TObject): Integer;
+begin
+  Assert(Assigned(AList));
+  Result := 0;
+end;
+
+function IndexCount(const AList: TStrings): Integer;
 begin
   Assert(Assigned(AList));
   Result := AList.Count;
 end;
 
-function ItemCount(const AList: TComponent): Integer;
+function IndexCount(const AList: TComponent): Integer;
 begin
   Assert(Assigned(AList));
   Result := AList.ComponentCount;
 end;
 
-function ItemCount(const AList: TPageControl): Integer; overload;
+function IndexCount(const AList: TPageControl): Integer;
 begin
   Assert(Assigned(AList));
   Result := AList.PageCount;
 end;
 
-function ItemFirst(const AList: TStrings): Integer;
+function IndexCount(const AList: TToolBar): Integer;
 begin
   Assert(Assigned(AList));
-  Result := 0;
+  Result := AList.ButtonCount;
 end;
 
-function ItemFirst(const AList: TComponent): Integer;
+function IndexLast(const AList: TStrings): Integer;
 begin
-  Assert(Assigned(AList));
-  Result := 0;
+  Result := IndexCount(AList) - 1;
 end;
 
-function ItemFirst(const AList: TPageControl): Integer;
+function IndexLast(const AList: TComponent): Integer;
 begin
-  Assert(Assigned(AList));
-  Result := 0;
+  Result := IndexCount(AList) - 1;
 end;
 
-function ItemLast(const AList: TStrings): Integer;
+function IndexLast(const AList: TPageControl): Integer;
 begin
-  Result := ItemCount(AList) - 1;
+  Result := IndexCount(AList) - 1;
 end;
 
-function ItemLast(const AList: TComponent): Integer;
+function IndexLast(const AList: TToolBar): Integer;
 begin
-  Result := ItemCount(AList) - 1;
-end;
-
-function ItemLast(const AList: TPageControl): Integer;
-begin
-  Result := ItemCount(AList) - 1;
+  Result := IndexCount(AList) - 1;
 end;
 
 end.

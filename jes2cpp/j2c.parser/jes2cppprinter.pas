@@ -31,7 +31,8 @@ unit Jes2CppPrinter;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppIterate, Jes2CppParserFunctions, Jes2CppStrings, Jes2CppTranslate, StrUtils, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppIterate, Jes2CppParserFunctions, Jes2CppStrings,
+  Jes2CppTranslate, StrUtils, SysUtils;
 
 type
 
@@ -40,7 +41,7 @@ type
     FIndent, FTabSize, FColWidth: Integer;
     FOutput, FBreaker: TStringList;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
     destructor Destroy; override;
   protected
     procedure Print(const AFormat: String; const AArgs: array of const; const AIsRequired: Boolean = True); overload;
@@ -60,11 +61,11 @@ type
 
 implementation
 
-constructor CJes2CppPrinter.Create(AOwner: TComponent);
+constructor CJes2CppPrinter.Create(const AOwner: TComponent; const AName: TComponentName);
 begin
-  inherited Create(AOwner);
+  inherited Create(AOwner, AName);
   FColWidth := GiColWidth;
-  FTabSize := 2;
+  FTabSize := GiTabSize;
   FBreaker := TStringList.Create;
   FOutput := TStringList.Create;
 end;
@@ -103,7 +104,7 @@ var
   LIndex: Integer;
 begin
   FBreaker.Text := WrapText(ALine, LineEnding, [CharSpace], FColWidth - FIndent);
-  for LIndex := ItemFirst(FBreaker) to ItemLast(FBreaker) do
+  for LIndex := IndexFirst(FBreaker) to IndexLast(FBreaker) do
   begin
     PrintRaw(Trim(FBreaker[LIndex]), AIsRequired);
   end;
@@ -119,7 +120,7 @@ var
   LIndex: Integer;
 begin
   FBreaker.Text := WrapText(AComment, LineEnding, [CharSpace], FColWidth - FIndent);
-  for LIndex := ItemFirst(FBreaker) to ItemLast(FBreaker) do
+  for LIndex := IndexFirst(FBreaker) to IndexLast(FBreaker) do
   begin
     PrintRaw(GsCppCommentSpace + Trim(FBreaker[LIndex]));
   end;

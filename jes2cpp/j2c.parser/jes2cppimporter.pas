@@ -44,7 +44,7 @@ type
     procedure ImportFrom(const AScript: TStrings; const AScriptFileName: TFileName; const ALevel: Integer = 0); overload;
     procedure ImportFrom(const AScriptFileName: TFileName); overload;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
     destructor Destroy; override;
   public
     property Description: CJes2CppDescription read FDescription;
@@ -52,9 +52,9 @@ type
 
 implementation
 
-constructor CJes2CppImporter.Create(AOwner: TComponent);
+constructor CJes2CppImporter.Create(const AOwner: TComponent; const AName: TComponentName);
 begin
-  inherited Create(AOwner);
+  inherited Create(AOwner, AName);
   FDescription := CJes2CppDescription.Create(Self);
   FImportFileNames := TStringList.Create;
   FImportFileNames.Sorted := True;

@@ -44,17 +44,17 @@ type
     function ParseWhile: String;
     function ParseLoop: String;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
   public
     property Loops: CJes2CppLoops read FLoops;
   end;
 
 implementation
 
-constructor CJes2CppParserLoops.Create(AOwner: TComponent);
+constructor CJes2CppParserLoops.Create(const AOwner: TComponent; const AName: TComponentName);
 begin
-  inherited Create(AOwner);
-  FLoops := CJes2CppLoops.Create(Self);
+  inherited Create(AOwner, AName);
+  FLoops := CJes2CppLoops.Create(Self, EmptyStr);
 end;
 
 function CJes2CppParserLoops.ParseWhile: String;

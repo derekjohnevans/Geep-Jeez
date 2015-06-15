@@ -37,11 +37,13 @@ const
 
   GsFileExtA = ExtensionSeparator + 'a';
   GsFileExtCpp = ExtensionSeparator + 'cpp';
+  GsFileExtDef = ExtensionSeparator + 'def';
+  GsFileExtExe = ExtensionSeparator + 'exe';
+  GsFileExtH = ExtensionSeparator + 'h';
   GsFileExtHtml = ExtensionSeparator + 'html';
   GsFileExtJsFx = ExtensionSeparator + 'jsfx';
   GsFileExtJsFxInc = GsFileExtJsFx + '-inc';
   GsFileExtLib = ExtensionSeparator + 'lib';
-  GsFileExtExe = ExtensionSeparator + 'exe';
 
 {$IF DEFINED(WINDOWS)}
   GsFileExtDll = ExtensionSeparator + 'dll';
@@ -59,9 +61,11 @@ const
   GsFilePartData = 'Data';
   GsFilePartEffects = 'Effects';
   GsFilePartJes2Cpp = 'jes2cpp';
+  GsFilePartExports = 'exports';
   GsFilePartLibSndFile = 'libsndfile';
   GsFilePartLibSndFile1 = GsFilePartLibSndFile + '-1';
   GsFilePartLib = 'lib';
+  GsFilePartUntitled = 'untitled';
   GsFilePartOutput = 'output';
   GsFilePartREAPER = 'REAPER';
   GsFilePartVeST = 'vest';
@@ -70,6 +74,15 @@ const
   GsFilePartSaviHost = 'savihost';
 
 type
+
+  TJes2CppUrls = object
+  const
+    GeepJeez = GsJes2CppWebsite;
+    FatCow = 'http://www.fatcow.com/free-icons';
+    REAPER = 'http://www.reaper.fm/';
+    JSFXReference = 'http://www.reaper.fm/sdk/js/js.php';
+    SAVIHost = 'http://www.hermannseib.com/english/savihost.htm';
+  end;
 
   TJes2CppFileNames = object
   public
@@ -99,27 +112,27 @@ implementation
 
 function PathToApplicationData: TFileName;
 begin
-  Result := J2C_GetSpecialDir(CSIDL_APPDATA);
+  Result := TJes2CppPlatform.GetSpecialDir(CSIDL_APPDATA);
 end;
 
 function PathToProgramFiles: TFileName;
 begin
-  Result := J2C_GetSpecialDir(CSIDL_PROGRAM_FILES);
+  Result := TJes2CppPlatform.GetSpecialDir(CSIDL_PROGRAM_FILES);
 end;
 
 function PathToWindows: TFileName;
 begin
-  Result := J2C_GetSpecialDir(CSIDL_WINDOWS);
+  Result := TJes2CppPlatform.GetSpecialDir(CSIDL_WINDOWS);
 end;
 
 function PathToProfiles: TFileName;
 begin
-  Result := J2C_GetSpecialDir(CSIDL_PROFILES);
+  Result := TJes2CppPlatform.GetSpecialDir(CSIDL_PROFILES);
 end;
 
 function PathToProfile: TFileName;
 begin
-  Result := J2C_GetSpecialDir(CSIDL_PROFILE);
+  Result := TJes2CppPlatform.GetSpecialDir(CSIDL_PROFILE);
 end;
 
 function PathToTemp: TFileName;

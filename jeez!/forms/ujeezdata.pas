@@ -39,6 +39,8 @@ type
   { TJeezData }
 
   TJeezData = class(TDataModule)
+    FontDialog: TFontDialog;
+    ImageList32: TImageList;
     ImageListTabSheet: TImageList;
     ImageList16: TImageList;
     OpenDialog: TOpenDialog;

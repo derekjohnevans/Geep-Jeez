@@ -74,7 +74,12 @@ end;
 
 procedure TJeezStorage.Load(const AControl: TComboBox);
 begin
-  AControl.ItemIndex := ReadInteger(AControl.Name, GsItemIndex, AControl.ItemIndex);
+  if AControl.Style = csDropDown then
+  begin
+    AControl.Caption := ReadString(AControl.Name, GsCaption, AControl.Text);
+  end else begin
+    AControl.ItemIndex := ReadInteger(AControl.Name, GsItemIndex, AControl.ItemIndex);
+  end;
 end;
 
 procedure TJeezStorage.Load(const AControl: TDirectoryEdit);
@@ -89,7 +94,7 @@ end;
 
 procedure TJeezStorage.Load(const AControl: TColorBox);
 begin
-  AControl.Selected := ReadInteger(AControl.Name, GsValue, AControl.Selected);
+  AControl.Selected := ReadInteger(AControl.Name, GsSelected, AControl.Selected);
 end;
 
 procedure TJeezStorage.Load(const AControl: TListBox);
@@ -115,7 +120,12 @@ end;
 
 procedure TJeezStorage.Save(const AControl: TComboBox);
 begin
-  WriteInteger(AControl.Name, GsItemIndex, AControl.ItemIndex);
+  if AControl.Style = csDropDown then
+  begin
+    WriteString(AControl.Name, GsCaption, AControl.Caption);
+  end else begin
+    WriteInteger(AControl.Name, GsItemIndex, AControl.ItemIndex);
+  end;
 end;
 
 procedure TJeezStorage.Save(const AControl: TDirectoryEdit);
@@ -130,7 +140,7 @@ end;
 
 procedure TJeezStorage.Save(const AControl: TColorBox);
 begin
-  WriteInteger(AControl.Name, GsValue, AControl.Selected);
+  WriteInteger(AControl.Name, GsSelected, AControl.Selected);
 end;
 
 procedure TJeezStorage.Save(const AControl: TListBox);

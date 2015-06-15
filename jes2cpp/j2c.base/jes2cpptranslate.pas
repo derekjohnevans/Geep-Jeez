@@ -35,7 +35,11 @@ uses
 
 const
 
+  GsCppWin32 = 'WIN32';
+  GsCppBeos = 'BEOS';
+
   GsCppJes2CppInline = 'JES2CPP_INLINE';
+  GsCppJes2CppInlineSpace = GsCppJes2CppInline + CharSpace;
   GsCppJes2CppBass = 'JES2CPP_BASS';
   GsCppJes2CppSndFile = 'JES2CPP_SNDFILE';
 
@@ -59,7 +63,7 @@ const
   GsCppFunct1 = '%s()';
   GsCppFunct2 = '%s(%s)';
   GsCppFunct3 = '%s(%s, %s)';
-  GsCppInlineSpace = GsCppJes2CppInline + CharSpace;
+  GsCppInline = 'inline';
   GsCppLineEnding = CharSemiColon + LineEnding;
   GsCppOperator = '(%s %s %s)';
   GsCppPow = 'pow';
@@ -70,6 +74,7 @@ const
 
   GsCppFloat = 'float';
   GsCppDouble = 'double';
+  GsCppStatic = 'static';
   GsCppNull = 'NULL';
   GsCppEelF = 'EEL_F';
   GsCppNop = 'M_NOP';

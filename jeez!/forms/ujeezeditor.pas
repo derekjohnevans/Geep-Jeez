@@ -31,10 +31,11 @@ unit UJeezEditor;
 interface
 
 uses
-  Buttons, Classes, ComCtrls, Controls, DateUtils, ExtCtrls, FileUtil, Forms,
-  JeezResources, JeezSynEdit, JeezTreeView, JeezUtils, Jes2Cpp, Jes2CppCompiler, Jes2CppConstants, Jes2CppEel,
-  Jes2CppFunction, Jes2CppIdentifier, Jes2CppIdentString, Jes2CppIterate, Jes2CppPlatform, Jes2CppReference, Jes2CppStrings,
-  Jes2CppUtils, Jes2CppVariable, LCLIntf, LCLType, Menus, StdCtrls, SynEdit, SynEditTypes, SynHighlighterAny, SysUtils, types;
+  Buttons, Classes, ComCtrls, Controls, DateUtils, ExtCtrls, FileUtil, Forms, Graphics, JeezResources, JeezSynEdit,
+  JeezTreeView, JeezUtils, Jes2Cpp, Jes2CppCompiler, Jes2CppConstants, Jes2CppEel,
+  Jes2CppFileNames, Jes2CppFunction, Jes2CppIdentifier, Jes2CppIdentString, Jes2CppIterate, Jes2CppPlatform,
+  Jes2CppReference, Jes2CppStrings, Jes2CppUtils, Jes2CppVariable, LCLIntf, LCLType, Menus, StdCtrls, SynEdit,
+  SynEditTypes, SynHighlighterAny, SysUtils, types;
 
 type
 
@@ -78,6 +79,8 @@ type
     TimerCodeInsight: TTimer;
     TimerPopupNotifier: TTimer;
     ToolBar: TToolBar;
+    ToolButton1: TToolButton;
+    ToolButton2: TToolButton;
     TreeView: TTreeView;
     procedure ButtonFindErrorClick(ASender: TObject);
     procedure ButtonSyntaxCheckClick(ASender: TObject);
@@ -140,7 +143,8 @@ type
     procedure LoadFromFile(const AFileName: TFileName);
     procedure SaveToFile(const AFileName: TFileName); overload;
     procedure SaveToFile; overload;
-    function GetPluginFileName: TFileName;
+    function GetFileNamePlugin: TFileName;
+    function IsFileNameInclude: Boolean;
   public
     property Filename: TFileName read FFileName;
   end;
@@ -154,8 +158,15 @@ uses UJeezData, UJeezIde, UJeezMessages, UJeezOptions, UJeezProperties;
 constructor TJeezEditor.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  J2C_ScrollingWinControlPrepare(Self);
-  TJeezSynEdit._SynJsFxInit(SynJsfxSyn);
+
+  if TJes2CppPlatform.IsWindows9x then
+  begin
+    PanelTop.ParentColor := False;
+    PanelTop.Color := clBtnFace;
+  end;
+
+  TJes2CppPlatform.ScrollingWinControlPrepare(Self);
+  TJeezSynEdit.SynJsFxInit(SynJsfxSyn);
 
   ErrorMessage.LineHighlightColor.Background := ErrorMessage.Color;
 
@@ -173,11 +184,16 @@ begin
   ApplyColors;
 end;
 
-function TJeezEditor.GetPluginFileName: TFileName;
+function TJeezEditor.GetFileNamePlugin: TFileName;
 begin
   Result := IncludeTrailingPathDelimiter(J2C_StringsGetValue(SynEdit.Lines, GsInstallPath,
-    JeezOptions.EditDefVstPath.Directory, True)) + FileNameOutputDll(ExtractFilename(FFilename),
-    JeezOptions.GetTypeProcessor, JeezOptions.GetTypePrecision, JeezOptions.GetTypePlugin);
+    JeezOptions.EditDefVstPath.Directory, True)) + FileNameOutputDll(ExtractFilename(FFileName),
+    JeezOptions.GetTypeArchitecture, JeezOptions.GetTypePrecision, JeezOptions.GetTypePlugin);
+end;
+
+function TJeezEditor.IsFileNameInclude: Boolean;
+begin
+  Result := SameText(ExtractFileExt(FFileName), GsFileExtJsFxInc);
 end;
 
 procedure TJeezEditor.ApplyColors;
@@ -187,6 +203,8 @@ begin
   JeezOptions.ApplySynEdit(SynEdit, JeezOptions.ColorBackground.Selected);
   JeezOptions.ApplySynEdit(ErrorMessage, JeezOptions.ColorBackground.Selected);
   JeezOptions.ApplySynAnySyn(SynJsfxSyn, False);
+  EditFolder.Invalidate;
+  TreeView.Invalidate;
 end;
 
 function TJeezEditor.FindTreeNodeVariable(const AName: String): TTreeNode;
@@ -337,7 +355,7 @@ var
   LReference: CJes2CppReference;
   LTreeNode: TTreeNode;
 begin
-  for LIndex := ItemFirst(AIdentifier.References) to ItemLast(AIdentifier.References) do
+  for LIndex := IndexFirst(AIdentifier.References) to IndexLast(AIdentifier.References) do
   begin
     LReference := AIdentifier.References.GetReference(LIndex);
     LTreeNode := J2C_TreeNodeFindOrAdd(AParent, LReference.EncodeLineFilePath);
@@ -361,9 +379,10 @@ begin
   try
     J2C_TreeNodesMarkNonRootsForCutting(TreeView.Items);
     try
-      with CJes2Cpp.Create(Self) do
+      with CJes2Cpp.Create(nil, EmptyStr) do
       begin
         try
+          WarningsAsErrors := JeezOptions.EditWarningsAsErrors.Checked;
           ForceGlobals := JeezOptions.EditForceGlobals.Checked;
           IsNoOutput := True;
 
@@ -373,11 +392,11 @@ begin
           //JeezMessages.LogMessage('Timer: ' + IntToStr(LTimer));
           PanelError.Visible := False;
 
-          for LIndex := ItemFirst(Variables) to ItemLast(Variables) do
+          for LIndex := IndexFirst(Variables) to IndexLast(Variables) do
           begin
             AddVariable(Variables.GetVariable(LIndex));
           end;
-          for LIndex := ItemFirst(Functions) to ItemLast(Functions) do
+          for LIndex := IndexFirst(Functions) to IndexLast(Functions) do
           begin
             AddFunction(Functions.GetFunction(LIndex));
           end;
@@ -387,14 +406,14 @@ begin
             begin
               if Functions.GetFunction(LIndex).IsSystem then
               begin
-                SynJsfxSyn.Objects.Add(UpperCase(Functions.Components[LIndex].Name));
+                SynJsfxSyn.Objects.Add(UpperCase(Functions[LIndex].Name));
               end;
             end;
             for LIndex := 0 to Variables.ComponentCount - 1 do
             begin
               if Variables.GetIdentifier(LIndex).IsSystem then
               begin
-                SynJsfxSyn.Constants.Add(UpperCase(J2C_IdentClean(Variables.Components[LIndex].Name)));
+                SynJsfxSyn.Constants.Add(UpperCase(J2C_IdentClean(Variables[LIndex].Name)));
               end;
             end;
             SynEdit.Invalidate;
@@ -739,9 +758,10 @@ end;
 procedure TJeezEditor.ButtonSyntaxCheckClick(ASender: TObject);
 begin
   JeezMessages.LogFileName(SMsgTypeSyntaxChecking, FFileName);
-  with Jeez_Jes2Cpp.Create(Self) do
+  with Transpile.Create(nil, EmptyStr) do
   begin
     try
+      WarningsAsErrors := JeezOptions.EditWarningsAsErrors.Checked;
       ForceGlobals := JeezOptions.EditForceGlobals.Checked;
       TranspileScript(SynEdit.Lines, FFileName);
     finally
