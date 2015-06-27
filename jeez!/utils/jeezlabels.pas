@@ -72,7 +72,7 @@ begin
         LCaption := LHint;
       end;
       AControl.Hint := LHint;
-      if not TJes2CppPlatform.IsWindows9x then
+      if not NsPlatform.IsWindows9x then
       begin
         AControl.Color := clInfoBlock;
       end;

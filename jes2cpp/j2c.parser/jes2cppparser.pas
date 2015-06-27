@@ -31,19 +31,20 @@ unit Jes2CppParser;
 interface
 
 uses
-  Jes2CppConstants, Jes2CppEel, Jes2CppImporter, Jes2CppToken, Jes2CppTranslate, Jes2CppUtils, Math, StrUtils, SysUtils;
+  Jes2CppConstants, Jes2CppEel, Jes2CppImporter, Jes2CppToken, Jes2CppTranslate, Jes2CppUtils, StrUtils, SysUtils;
 
 type
 
   CJes2CppParser = class(CJes2CppImporter)
   strict private
     FSource, FCurrentComment: String;
-    FToken, FTokenEnd, FTokenNext: PChar;
+    FTokenHead, FTokenFoot, FTokenNext: PChar;
   strict private
     procedure ParseWhiteSpace;
   protected
-    function ParseSign: TValueSign;
+    function ParseSign: String;
     function ParseRawString: String;
+    function ParseExtension: String;
   protected
     function CurrentToken: String; override;
     function PullToken: String;
@@ -76,8 +77,8 @@ implementation
 
 procedure CJes2CppParser.ResetParser(const ASource: String; const AFileName: TFileName);
 begin
-  FileLine := M_ZERO;
-  FileName := AFileName;
+  FileCaretY := M_ZERO;
+  FileSource := AFileName;
   FSource := ASource;
   FTokenNext := PChar(FSource);
   ParseWhiteSpace;
@@ -103,7 +104,7 @@ begin
         Inc(FTokenNext);
       end;
       SetString(LString, LToken, FTokenNext - LToken);
-      FileName := LString;
+      FileSource := LString;
       if FTokenNext[0] <> CharNull then
       begin
         Inc(FTokenNext);
@@ -117,7 +118,7 @@ begin
         Inc(FTokenNext);
       end;
       SetString(LString, LToken, FTokenNext - LToken);
-      FileLine := StrToInt(LString);
+      FileCaretY := StrToInt(LString);
       if FTokenNext[0] <> CharNull then
       begin
         Inc(FTokenNext);
@@ -127,7 +128,7 @@ begin
       LToken := FTokenNext;
       repeat
         Inc(FTokenNext);
-      until (FTokenNext[0] in CharSetEof) or ((FTokenNext[-2] = CharAsterisk) and (FTokenNext[-1] = CharSlashForward));
+      until (FTokenNext[0] in CharSetNull) or ((FTokenNext[-2] = CharAsterisk) and (FTokenNext[-1] = CharSlashForward));
       SetString(FCurrentComment, LToken, FTokenNext - LToken);
       FCurrentComment := J2C_CleanComment(FCurrentComment);
     end else if (FTokenNext[0] = CharSlashForward) and (FTokenNext[1] = CharSlashForward) then
@@ -135,7 +136,7 @@ begin
       LToken := FTokenNext;
       repeat
         Inc(FTokenNext);
-      until FTokenNext[0] in CharSetEol;
+      until FTokenNext[0] in CharSetLineEnding;
       SetString(FCurrentComment, LToken, FTokenNext - LToken);
       FCurrentComment := J2C_CleanComment(FCurrentComment);
     end else begin
@@ -144,15 +145,69 @@ begin
   until False;
 end;
 
+procedure CJes2CppParser.NextToken;
+begin
+  FTokenHead := FTokenNext;
+  FTokenFoot := FTokenHead;
+  if not IsNull then
+  begin
+    if FTokenHead[0] in CharSetQuote then
+    begin
+      Inc(FTokenFoot);
+      while not (FTokenFoot[0] in CharSetLineEnding + [FTokenHead[0]]) do
+      begin
+        if (FTokenFoot[0] = CharSlashBackward) and not (FTokenFoot[1] in CharSetLineEnding) then
+        begin
+          Inc(FTokenFoot);
+        end;
+        Inc(FTokenFoot);
+      end;
+      if FTokenFoot[0] <> FTokenHead[0] then
+      begin
+        LogException(SMsgIncompleteStringCharSequence);
+      end;
+      Inc(FTokenFoot);
+    end else if FTokenHead[0] in CharSetOperator1 then
+    begin
+      if FTokenHead[1] = CharEqualSign then
+      begin
+        Inc(FTokenFoot);
+        if FTokenHead[2] = CharEqualSign then
+        begin
+          Inc(FTokenFoot);
+        end;
+      end else if (FTokenHead[0] in CharSetOperator2) and (FTokenHead[0] = FTokenHead[1]) then
+      begin
+        Inc(FTokenFoot);
+      end;
+      Inc(FTokenFoot);
+    end else if (FTokenHead[0] = CharDollar) and (FTokenHead[1] = CharQuoteSingle) and (FTokenHead[2] <> CharNull) and
+      (FTokenHead[3] = CharQuoteSingle) then
+    begin
+      Inc(FTokenFoot, 4);
+    end else if FTokenHead[0] in CharSetNumberHead then
+    begin
+      repeat
+        Inc(FTokenFoot);
+      until not (FTokenFoot[0] in CharSetNumberBody);
+    end else begin
+      if FTokenHead[0] in CharSetIdentHead then
+      begin
+        repeat
+          Inc(FTokenFoot);
+        until not (FTokenFoot[0] in CharSetIdentBody);
+      end else begin
+        Inc(FTokenFoot);
+      end;
+    end;
+    FTokenNext := FTokenFoot;
+    ParseWhiteSpace;
+  end;
+end;
+
 function CJes2CppParser.CurrentToken: String;
 begin
-  // TODO: Why is this here?
-  if FTokenEnd > FToken then
-  begin
-    SetString(Result, FToken, FTokenEnd - FToken);
-  end else begin
-    Result := EmptyStr;
-  end;
+  SetString(Result, FTokenHead, FTokenFoot - FTokenHead);
 end;
 
 function CJes2CppParser.PullToken: String;
@@ -199,37 +254,37 @@ end;
 
 function CJes2CppParser.IsNull: Boolean;
 begin
-  Result := FToken[0] in CharSetEof;
+  Result := FTokenHead[0] in CharSetNull;
 end;
 
 function CJes2CppParser.IsEol: Boolean;
 begin
-  Result := FToken[0] in CharSetEol;
+  Result := FTokenHead[0] in CharSetLineEnding;
 end;
 
 function CJes2CppParser.IsIdentHead: Boolean;
 begin
-  Result := FToken[0] in CharSetIdentHead;
+  Result := FTokenHead[0] in CharSetIdentHead;
 end;
 
 function CJes2CppParser.IsNumberHead: Boolean;
 begin
-  Result := FToken[0] in CharSetNumberHead;
+  Result := FTokenHead[0] in CharSetNumberHead;
 end;
 
 function CJes2CppParser.IsStringHead: Boolean;
 begin
-  Result := FToken[0] = CharQuoteDouble;
+  Result := FTokenHead[0] = CharQuoteDouble;
 end;
 
 function CJes2CppParser.IsCharHead: Boolean;
 begin
-  Result := FToken[0] = CharQuoteSingle;
+  Result := FTokenHead[0] = CharQuoteSingle;
 end;
 
 function CJes2CppParser.IsOperator: Boolean;
 begin
-  Result := FToken[0] in CharSetOperator1;
+  Result := FTokenHead[0] in CharSetOperator1;
 end;
 
 function CJes2CppParser.IsVariable: Boolean;
@@ -239,28 +294,32 @@ end;
 
 function CJes2CppParser.IsFunctionHead: Boolean;
 begin
-  Result := FToken[0] in CharSetFunctHead;
+  Result := FTokenHead[0] in CharSetFunctHead;
 end;
 
 function CJes2CppParser.IsFunctionCall: Boolean;
 begin
-  Result := (FToken[0] in CharSetFunctHead) and (FTokenNext[0] = CharOpeningParenthesis);
+  Result := (FTokenHead[0] in CharSetFunctHead) and (FTokenNext[0] = CharOpeningParenthesis);
 end;
 
-function CJes2CppParser.ParseSign: TValueSign;
+function CJes2CppParser.ParseSign: String;
 var
-  LToken: String;
+  LIsNegitive: Boolean;
 begin
-  Result := PositiveValue;
-  LToken := CurrentToken;
-  while (LToken = CharPlusSign) or (LToken = CharMinusSign) do
+  LIsNegitive := False;
+  while (CurrentToken = CharPlusSign) or (CurrentToken = CharMinusSign) do
   begin
-    if LToken = CharMinusSign then
+    if CurrentToken = CharMinusSign then
     begin
-      Result := -Result;
+      LIsNegitive := not LIsNegitive;
     end;
     NextToken;
-    LToken := CurrentToken;
+  end;
+  if LIsNegitive then
+  begin
+    Result := CharMinusSign;
+  end else begin
+    Result := EmptyStr;
   end;
 end;
 
@@ -274,58 +333,13 @@ begin
   end;
 end;
 
-// TODO: Merge this with PullToken?
-procedure CJes2CppParser.NextToken;
+function CJes2CppParser.ParseExtension: String;
 begin
-  FToken := FTokenNext;
-  FTokenEnd := FToken;
-  if not IsNull then
+  if IsStringHead then
   begin
-    if FToken[0] in CharSetQuote then
-    begin
-      repeat
-        Inc(FTokenEnd);
-      until (FTokenEnd[0] = CharNull) or ((FTokenEnd[0] = FToken[0]) and (FTokenEnd[-1] <> CharSlashBackward));
-      if FTokenEnd[0] <> FToken[0] then
-      begin
-        LogException(SMsgIncompleteStringCharSequence);
-      end;
-      Inc(FTokenEnd);
-    end else if FToken[0] in CharSetOperator1 then
-    begin
-      if FToken[1] = CharEqualSign then
-      begin
-        Inc(FTokenEnd);
-        if FToken[2] = CharEqualSign then
-        begin
-          Inc(FTokenEnd);
-        end;
-      end else if (FToken[0] in CharSetOperator2) and (FToken[0] = FToken[1]) then
-      begin
-        Inc(FTokenEnd);
-      end;
-      Inc(FTokenEnd);
-    end else if (FToken[0] = CharDollar) and (FToken[1] = CharQuoteSingle) and (FToken[2] <> CharNull) and
-      (FToken[3] = CharQuoteSingle) then
-    begin
-      Inc(FTokenEnd, 4);
-    end else if IsNumberHead then
-    begin
-      repeat
-        Inc(FTokenEnd);
-      until not (FTokenEnd[0] in CharSetNumberBody);
-    end else begin
-      if IsIdentHead then
-      begin
-        repeat
-          Inc(FTokenEnd);
-        until not (FTokenEnd[0] in CharSetIdentBody);
-      end else begin
-        Inc(FTokenEnd);
-      end;
-    end;
-    FTokenNext := FTokenEnd;
-    ParseWhiteSpace;
+    Result := ParseRawString;
+  end else begin
+    Result := EmptyStr;
   end;
 end;
 

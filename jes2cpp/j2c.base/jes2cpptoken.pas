@@ -37,8 +37,8 @@ const
   CharSetAll = [#0..#255];
   CharSetWhite = [#9, #10, #11, #12, #13, #32];
   CharSetQuote = [CharQuoteSingle, CharQuoteDouble];
-  CharSetEof = [CharNull];
-  CharSetEol = CharSetEof + [#10, #13];
+  CharSetNull = [CharNull];
+  CharSetLineEnding = CharSetNull + [#10, #13];
   CharSetUpper = ['A'..'Z'];
   CharSetLower = ['a'..'z'];
   CharSetHex = ['a'..'f', 'A'..'F'];

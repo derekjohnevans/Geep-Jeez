@@ -68,7 +68,7 @@ uses UJeezOptions;
 
 procedure TJeezProperties.FormCreate(ASender: TObject);
 begin
-  TJes2CppPlatform.ScrollingWinControlPrepare(Self);
+  NsPlatform.ScrollingWinControlPrepare(Self);
   PageControl.PageIndex := 0;
 end;
 

@@ -58,7 +58,7 @@ const
   GsCppCommentHead = CharSlashForward + CharAsterisk;
   GsCppCommentLine = CharSlashForward + CharSlashForward;
   GsCppCommentSpace = GsCppCommentLine + CharSpace;
-  GsCppEqu = CharSpace + CharEqualSign + CharSpace;
+  GsCppAssign = CharSpace + CharEqualSign + CharSpace;
   GsCppFmod = 'fmod';
   GsCppFunct1 = '%s()';
   GsCppFunct2 = '%s(%s)';
@@ -75,7 +75,7 @@ const
   GsCppFloat = 'float';
   GsCppDouble = 'double';
   GsCppStatic = 'static';
-  GsCppNull = 'NULL';
+  GsCppNullPtr = 'nullptr';
   GsCppEelF = 'EEL_F';
   GsCppNop = 'M_NOP';
   GsCppZero = 'M_ZERO';
@@ -90,9 +90,7 @@ const
   GsMarkerHeadFile = GsMarkerHead + 'file[';
   GsMarkerHeadLine = GsMarkerHead + 'line[';
 
-function CppEncodeEelF(const AIdent: TIdentString; const AIsRef: Boolean): String;
-
-function CppEncodeString(const AString: String): String;
+function CppEncodeString(const AString: String; const ACharQuote: Char = CharQuoteDouble): String;
 function CppDecodeString(const AString: String): String;
 
 function CppEncodeFloat(const AExtended: Extended): String; overload;
@@ -104,29 +102,39 @@ function CppIsHashString(const AString: String): Boolean;
 
 implementation
 
-function CppEncodeEelF(const AIdent: TIdentString; const AIsRef: Boolean): String;
-begin
-  if AIsRef then
-  begin
-    Result := GsCppEelF + CharAmpersand + CharSpace + AIdent;
-  end else begin
-    Result := GsCppEelF + CharSpace + AIdent;
-  end;
-end;
+function CppEncodeString(const AString: String; const ACharQuote: Char): String;
 
-function CppEncodeString(const AString: String): String;
+  procedure Encode(const ASrc, ADst: Char);
+  begin
+    Result := ReplaceStr(Result, ASrc, CharSlashBackward + ADst);
+  end;
+
 begin
   Result := AString;
-  Result := ReplaceStr(Result, CharSlashBackward, CharSlashBackward + CharSlashBackward);
-  Result := ReplaceStr(Result, CharQuoteDouble, CharSlashBackward + CharQuoteDouble);
-  Result := CharQuoteDouble + Result + CharQuoteDouble;
+  Encode(CharSlashBackward, CharSlashBackward);
+  Encode(CharQuoteDouble, CharQuoteDouble);
+  Encode(CharQuoteSingle, CharQuoteSingle);
+  Encode(CharLF, 'n');
+  Encode(CharCR, 'r');
+  Encode(CharTab, 't');
+  Result := ACharQuote + Result + ACharQuote;
 end;
 
 function CppDecodeString(const AString: String): String;
+
+  procedure Decode(const ASrc, ADst: Char);
+  begin
+    Result := ReplaceStr(Result, CharSlashBackward + ASrc, ADst);
+  end;
+
 begin
   Result := Copy(AString, 2, Length(AString) - 2);
-  Result := ReplaceStr(Result, CharSlashBackward + CharQuoteDouble, CharQuoteDouble);
-  Result := ReplaceStr(Result, CharSlashBackward + CharSlashBackward, CharSlashBackward);
+  Decode(CharQuoteDouble, CharQuoteDouble);
+  Decode(CharQuoteSingle, CharQuoteSingle);
+  Decode('n', CharLF);
+  Decode('r', CharCR);
+  Decode('t', CharTab);
+  Decode(CharSlashBackward, CharSlashBackward);
 end;
 
 function CppEncodeFloat(const AExtended: Extended): String;

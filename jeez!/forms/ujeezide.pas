@@ -79,7 +79,6 @@ type
     MenuToolsSep4: TMenuItem;
     MenuRecentFile: TMenuItem;
     MenuToolsOpenCppOutputFile: TMenuItem;
-    MenuToolsEditSliders: TMenuItem;
     MenuFileOpenReaper: TMenuItem;
     MenuToolsConvertEffectToImportModule: TMenuItem;
     MenuPopupSep2: TMenuItem;
@@ -131,6 +130,7 @@ type
     procedure FormCloseQuery(ASender: TObject; var ACanClose: Boolean);
     procedure FormCreate(ASender: TObject);
     procedure FormShow(ASender: TObject);
+    procedure MenuEditClick(Sender: TObject);
     procedure MenuEditCopyClick(ASender: TObject);
     procedure MenuEditCutClick(ASender: TObject);
     procedure MenuEditFindClick(ASender: TObject);
@@ -151,19 +151,18 @@ type
     procedure MenuFileSaveAsClick(ASender: TObject);
     procedure MenuFileSaveClick(ASender: TObject);
     procedure MenuHelpAboutJeezClick(ASender: TObject);
-    procedure MenuHelpFatcowOnlineClick(Sender: TObject);
+    procedure MenuHelpFatcowOnlineClick(ASender: TObject);
     procedure MenuHelpGotoJeezOnlineClick(ASender: TObject);
     procedure MenuFileOpenReaperClick(ASender: TObject);
-    procedure MenuHelpReaperOnlineClick(Sender: TObject);
-    procedure MenuHelpJsFxReferenceOnlineClick(Sender: TObject);
-    procedure MenuHelpSaviHostClick(Sender: TObject);
+    procedure MenuHelpReaperOnlineClick(ASender: TObject);
+    procedure MenuHelpJsFxReferenceOnlineClick(ASender: TObject);
+    procedure MenuHelpSaviHostClick(ASender: TObject);
     procedure MenuToolsOpenPluginInHostClick(ASender: TObject);
     procedure MenuPopupOpenContainingFolderClick(ASender: TObject);
     procedure MenuRecentFilesPopup(ASender: TObject);
     procedure MenuToolsBuildAndInstallPluginClick(ASender: TObject);
     procedure MenuToolsBuildPluginClick(ASender: TObject);
     procedure MenuToolsClick(ASender: TObject);
-    procedure MenuToolsEditSlidersClick(ASender: TObject);
     procedure MenuToolsConvertEffectToImportModuleClick(ASender: TObject);
     procedure MenuToolsOpenCppOutputFileClick(ASender: TObject);
     procedure MenuToolsShowOutputFolderClick(ASender: TObject);
@@ -173,7 +172,10 @@ type
     procedure PageControlMouseDown(ASender: TObject; AMouseButton: TMouseButton; AShiftState: TShiftState; AX, AY: Integer);
     procedure MenuPageControlPopup(ASender: TObject);
   strict private
-    procedure DoTabSheetShow(ASender: TObject);
+    FIsFindDialogOpen: Boolean;
+  strict private
+    procedure DoOnTabSheetShow(ASender: TObject);
+    procedure DoOnPaintGradientFill(ASender: TObject);
   public
     procedure UpdateColors;
     procedure UpdateTabSheet(const ATabSheet: TTabSheet);
@@ -196,7 +198,7 @@ implementation
 
 {$R *.lfm}
 
-uses UJeezBuild, UJeezData, UJeezGuiEditor, UJeezOptions;
+uses UJeezBuild, UJeezData, UJeezOptions;
 
 procedure PlatformLoadFromFile(const AFileName: TFileName);
 begin
@@ -205,8 +207,8 @@ end;
 
 procedure TJeezIde.FormCreate(ASender: TObject);
 begin
-  TJes2CppPlatform.SingleInstanceInit(Handle, GsJeezTitle, PlatformLoadFromFile);
-  TJes2CppPlatform.ScrollingWinControlPrepare(Self);
+  NsPlatform.SingleInstanceInit(Handle, GsJeezTitle, PlatformLoadFromFile);
+  NsPlatform.ScrollingWinControlPrepare(Self);
   // We must set the default size here so form centering is correct.
   Width := GiFormWidth;
   Height := GiFormHeight;
@@ -232,6 +234,7 @@ begin
 {$ERROR}
 {$ENDIF}
 
+  ToolBar.OnPaint := DoOnPaintGradientFill;
   for LIndex := IndexFirst(ToolBar) to IndexLast(ToolBar) do
   begin
     ToolBar.Buttons[LIndex].Caption := CharSpace + Trim(ToolBar.Buttons[LIndex].Caption) + CharSpace;
@@ -264,6 +267,20 @@ begin
   end;
 end;
 
+procedure TJeezIde.MenuEditClick(Sender: TObject);
+var
+  LSynEdit: TSynEdit;
+begin
+  LSynEdit := GetActiveEditor.SynEdit;
+  MenuEditUndo.Enabled := not FIsFindDialogOpen and LSynEdit.CanUndo;
+  MenuEditRedo.Enabled := not FIsFindDialogOpen and LSynEdit.CanRedo;
+  MenuEditCut.Enabled := not FIsFindDialogOpen and LSynEdit.SelAvail;
+  MenuEditCopy.Enabled := not FIsFindDialogOpen and LSynEdit.SelAvail;
+  MenuEditPaste.Enabled := not FIsFindDialogOpen and LSynEdit.CanPaste;
+  MenuEditDelete.Enabled := not FIsFindDialogOpen and LSynEdit.SelAvail;
+  MenuEditSelectAll.Enabled := not FIsFindDialogOpen;
+end;
+
 procedure TJeezIde.ShowPopupNotifier(const ATitle, AText: String);
 begin
   PopupNotifier.Title := ATitle;
@@ -280,7 +297,7 @@ end;
 procedure TJeezIde.ApplicationPropertiesException(ASender: TObject; AException: Exception);
 begin
   try
-    LoadFromFile(J2C_ExtractFileName(AException.Message), J2C_ExtractFileLine(AException.Message));
+    LoadFromFile(J2C_ExtractFileSource(AException.Message), J2C_ExtractFileCaretY(AException.Message));
   except
   end;
   MessageDlg(AException.Message, mtInformation, [mbOK], M_ZERO);
@@ -297,26 +314,16 @@ begin
   end;
 end;
 
-procedure TJeezIde.FindDialogClose(ASender: TObject);
-begin
-  MenuEditUndo.Enabled := True;
-  MenuEditRedo.Enabled := True;
-  MenuEditCut.Enabled := True;
-  MenuEditCopy.Enabled := True;
-  MenuEditPaste.Enabled := True;
-  MenuEditDelete.Enabled := True;
-  MenuEditSelectAll.Enabled := True;
-end;
-
 procedure TJeezIde.FindDialogShow(ASender: TObject);
 begin
-  MenuEditUndo.Enabled := False;
-  MenuEditRedo.Enabled := False;
-  MenuEditCut.Enabled := False;
-  MenuEditCopy.Enabled := False;
-  MenuEditPaste.Enabled := False;
-  MenuEditDelete.Enabled := False;
-  MenuEditSelectAll.Enabled := False;
+  FIsFindDialogOpen := True;
+  MenuEdit.Click;
+end;
+
+procedure TJeezIde.FindDialogClose(ASender: TObject);
+begin
+  FIsFindDialogOpen := False;
+  MenuEdit.Click;
 end;
 
 procedure TJeezIde.FormCloseQuery(ASender: TObject; var ACanClose: Boolean);
@@ -467,7 +474,7 @@ procedure TJeezIde.MenuFileExportCodeAsHtmlClick(ASender: TObject);
 begin
   if JeezData.SaveDialogHtml.Execute then
   begin
-    TJeezSynEdit.SynEditExport(GetActiveEditor.SynEdit, GetActiveEditor.SynEdit.Lines,
+    NsSynEdit.ExportHtml(GetActiveEditor.SynEdit, GetActiveEditor.SynEdit.Lines,
       JeezData.SaveDialogHtml.Filename);
   end;
 end;
@@ -516,34 +523,34 @@ begin
     LineEnding + LineEnding + GsJes2CppLicense + LineEnding + LineEnding + GsJes2CppWebsite);
 end;
 
-procedure TJeezIde.MenuHelpFatcowOnlineClick(Sender: TObject);
+procedure TJeezIde.MenuHelpFatcowOnlineClick(ASender: TObject);
 begin
-  OpenUrl(TJes2CppUrls.FatCow);
+  OpenUrl(NSUrls.FatCow);
 end;
 
-procedure TJeezIde.MenuHelpReaperOnlineClick(Sender: TObject);
+procedure TJeezIde.MenuHelpReaperOnlineClick(ASender: TObject);
 begin
-  OpenUrl(TJes2CppUrls.REAPER);
+  OpenUrl(NSUrls.REAPER);
 end;
 
-procedure TJeezIde.MenuHelpJsFxReferenceOnlineClick(Sender: TObject);
+procedure TJeezIde.MenuHelpJsFxReferenceOnlineClick(ASender: TObject);
 begin
-  OpenUrl(TJes2CppUrls.JSFXReference);
+  OpenUrl(NSUrls.JSFXReference);
 end;
 
-procedure TJeezIde.MenuHelpSaviHostClick(Sender: TObject);
+procedure TJeezIde.MenuHelpSaviHostClick(ASender: TObject);
 begin
-  OpenUrl(TJes2CppUrls.SAVIHost);
+  OpenUrl(NSUrls.SAVIHost);
 end;
 
 procedure TJeezIde.MenuHelpGotoJeezOnlineClick(ASender: TObject);
 begin
-  OpenUrl(TJes2CppUrls.GeepJeez);
+  OpenUrl(NSUrls.GeepJeez);
 end;
 
 procedure TJeezIde.MenuFileOpenReaperClick(ASender: TObject);
 begin
-  JeezData.OpenDialog.InitialDir := TJes2CppFileNames.PathToReaperEffects;
+  JeezData.OpenDialog.InitialDir := NSFileNames.PathToReaperEffects;
   JeezData.OpenDialog.FileName := EmptyStr;
   LoadFromFile;
 end;
@@ -606,10 +613,18 @@ begin
   StatusBar.Panels[2].Text := QuotedStr(LFileName);
 end;
 
-procedure TJeezIde.DoTabSheetShow(ASender: TObject);
+procedure TJeezIde.DoOnTabSheetShow(ASender: TObject);
 begin
   UpdateTabSheet(ASender as TTabSheet);
   HidePopupNotifier;
+end;
+
+procedure TJeezIde.DoOnPaintGradientFill(ASender: TObject);
+begin
+  with ASender as TCustomControl do
+  begin
+    Canvas.GradientFill(ClientRect, clBtnHighLight, clBtnShadow, gdVertical);
+  end;
 end;
 
 function TJeezIde.GetEditor(const AIndex: Integer): TJeezEditor;
@@ -628,7 +643,7 @@ var
   LTabSheet: TTabSheet;
 begin
   LTabSheet := PageControl.AddTabSheet;
-  LTabSheet.OnShow := DoTabSheetShow;
+  LTabSheet.OnShow := DoOnTabSheetShow;
   LTabSheet.BorderSpacing.Left := 0;
   LTabSheet.BorderSpacing.Right := 2;
   LTabSheet.BorderSpacing.Top := 2;
@@ -667,10 +682,6 @@ begin
     MenuFileNew.Click;
     Result := GetActiveEditor;
     Result.LoadFromFile(AFileName);
-    if not SameText(ExtractFileExt(AFileName), GsFileExtJsFxInc) then
-    begin
-      JeezOptions.AddRecentFile(AFileName);
-    end;
   end;
 end;
 
@@ -695,7 +706,7 @@ end;
 
 procedure TJeezIde.MenuToolsOpenCppOutputFileClick(ASender: TObject);
 begin
-  LoadFromFile(TJes2CppFileNames.FileNameOutputCpp);
+  LoadFromFile(NSFileNames.FileNameOutputCpp);
 end;
 
 procedure TJeezIde.MenuToolsOpenPluginInHostClick(ASender: TObject);
@@ -717,7 +728,7 @@ begin
   with TProcess.Create(Self) do
   begin
     try
-      Executable := TJes2CppFileNames.FileNameSaviHost(JeezOptions.GetTypeArchitecture = pa64bit);
+      Executable := NSFileNames.FileNameSaviHost(JeezOptions.GetTypeArchitecture = pa64bit);
       Parameters.Add(LFileName);
       Execute;
     finally
@@ -728,7 +739,7 @@ end;
 
 procedure TJeezIde.MenuToolsShowOutputFolderClick(ASender: TObject);
 begin
-  OpenUrl(TJes2CppFileNames.PathToTempBuild);
+  OpenUrl(NSFileNames.PathToTempBuild);
 end;
 
 procedure TJeezIde.MenuToolsOptionsClick(ASender: TObject);
@@ -787,12 +798,7 @@ end;
 
 procedure TJeezIde.MenuToolsClick(ASender: TObject);
 begin
-  MenuToolsOpenCppOutputFile.Enabled := FileExists(TJes2CppFileNames.FileNameOutputCpp);
-end;
-
-procedure TJeezIde.MenuToolsEditSlidersClick(ASender: TObject);
-begin
-  JeezGuiEditor.Execute(GetActiveEditor.SynEdit.Lines);
+  MenuToolsOpenCppOutputFile.Enabled := FileExists(NSFileNames.FileNameOutputCpp);
 end;
 
 procedure TJeezIde.MenuToolsConvertEffectToImportModuleClick(ASender: TObject);

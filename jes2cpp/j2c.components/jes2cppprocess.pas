@@ -102,7 +102,7 @@ end;
 
 procedure CJes2CppProcess.LogMessage(const AType, AMessage: String);
 begin
-  LogMessage(J2C_StringLogMessage(AType, AMessage));
+  LogMessage(NSLog.TypeMessage(AType, AMessage));
 end;
 
 procedure CJes2CppProcess.LogException(const AMessage: String);

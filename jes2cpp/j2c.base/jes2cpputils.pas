@@ -38,8 +38,8 @@ function J2C_CleanComment(const AString: String): String;
 
 function J2C_ExtractAttribute(const AString, AName: String): String;
 
-function J2C_ExtractFileName(const AString: String): TFileName;
-function J2C_ExtractFileLine(const AString: String): Integer;
+function J2C_ExtractFileSource(const AString: String): TFileName;
+function J2C_ExtractFileCaretY(const AString: String): Integer;
 
 procedure J2C_ExtractSection(const AName: String; const ADst, ASrc: TStrings; const AFileName: TFileName;
   const AInsertMarkers: Boolean; out ASectionHeader: String); overload;
@@ -96,7 +96,7 @@ begin
   end;
 end;
 
-function J2C_ExtractFileName(const AString: String): TFileName;
+function J2C_ExtractFileSource(const AString: String): TFileName;
 begin
   try
     Result := J2C_ExtractAttribute(AString, GsPath);
@@ -106,7 +106,7 @@ begin
   Result += J2C_ExtractAttribute(AString, GsFile);
 end;
 
-function J2C_ExtractFileLine(const AString: String): Integer;
+function J2C_ExtractFileCaretY(const AString: String): Integer;
 begin
   Result := StrToInt(J2C_ExtractAttribute(AString, GsLine));
 end;

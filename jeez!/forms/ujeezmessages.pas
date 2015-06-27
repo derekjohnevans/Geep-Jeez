@@ -31,8 +31,8 @@ unit UJeezMessages;
 interface
 
 uses
-  ComCtrls, Controls, FileUtil, Forms, JeezResources, JeezUtils, Jes2CppConstants, Jes2CppMessageLog,
-  SynEdit, SynHighlighterAny, SysUtils;
+  Classes, ComCtrls, Controls, FileUtil, Forms, JeezResources, JeezUtils, Jes2CppConstants, Jes2CppMessageLog,
+  Jes2CppUtils, SynEdit, SynHighlighterAny, SysUtils;
 
 const
 
@@ -51,6 +51,7 @@ type
     procedure ButtonHideMessagesClick(ASender: TObject);
     procedure ButtonShowMessagesClick(ASender: TObject);
     procedure FormShow(ASender: TObject);
+    procedure SynEditMouseDown(ASender: TObject; AButton: TMouseButton; AShift: TShiftState; AX, AY: Integer);
   private
   public
     procedure LogMessage(const AMessage: String); overload;
@@ -98,6 +99,14 @@ begin
   end;
 end;
 
+procedure TJeezMessages.SynEditMouseDown(ASender: TObject; AButton: TMouseButton; AShift: TShiftState; AX, AY: Integer);
+begin
+  try
+    JeezIde.LoadFromFile(J2C_ExtractFileSource(SynEdit.LineText), J2C_ExtractFileCaretY(SynEdit.LineText));
+  except
+  end;
+end;
+
 procedure TJeezMessages.LogMessage(const AMessage: String);
 begin
   while SynEdit.Lines.Count > 512 do
@@ -114,12 +123,12 @@ end;
 
 procedure TJeezMessages.LogFileName(const ATask, AFileName: String);
 begin
-  LogMessage(J2C_StringLogFileName(ATask, AFileName));
+  LogMessage(NSLog.TypeFileName(ATask, AFileName));
 end;
 
 procedure TJeezMessages.LogException(const AMessage: String);
 begin
-  LogMessage(J2C_StringLogMessage(SMsgTypeException, AMessage));
+  LogMessage(NSLog.TypeMessage(SMsgTypeException, AMessage));
   raise Exception.Create(AMessage);
 end;
 
@@ -174,4 +183,7 @@ begin
 end;
 
 end.
+
+
+
 

@@ -70,10 +70,10 @@ begin
     CharSpace + GsPlugin + CharSpace + CharOpeningParenthesis;
   case JeezOptions.GetTypeArchitecture of
     pa32bit: begin
-      FCaption += Gs32Bit + CharSpace + SMsgProcessor;
+      FCaption += Gs32Bit + CharSpace + SMsgArchitecture;
     end;
     pa64bit: begin
-      FCaption += Gs64Bit + CharSpace + SMsgProcessor;
+      FCaption += Gs64Bit + CharSpace + SMsgArchitecture;
     end;
   end;
   FCaption += CharSlashForward;
@@ -113,7 +113,7 @@ begin
   Refresh;
   Application.ProcessMessages;
   try
-    LTranspiler := Transpile.Create(nil, EmptyStr);
+    LTranspiler := Transpile.Create(Self);
     try
       LTranspiler.WarningsAsErrors := JeezOptions.EditWarningsAsErrors.Checked;
       LTranspiler.TranspileScript(JeezIde.GetActiveEditor.SynEdit.Lines, JeezIde.GetActiveEditor.Filename,

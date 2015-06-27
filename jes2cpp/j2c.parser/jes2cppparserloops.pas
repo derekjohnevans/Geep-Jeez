@@ -31,7 +31,7 @@ unit Jes2CppParserLoops;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppLoop, Jes2CppParserElements, Jes2CppTranslate, SysUtils;
+  Jes2CppConstants, Jes2CppEel, Jes2CppLoop, Jes2CppParserElements, Jes2CppTranslate, SysUtils;
 
 type
 
@@ -43,18 +43,18 @@ type
   protected
     function ParseWhile: String;
     function ParseLoop: String;
-  public
-    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
+  protected
+    procedure DoCreate; override;
   public
     property Loops: CJes2CppLoops read FLoops;
   end;
 
 implementation
 
-constructor CJes2CppParserLoops.Create(const AOwner: TComponent; const AName: TComponentName);
+procedure CJes2CppParserLoops.DoCreate;
 begin
-  inherited Create(AOwner, AName);
-  FLoops := CJes2CppLoops.Create(Self, EmptyStr);
+  inherited DoCreate;
+  FLoops := CJes2CppLoops.Create(Self);
 end;
 
 function CJes2CppParserLoops.ParseWhile: String;
@@ -70,7 +70,7 @@ begin
     LLoop.FPreCondition := LLoop.FBlock;
     LLoop.FBlock := ParseBlock;
   end;
-  Result := LLoop.CppCall;
+  Result := LLoop.EncodeCallCpp;
 end;
 
 function CJes2CppParserLoops.ParseLoopBlock: String;
@@ -98,7 +98,7 @@ begin
   ExpectToken(CharComma);
   LLoop.FBlock := ParseLoopBlock;
   ExpectToken(CharClosingParenthesis);
-  Result := LLoop.CppCall;
+  Result := LLoop.EncodeCallCpp;
 end;
 
 end.

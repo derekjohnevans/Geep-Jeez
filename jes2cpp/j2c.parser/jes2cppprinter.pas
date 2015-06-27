@@ -40,12 +40,12 @@ type
   strict private
     FIndent, FTabSize, FColWidth: Integer;
     FOutput, FBreaker: TStringList;
-  public
-    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
-    destructor Destroy; override;
+  protected
+    procedure DoCreate; override;
+    procedure DoDestroy; override;
   protected
     procedure Print(const AFormat: String; const AArgs: array of const; const AIsRequired: Boolean = True); overload;
-    procedure Print(const ALine: String; const AIsRequired: Boolean = True); overload;
+    procedure Print(const ALine: String; const AIsRequired: Boolean = True; const AWrapText: Boolean = True); overload;
     procedure PrintBlankLine;
     procedure PrintComment(const AComment: String);
     procedure PrintExternCFoot;
@@ -61,20 +61,20 @@ type
 
 implementation
 
-constructor CJes2CppPrinter.Create(const AOwner: TComponent; const AName: TComponentName);
+procedure CJes2CppPrinter.DoCreate;
 begin
-  inherited Create(AOwner, AName);
+  inherited DoCreate;
   FColWidth := GiColWidth;
   FTabSize := GiTabSize;
   FBreaker := TStringList.Create;
   FOutput := TStringList.Create;
 end;
 
-destructor CJes2CppPrinter.Destroy;
+procedure CJes2CppPrinter.DoDestroy;
 begin
   FreeAndNil(FOutput);
   FreeAndNil(FBreaker);
-  inherited Destroy;
+  inherited DoDestroy;
 end;
 
 procedure CJes2CppPrinter.PrintRaw(const ALine: String; const AIsRequired: Boolean);
@@ -99,11 +99,18 @@ begin
   end;
 end;
 
-procedure CJes2CppPrinter.Print(const ALine: String; const AIsRequired: Boolean);
+procedure CJes2CppPrinter.Print(const ALine: String; const AIsRequired: Boolean; const AWrapText: Boolean);
 var
   LIndex: Integer;
 begin
-  FBreaker.Text := WrapText(ALine, LineEnding, [CharSpace], FColWidth - FIndent);
+  // NOTE: Wrap text doesn't work for C++ strings, therefore, AWrapText should be false
+  // whenever we print C++ strings.
+  if AWrapText then
+  begin
+    FBreaker.Text := WrapText(ALine, LineEnding, [CharSpace], FColWidth - FIndent);
+  end else begin
+    FBreaker.Text := ALine;
+  end;
   for LIndex := IndexFirst(FBreaker) to IndexLast(FBreaker) do
   begin
     PrintRaw(Trim(FBreaker[LIndex]), AIsRequired);

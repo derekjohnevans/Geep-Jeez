@@ -31,7 +31,7 @@ unit Jes2Cpp;
 interface
 
 uses
-  Classes, Jes2CppCompiler, Jes2CppConstants, Jes2CppEel, Jes2CppFileNames, Jes2CppIterate, Jes2CppPrinter, Jes2CppTranslate,
+  Classes, Jes2CppCompiler, Jes2CppConstants, Jes2CppEel, Jes2CppFileNames, Jes2CppFunction, Jes2CppLoop, Jes2CppPrinter, Jes2CppTranslate,
   SysUtils;
 
 type
@@ -54,6 +54,8 @@ type
   public
     property IsNoOutput: Boolean read FIsNoOutput write FIsNoOutput;
   end;
+
+// Helper functions (Dont use)
 
 procedure Jes2CppTranspile(const AFileNameDst, AFileNameSrc: TFileName;
   const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String);
@@ -78,7 +80,8 @@ end;
 
 procedure CJes2Cpp.PrintScriptClass(const AFileName: TFileName);
 var
-  LIndex: Integer;
+  LLoop: CJes2CppLoop;
+  LFunction: CJes2CppFunction;
 begin
   if not FIsNoOutput then
   begin
@@ -87,6 +90,8 @@ begin
     Print(CharOpeningBrace);
     Print('public:');
   end;
+  WriteSliderSerializationCode;
+
   PrintParseSection(GsEelSectionInit, GsDoInit, Description.AtInit, AFileName);
   PrintParseSection(GsEelSectionSlider, GsDoSlider, Description.AtSlider, AFileName);
   PrintParseSection(GsEelSectionBlock, GsDoBlock, Description.AtBlock, AFileName);
@@ -96,40 +101,40 @@ begin
 
   if not FIsNoOutput then
   begin
-    if IndexCount(Variables) > M_ZERO then
+    if Variables.HasComponents then
     begin
       PrintTitle(SMsgDefineGlobalVariables);
-      Print(Variables.CppDefineVariables);
+      Print(Variables.EncodeDefineCpp);
       PrintBlankLine;
     end;
-    if IndexCount(Loops) > M_ZERO then
+    if Loops.HasComponents then
     begin
       PrintTitle(SMsgDefineInnerLoops);
-      for LIndex := IndexFirst(Loops) to IndexLast(Loops) do
+      for LLoop in Loops do
       begin
-        Print(Loops.GetLoop(LIndex).CppDefine);
+        Print(LLoop.EncodeDefineCpp);
       end;
     end;
     PrintTitle(SMsgDefineInternalFunctions);
-    for LIndex := IndexFirst(Functions) to IndexLast(Functions) do
+    for LFunction in Functions do
     begin
-      if Functions.GetFunction(LIndex).IsInternalAndUsed then
+      if LFunction.IsInternalAndUsed then
       begin
-        PrintTitle(Functions.GetFunction(LIndex).GetTitle);
-        Print(Functions.GetFunction(LIndex).CppDefine);
+        PrintTitle(LFunction.GetTitle);
+        Print(LFunction.EncodeDefineCpp);
       end;
     end;
 
     PrintMethodHead(GsDoOpen);
-    Print(Variables.CppClear);
-    Print(Description.CppSetFileNames);
-    Print(Variables.CppSetStringConstants);
+    Print(Variables.EncodeClearCpp);
+    Print(Description.EncodeFileNamesCpp);
+    Print(Variables.EncodeStringLiteralsCpp, True, False);
     PrintMethodFoot;
 
     Print(GsCppFunct1, [GsTJes2CppEffect]);
     Print(CharOpeningBrace);
     PrintTitle(SMsgEffectDescription);
-    Print(Description.CppSetDescription);
+    Print(Description.EncodeDescriptionCpp, True, False);
     PrintMethodFoot;
 
     Print(CharClosingBrace + CharSemiColon);
@@ -140,17 +145,17 @@ procedure CJes2Cpp.PrintAudioEffectCallBacks;
 
   procedure LPrintDefineLJes2Cpp;
   begin
-    Print('TJes2Cpp* LJes2Cpp = ((TJes2Cpp*)VeST_GetData(AVeST));');
+    Print(GsTJes2Cpp + '* LJes2Cpp = ((' + GsTJes2Cpp + '*)VeST_GetData(AVeST));');
   end;
 
   procedure LPrintJes2Cpp(const AFuncCall: String);
   begin
-    Print('((TJes2Cpp*)VeST_GetData(AVeST))->' + AFuncCall);
+    Print('((' + GsTJes2Cpp + '*)VeST_GetData(AVeST))->' + AFuncCall);
   end;
 
   procedure LPrintJes2CppReturn(const AFuncCall: String);
   begin
-    Print('return ((TJes2Cpp*)VeST_GetData(AVeST))->' + AFuncCall);
+    Print('return ((' + GsTJes2Cpp + '*)VeST_GetData(AVeST))->' + AFuncCall);
   end;
 
   procedure LPrintFunctionNotify(const AName: String);
@@ -179,6 +184,7 @@ begin
   Print('VeST_SetUniqueID(AVeST, LJes2Cpp->GetUniqueId());');
   Print('VeST_SetGraphicsSize(AVeST, %d, %d);', [Description.GfxWidth, Description.GfxHeight], Description.GfxEnabled);
   Print('VeST_SetIsSynth(AVeST, true);', Description.FIsSynth);
+  Print('VeST_ProgramsAreChunks(AVeST, true);');
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoDestroy(HVEST AVeST)');
   Print(CharOpeningBrace);
@@ -199,23 +205,23 @@ begin
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoMouseMoved(HVEST AVeST, double AX, double AY, int AButtons)');
   Print(CharOpeningBrace);
-  LPrintJes2Cpp('SetMouse(AX, AY, AButtons);');
+  LPrintJes2Cpp('DoMouseMoved(AX, AY, AButtons);');
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoMouseDown(HVEST AVeST, double AX, double AY, int AButtons)');
   Print(CharOpeningBrace);
-  Print('EffectDoMouseMoved(AVeST, AX, AY, AButtons);');
+  LPrintJes2Cpp('DoMouseDown(AX, AY, AButtons);');
   Print(CharClosingBrace);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoMouseUp(HVEST AVeST, double AX, double AY, int AButtons)');
   Print(CharOpeningBrace);
-  Print('EffectDoMouseMoved(AVeST, AX, AY, AButtons);');
+  LPrintJes2Cpp('DoMouseUp(AX, AY, AButtons);');
   Print(CharClosingBrace);
   Print('int VEST_WINAPI EffectDoGetChunk(HVEST AVeST, void** AData, bool AIsPreset)');
   Print(CharOpeningBrace);
-  Print('return 0;');
+  LPrintJes2CppReturn('DoGetChunk(AData, AIsPreset);');
   Print(CharClosingBrace);
   Print('int VEST_WINAPI EffectDoSetChunk(HVEST AVeST, void* AData, int ASize, bool AIsPreset)');
   Print(CharOpeningBrace);
-  Print('return 0;');
+  LPrintJes2CppReturn('DoSetChunk(AData, ASize, AIsPreset);');
   Print(CharClosingBrace);
   Print('int VEST_WINAPI EffectDoGetVendorVersion(HVEST AVeST)');
   Print(CharOpeningBrace);
@@ -358,8 +364,8 @@ begin
   Print('JES2CPP_EXPORT const LADSPA_Descriptor* ladspa_descriptor(unsigned long AIndex)');
   Print(CharOpeningBrace);
   Print('if (!AIndex)');
-  LPrintEntryPointBody('NULL', 'VeST_GetLADSPA');
-  Print('return NULL;');
+  LPrintEntryPointBody('nullptr', 'VeST_GetLADSPA');
+  Print('return nullptr;');
   Print(CharClosingBrace);
   PrintExternCFoot;
   print('#endif // VEST_LV1');
@@ -370,8 +376,8 @@ begin
   Print('JES2CPP_EXPORT const LV2_Descriptor* lv2_descriptor(uint32_t AIndex)');
   Print(CharOpeningBrace);
   Print('if (!AIndex)');
-  LPrintEntryPointBody('NULL', 'VeST_GetLADSPA');
-  Print('return NULL;');
+  LPrintEntryPointBody('nullptr', 'VeST_GetLADSPA');
+  Print('return nullptr;');
   Print(CharClosingBrace);
   PrintExternCFoot;
   print('#endif // VEST_LV2');
@@ -384,11 +390,13 @@ begin
   try
     Output.Clear;
 
+
+
     LogMessage(SMsgTypeParsing, SMsgDescription);
 
-    if not SameText(ExtractFileName(AFileNameSrc), ExtractFileName(TJes2CppFileNames.FileNameJes2CppJsFx)) then
+    if not SameText(ExtractFileName(AFileNameSrc), ExtractFileName(NSFileNames.FileNameJes2CppJsFx)) then
     begin
-      ImportFrom(TJes2CppFileNames.FileNameJes2CppJsFx);
+      ImportFrom(NSFileNames.FileNameJes2CppJsFx);
     end;
     ImportFrom(AScript, AFileNameSrc);
 
@@ -398,7 +406,7 @@ begin
     LogMessage(Format('%s=%s %s=%s %s=%s', [GsVendorString, QuotedStr(Description.VendorString), GsEffectName,
       QuotedStr(Description.EffectName), GsProductString, QuotedStr(Description.ProductString)]));
 
-    LogMessage(Format(SMsgNumberOfParametersFound1, [Description.ParameterCount]));
+    LogMessage(Format(SMsgNumberOfParametersFound1, [Description.Parameters.ComponentCount]));
 
     if not FIsNoOutput then
     begin
@@ -442,7 +450,7 @@ end;
 procedure Jes2CppTranspile(const AFileNameDst, AFileNameSrc: TFileName;
   const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String);
 begin
-  with CJes2Cpp.Create(nil, EmptyStr) do
+  with CJes2Cpp.Create(nil) do
   begin
     try
       TranspileScriptFromFile(AFileNameSrc, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId);
@@ -458,7 +466,7 @@ function Jes2CppTranspileCompile(const AFileName: TFileName;
 var
   LJes2Cpp: CJes2Cpp;
 begin
-  LJes2Cpp := CJes2Cpp.Create(nil, EmptyStr);
+  LJes2Cpp := CJes2Cpp.Create(nil);
   try
     LJes2Cpp.TranspileScriptFromFile(AFileName, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId);
     with CJes2CppCompiler.Create(nil) do

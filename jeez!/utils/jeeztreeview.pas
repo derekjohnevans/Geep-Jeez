@@ -35,10 +35,15 @@ uses
 
 const
 
-  GiImageIndexFunctions = 26;
-  GiImageIndexVariables = 27;
+  GiImageIndexFunctionsSystem = 43;
+  GiImageIndexFunctionsUser = 44;
+  GiImageIndexVariablesSystem = 45;
+  GiImageIndexVariablesUser = 46;
+  GiImageIndexString = 26;
   GiImageIndexRefInternal = 37;
   GiImageIndexRefExternal = 39;
+
+  GiImageIndexFunctions = [GiImageIndexFunctionsSystem, GiImageIndexFunctionsUser];
 
 type
 
@@ -48,23 +53,23 @@ type
 
 function J2C_StringRemoveCount(const AString: String): String;
 
-procedure J2C_TreeViewHandleKeyPress(const ATreeView: TTreeView; const AKey: Char);
-function J2C_TreeNodeIsReference(const ATreeNode: TTreeNode): Boolean;
-function J2C_TreeNodeGetText(const ATreeNode: TTreeNode; const AStripParams: Boolean = False): String;
-procedure J2C_TreeNodeUpdateCount(const ATreeNode: TTreeNode);
-
-function J2C_TreeNodeFind(const ATreeNode: TTreeNode; const AString: String; const AStripParams: Boolean = False): TTreeNode;
-function J2C_TreeNodesFind(const ATreeNodes: TTreeNodes; const AText: String; const AStripParams: Boolean = False): TTreeNode;
-
-function J2C_TreeNodeFindOrAdd(const ATreeNode: TTreeNode; const AText: String; const AStripParams: Boolean = False): TTreeNode;
-
-procedure J2C_TreeViewRootNodesClear(const ATreeView: TTreeView);
-procedure J2C_TreeViewRootNodesCollapse(const ATreeView: TTreeView);
-
-procedure J2C_TreeNodesMarkNonRootsForCutting(const ATreeNodes: TTreeNodes);
-procedure J2C_TreeNodesDeleteCuts(const ATreeNodes: TTreeNodes);
-
-procedure J2C_TreeNodeDraw(const ATreeNode: TTreeNode);
+type
+  NSJeezTreeView = object
+    class function TreeNodeSameText(const ATreeNode: TTreeNode; const AText: String; const AStripParams: Boolean): Boolean;
+    class function TreeNodeCount(const ATreeNode: TTreeNode): Integer;
+    class procedure TreeViewHandleKeyPress(const ATreeView: TTreeView; const AKey: Char);
+    class function TreeNodeIsReference(const ATreeNode: TTreeNode): Boolean;
+    class function TreeNodeGetText(const ATreeNode: TTreeNode; const AStripParams: Boolean = False): String;
+    class procedure TreeNodeUpdateCount(const ATreeNode: TTreeNode);
+    class function TreeNodeFind(const ATreeNode: TTreeNode; const AString: String; const AStripParams: Boolean = False): TTreeNode;
+    class function TreeNodesFind(const ATreeNodes: TTreeNodes; const AText: String; const AStripParams: Boolean = False): TTreeNode;
+    class function TreeNodeFindOrCreate(const ATreeNode: TTreeNode; const AText: String; const AStripParams: Boolean = False): TTreeNode;
+    class procedure TreeViewRootNodesClear(const ATreeView: TTreeView);
+    class procedure TreeViewRootNodesCollapse(const ATreeView: TTreeView);
+    class procedure TreeNodesMarkNonRootsForCutting(const ATreeNodes: TTreeNodes);
+    class procedure TreeNodesDeleteCuts(const ATreeNodes: TTreeNodes);
+    class procedure TreeNodeDraw(const ATreeNode: TTreeNode; const AColorFunction, AColorVariables, AColorIdentifiers, AColorSymbols: TColor);
+  end;
 
 implementation
 
@@ -84,7 +89,7 @@ begin
   Result := Copy(AString, 1, (Pos(CharOpeningParenthesis, AString) - 1) and MaxInt);
 end;
 
-procedure J2C_TreeViewHandleKeyPress(const ATreeView: TTreeView; const AKey: Char);
+class procedure NSJeezTreeView.TreeViewHandleKeyPress(const ATreeView: TTreeView; const AKey: Char);
 var
   LTreeNode: TTreeNode;
 begin
@@ -106,12 +111,12 @@ begin
   end;
 end;
 
-function J2C_TreeNodeIsReference(const ATreeNode: TTreeNode): Boolean;
+class function NSJeezTreeView.TreeNodeIsReference(const ATreeNode: TTreeNode): Boolean;
 begin
   Result := AnsiStartsStr(GsLine + CharEqualSign, ATreeNode.Text);
 end;
 
-function J2C_TreeNodeGetText(const ATreeNode: TTreeNode; const AStripParams: Boolean): String;
+class function NSJeezTreeView.TreeNodeGetText(const ATreeNode: TTreeNode; const AStripParams: Boolean): String;
 begin
   Result := J2C_StringRemoveCount(ATreeNode.Text);
   if AStripParams then
@@ -120,12 +125,12 @@ begin
   end;
 end;
 
-function J2C_TreeNodeSameText(const ATreeNode: TTreeNode; const AText: String; const AStripParams: Boolean): Boolean;
+class function NSJeezTreeView.TreeNodeSameText(const ATreeNode: TTreeNode; const AText: String; const AStripParams: Boolean): Boolean;
 begin
-  Result := SameText(J2C_TreeNodeGetText(ATreeNode, AStripParams), AText);
+  Result := SameText(TreeNodeGetText(ATreeNode, AStripParams), AText);
 end;
 
-function J2C_TreeNodeCount(const ATreeNode: TTreeNode): Integer;
+class function NSJeezTreeView.TreeNodeCount(const ATreeNode: TTreeNode): Integer;
 var
   LTreeNode: TTreeNode;
 begin
@@ -141,37 +146,38 @@ begin
   end;
 end;
 
-procedure J2C_TreeNodeUpdateCount(const ATreeNode: TTreeNode);
+class procedure NSJeezTreeView.TreeNodeUpdateCount(const ATreeNode: TTreeNode);
 begin
   if Assigned(ATreeNode) then
   begin
-    ATreeNode.Text := J2C_StringRemoveCount(ATreeNode.Text) + GsTreeNodeCountHead + IntToStr(J2C_TreeNodeCount(ATreeNode)) +
+    ATreeNode.Text := J2C_StringRemoveCount(ATreeNode.Text) + GsTreeNodeCountHead + IntToStr(TreeNodeCount(ATreeNode)) +
       GsTreeNodeCountFoot;
-    J2C_TreeNodeUpdateCount(ATreeNode.Parent);
+    TreeNodeUpdateCount(ATreeNode.Parent);
   end;
 end;
 
-function J2C_TreeNodeFind(const ATreeNode: TTreeNode; const AString: String; const AStripParams: Boolean): TTreeNode;
+class function NSJeezTreeView.TreeNodeFind(const ATreeNode: TTreeNode; const AString: String; const AStripParams: Boolean): TTreeNode;
 begin
   Result := ATreeNode.GetFirstChild;
-  while Assigned(Result) and not J2C_TreeNodeSameText(Result, AString, AStripParams) do
+  while Assigned(Result) and not TreeNodeSameText(Result, AString, AStripParams) do
   begin
     Result := Result.GetNextSibling;
   end;
 end;
 
-function J2C_TreeNodesFind(const ATreeNodes: TTreeNodes; const AText: String; const AStripParams: Boolean): TTreeNode;
+class function NSJeezTreeView.TreeNodesFind(const ATreeNodes: TTreeNodes; const AText: String; const AStripParams: Boolean): TTreeNode;
 begin
   Result := ATreeNodes.GetFirstNode;
-  while Assigned(Result) and not J2C_TreeNodeSameText(Result, AText, AStripParams) do
+  while Assigned(Result) and not TreeNodeSameText(Result, AText, AStripParams) do
   begin
     Result := Result.GetNext;
   end;
 end;
 
-function J2C_TreeNodeFindOrAdd(const ATreeNode: TTreeNode; const AText: String; const AStripParams: Boolean): TTreeNode;
+class function NSJeezTreeView.TreeNodeFindOrCreate(const ATreeNode: TTreeNode; const AText: String;
+  const AStripParams: Boolean): TTreeNode;
 begin
-  Result := J2C_TreeNodeFind(ATreeNode, AText, AStripParams);
+  Result := TreeNodeFind(ATreeNode, AText, AStripParams);
   if not Assigned(Result) then
   begin
     Result := ATreeNode.TreeView.Items.AddChild(ATreeNode, AText);
@@ -179,7 +185,7 @@ begin
   Result.Cut := False;
 end;
 
-procedure J2C_TreeViewRootNodesClear(const ATreeView: TTreeView);
+class procedure NSJeezTreeView.TreeViewRootNodesClear(const ATreeView: TTreeView);
 var
   LTreeNode: TTreeNode;
 begin
@@ -193,7 +199,7 @@ begin
   end;
 end;
 
-procedure J2C_TreeViewRootNodesCollapse(const ATreeView: TTreeView);
+class procedure NSJeezTreeView.TreeViewRootNodesCollapse(const ATreeView: TTreeView);
 var
   LTreeNode: TTreeNode;
 begin
@@ -207,7 +213,7 @@ begin
   end;
 end;
 
-procedure J2C_TreeNodesMarkNonRootsForCutting(const ATreeNodes: TTreeNodes);
+class procedure NSJeezTreeView.TreeNodesMarkNonRootsForCutting(const ATreeNodes: TTreeNodes);
 var
   LIndex: Integer;
 begin
@@ -220,7 +226,7 @@ begin
   end;
 end;
 
-procedure J2C_TreeNodesDeleteCuts(const ATreeNodes: TTreeNodes);
+class procedure NSJeezTreeView.TreeNodesDeleteCuts(const ATreeNodes: TTreeNodes);
 var
   LIndex: Integer;
 begin
@@ -237,9 +243,11 @@ begin
   end;
 end;
 
-procedure J2C_TreeNodeDraw(const ATreeNode: TTreeNode);
+class procedure NSJeezTreeView.TreeNodeDraw(const ATreeNode: TTreeNode;
+  const AColorFunction, AColorVariables, AColorIdentifiers, AColorSymbols: TColor);
+
 var
-  LImageIndex: Integer;
+  LImageIndex, LTop: Integer;
   LText: String;
   LRect: TRect;
   LCanvas: TCanvas;
@@ -250,7 +258,7 @@ begin
   LTreeView := ATreeNode.TreeView as TTreeView;
   LImageList := LTreeView.Images;
 
-  J2C_DrawItemBackground(LCanvas, ATreeNode.DisplayRect(False), ATreeNode.Selected);
+  NSJeezCanvas.DrawItemBackground(LCanvas, ATreeNode.DisplayRect(False), ATreeNode.Selected);
 
   LRect := ATreeNode.DisplayRect(True);
   if ATreeNode.Level <> 1 then
@@ -274,27 +282,39 @@ begin
     Inc(LRect.Left, LImageList.Width + 2);
   end;
   LText := ATreeNode.Text;
+  LTop := (LRect.Top + LRect.Bottom - LCanvas.TextHeight(LText)) div 2;
   if ATreeNode.Level = 0 then
   begin
-    LCanvas.Font.Color := JeezOptions.ColorSymbols.Selected;
+    LCanvas.Font.Color := AColorSymbols;
   end else if ATreeNode.Level = 1 then
   begin
     if ATreeNode.Count > 1 then
     begin
-      if ATreeNode.Parent.ImageIndex = GiImageIndexFunctions then
+      if ATreeNode.Parent.ImageIndex in GiImageIndexFunctions then
       begin
-        LCanvas.Font.Color := JeezOptions.ColorFunctions.Selected;
+        if ATreeNode.Parent.ImageIndex = GiImageIndexFunctionsSystem then
+        begin
+          NSJeezCanvas.DrawFunctionDefine(LCanvas, LRect.Left, LTop, LText, AColorFunction, AColorIdentifiers, AColorSymbols);
+        end else begin
+          NSJeezCanvas.DrawFunctionDefine(LCanvas, LRect.Left, LTop, LText, AColorIdentifiers, AColorIdentifiers, AColorSymbols);
+        end;
+        Exit;
       end else begin
-        LCanvas.Font.Color := JeezOptions.ColorIdentifiers.Selected;
+        if ATreeNode.Parent.ImageIndex = GiImageIndexVariablesSystem then
+        begin
+          LCanvas.Font.Color := AColorVariables;
+        end else begin
+          LCanvas.Font.Color := AColorIdentifiers;
+        end;
       end;
     end else begin
       LCanvas.Font.Color := JeezOptions.ColorComments.Selected;
     end;
-  end else if J2C_TreeNodeIsReference(ATreeNode) then
+  end else if TreeNodeIsReference(ATreeNode) then
   begin
     LCanvas.Font.Color := JeezOptions.ColorStrings.Selected;
   end;
-  LCanvas.TextRect(LRect, LRect.Left, (LRect.Top + LRect.Bottom - LCanvas.TextHeight(LText)) div 2, LText);
+  LCanvas.TextRect(LRect, LRect.Left, LTop, LText);
 end;
 
 end.

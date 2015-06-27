@@ -53,10 +53,10 @@ const
 const
 
   GsEelSpaceSWIPE = 'SWIPE' + CharDot;
+  GsEelSpaceJes2Cpp = 'jes2cpp' + CharDot;
   GsEelSpaceThis = GsEelThis + CharDot;
-  GsEelSpaceGlobal = GsEelGlobal + CharDot;
-  GsEelSpaceConstString = GsEelSpaceGlobal + 'ConstString' + CharDot;
-  GsEelSpaceTempString = GsEelSpaceGlobal + 'TempString' + CharDot;
+  GsEelSpaceStringLiteral = GsEelSpaceJes2Cpp + 'String' + CharDot + 'Literal' + CharDot;
+  GsEelSpaceStringTemp = GsEelSpaceJes2Cpp + 'String' + CharDot + 'Temp' + CharDot;
 
 const
 
@@ -81,8 +81,8 @@ const
 
 var
 
-  GaEelKeywords: array[0..9] of String = (GsEelLoop, GsEelWhile, GsEelFunction, GsEelLocal, GsEelStatic, GsEelInstance,
-    GsEelGlobal, GsEelGlobals, GsEelThis, GsEelExtern);
+  GaEelKeywords: array[0..9] of String = (GsEelLoop, GsEelWhile, GsEelFunction, GsEelLocal, GsEelStatic,
+    GsEelInstance, GsEelGlobal, GsEelGlobals, GsEelThis, GsEelExtern);
   GaEelSpecial: array[0..19] of String = (GsEelFalse, GsEelTrue, GsEffectName, GsVendorString, GsVendorVersion,
     GsUniqueId, GsInstallPath, GsEelReturn, GsEelDescDesc, GsEelDescImport, GsEelDescOptions, GsEelSectionInit,
     GsEelSectionBlock, GsEelSectionSample, GsEelSectionSlider, GsEelSectionSerialize, GsEelSectionGfx,
@@ -125,7 +125,6 @@ const
 
   GsFnAnd = 'AND';
   GsFnAor = 'OR';
-  GsFnChr = 'CHR';
   GsFnEqu = 'EQU';
   GsFnIf = 'IF';
   GsFnMem = 'MEM';

@@ -4,13 +4,13 @@
     <PathDelim Value="\"/>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="276">
+    <Units Count="304">
       <Unit0>
         <Filename Value="project.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="5"/>
-        <CursorPos Y="37"/>
+        <TopLine Value="42"/>
+        <CursorPos Y="74"/>
         <UsageCount Value="200"/>
       </Unit0>
       <Unit1>
@@ -19,9 +19,10 @@
         <ComponentName Value="JeezEditor"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Frame"/>
+        <UnitName Value="UJeezEditor"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="394"/>
-        <CursorPos X="76" Y="416"/>
+        <TopLine Value="410"/>
+        <CursorPos Y="426"/>
         <UsageCount Value="200"/>
       </Unit1>
       <Unit2>
@@ -30,83 +31,87 @@
         <ComponentName Value="JeezOptions"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <UnitName Value="UJeezOptions"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="123"/>
-        <CursorPos X="20" Y="139"/>
+        <TopLine Value="203"/>
+        <CursorPos X="38" Y="215"/>
         <UsageCount Value="200"/>
       </Unit2>
       <Unit3>
         <Filename Value="utils\jeezutils.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="35"/>
-        <CursorPos X="13" Y="51"/>
+        <TopLine Value="79"/>
+        <CursorPos X="69" Y="99"/>
         <UsageCount Value="200"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppconstants.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Jes2CppConstants"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="37"/>
-        <CursorPos X="26" Y="47"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="50"/>
+        <CursorPos X="25" Y="63"/>
         <UsageCount Value="200"/>
-        <Loaded Value="True"/>
       </Unit4>
       <Unit5>
         <Filename Value="..\jes2cpp\j2c.base\jes2cpputils.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="37"/>
+        <TopLine Value="25"/>
+        <CursorPos X="25" Y="41"/>
         <UsageCount Value="200"/>
       </Unit5>
       <Unit6>
         <Filename Value="..\jes2cpp\jes2cpp.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2Cpp"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="26"/>
-        <CursorPos X="38" Y="29"/>
+        <TopLine Value="81"/>
+        <CursorPos X="3" Y="94"/>
         <UsageCount Value="200"/>
       </Unit6>
       <Unit7>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppdescription.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppDescription"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="19"/>
-        <CursorPos X="33" Y="35"/>
+        <TopLine Value="100"/>
+        <CursorPos X="67" Y="116"/>
         <UsageCount Value="200"/>
       </Unit7>
       <Unit8>
-        <Filename Value="..\jes2cpp\j2c.base\jes2cppeat.pas"/>
+        <Filename Value="..\jes2cpp\j2c.base\jes2cppparsersimple.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppParserSimple"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="29"/>
-        <CursorPos X="10" Y="34"/>
+        <TopLine Value="100"/>
+        <CursorPos X="3" Y="38"/>
         <UsageCount Value="200"/>
       </Unit8>
       <Unit9>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppfunction.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppFunction"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="51"/>
-        <CursorPos X="51" Y="74"/>
+        <TopLine Value="99"/>
+        <CursorPos X="52" Y="111"/>
         <UsageCount Value="200"/>
       </Unit9>
       <Unit10>
         <Filename Value="..\jes2cpp\j2c.components\jes2cpploop.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="88"/>
-        <CursorPos X="17" Y="117"/>
+        <TopLine Value="31"/>
+        <CursorPos X="49" Y="43"/>
         <UsageCount Value="200"/>
       </Unit10>
       <Unit11>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppidentifier.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppIdentifier"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="63"/>
-        <CursorPos X="58" Y="80"/>
+        <TopLine Value="47"/>
+        <CursorPos X="14" Y="63"/>
         <UsageCount Value="201"/>
       </Unit11>
       <Unit12>
@@ -116,105 +121,115 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="136"/>
-        <CursorPos X="24" Y="160"/>
+        <TopLine Value="57"/>
+        <CursorPos X="49" Y="73"/>
         <UsageCount Value="200"/>
       </Unit12>
       <Unit13>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppreference.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppReference"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="62"/>
-        <CursorPos X="52" Y="84"/>
+        <TopLine Value="78"/>
+        <CursorPos X="59" Y="86"/>
         <UsageCount Value="200"/>
       </Unit13>
       <Unit14>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppvariable.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppVariable"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="109"/>
-        <CursorPos X="37" Y="133"/>
+        <TopLine Value="67"/>
+        <CursorPos X="14" Y="79"/>
         <UsageCount Value="200"/>
       </Unit14>
       <Unit15>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppsections.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppSections"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="55"/>
-        <CursorPos X="91" Y="63"/>
+        <TopLine Value="37"/>
+        <CursorPos X="9" Y="45"/>
         <UsageCount Value="200"/>
       </Unit15>
       <Unit16>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppplatform.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="168"/>
-        <CursorPos X="10" Y="132"/>
+        <TopLine Value="166"/>
+        <CursorPos X="136" Y="154"/>
         <UsageCount Value="200"/>
       </Unit16>
       <Unit17>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppidentstring.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="182"/>
-        <CursorPos X="5" Y="212"/>
+        <TopLine Value="82"/>
+        <CursorPos X="27" Y="97"/>
         <UsageCount Value="200"/>
       </Unit17>
       <Unit18>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppmessagelog.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppMessageLog"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="22"/>
-        <CursorPos X="3" Y="38"/>
+        <TopLine Value="158"/>
+        <CursorPos Y="186"/>
         <UsageCount Value="200"/>
       </Unit18>
       <Unit19>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppimporter.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppImporter"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="18"/>
-        <CursorPos X="10" Y="34"/>
-        <UsageCount Value="141"/>
+        <TopLine Value="104"/>
+        <CursorPos X="48" Y="132"/>
+        <UsageCount Value="200"/>
       </Unit19>
       <Unit20>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppparseroperator.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppParserOperator"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="24"/>
-        <CursorPos X="52" Y="40"/>
-        <UsageCount Value="140"/>
+        <TopLine Value="278"/>
+        <CursorPos X="40" Y="40"/>
+        <UsageCount Value="200"/>
       </Unit20>
       <Unit21>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppparserfunctions.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppParserFunctions"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="215"/>
-        <CursorPos X="46" Y="232"/>
-        <UsageCount Value="140"/>
+        <TopLine Value="95"/>
+        <CursorPos X="82" Y="111"/>
+        <UsageCount Value="200"/>
       </Unit21>
       <Unit22>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppparserexpression.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppParserExpression"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="22"/>
         <CursorPos X="44" Y="38"/>
-        <UsageCount Value="140"/>
+        <UsageCount Value="200"/>
       </Unit22>
       <Unit23>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppparserelements.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppParserElements"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="145"/>
-        <CursorPos X="50" Y="161"/>
-        <UsageCount Value="140"/>
+        <TopLine Value="100"/>
+        <CursorPos X="45" Y="121"/>
+        <UsageCount Value="200"/>
       </Unit23>
       <Unit24>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppparser.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppParser"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="28"/>
-        <CursorPos X="38" Y="38"/>
-        <UsageCount Value="140"/>
+        <TopLine Value="21"/>
+        <CursorPos X="34" Y="38"/>
+        <UsageCount Value="200"/>
       </Unit24>
       <Unit25>
         <Filename Value="forms\ujeezdata.pas"/>
@@ -223,8 +238,8 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="63"/>
-        <CursorPos X="20" Y="87"/>
+        <TopLine Value="28"/>
+        <CursorPos X="13" Y="40"/>
         <UsageCount Value="200"/>
       </Unit25>
       <Unit26>
@@ -234,8 +249,8 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="55"/>
-        <CursorPos X="20" Y="71"/>
+        <TopLine Value="37"/>
+        <CursorPos X="41" Y="49"/>
         <UsageCount Value="202"/>
       </Unit26>
       <Unit27>
@@ -250,192 +265,236 @@
         <UsageCount Value="200"/>
       </Unit27>
       <Unit28>
-        <Filename Value="forms\ujeezguieditor.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="JeezGuiEditor"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="29"/>
-        <CursorPos X="29" Y="45"/>
-        <UsageCount Value="200"/>
-      </Unit28>
-      <Unit29>
         <Filename Value="forms\ujeezmessages.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="JeezMessages"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="22"/>
-        <CursorPos X="84" Y="34"/>
+        <TopLine Value="19"/>
+        <CursorPos X="24" Y="35"/>
         <UsageCount Value="200"/>
-      </Unit29>
-      <Unit30>
+      </Unit28>
+      <Unit29>
         <Filename Value="forms\ujeezide.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="JeezIde"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="UJeezIde"/>
-        <TopLine Value="17"/>
-        <CursorPos X="16" Y="35"/>
-        <UsageCount Value="140"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="560"/>
+        <CursorPos Y="576"/>
+        <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
-      </Unit30>
-      <Unit31>
+      </Unit29>
+      <Unit30>
         <Filename Value="utils\jeezresources.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="22"/>
         <CursorPos X="54" Y="40"/>
         <UsageCount Value="206"/>
-      </Unit31>
-      <Unit32>
+      </Unit30>
+      <Unit31>
         <Filename Value="utils\jeezinifile.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="102"/>
+        <TopLine Value="33"/>
         <CursorPos X="13" Y="128"/>
         <UsageCount Value="200"/>
-      </Unit32>
-      <Unit33>
+      </Unit31>
+      <Unit32>
         <Filename Value="utils\jeeztreeview.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="226"/>
-        <CursorPos X="25" Y="253"/>
+        <TopLine Value="28"/>
+        <CursorPos X="21" Y="42"/>
         <UsageCount Value="200"/>
-      </Unit33>
-      <Unit34>
+      </Unit32>
+      <Unit33>
         <Filename Value="utils\jeezsynedit.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="100"/>
-        <CursorPos X="43" Y="135"/>
+        <TopLine Value="111"/>
+        <CursorPos X="36" Y="118"/>
         <UsageCount Value="200"/>
-      </Unit34>
-      <Unit35>
+      </Unit33>
+      <Unit34>
         <Filename Value="..\jes2cpp\j2c.base\jes2cpptranslate.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="29"/>
-        <CursorPos X="64" Y="42"/>
+        <TopLine Value="15"/>
+        <CursorPos X="10" Y="94"/>
         <UsageCount Value="200"/>
-      </Unit35>
-      <Unit36>
+      </Unit34>
+      <Unit35>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppprocess.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="106"/>
-        <CursorPos X="3" Y="126"/>
+        <TopLine Value="89"/>
+        <CursorPos X="31" Y="105"/>
         <UsageCount Value="200"/>
-      </Unit36>
-      <Unit37>
+      </Unit35>
+      <Unit36>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppfilenames.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="108"/>
-        <CursorPos X="37" Y="115"/>
+        <TopLine Value="62"/>
+        <CursorPos X="6" Y="78"/>
         <UsageCount Value="200"/>
-      </Unit37>
-      <Unit38>
+      </Unit36>
+      <Unit37>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppeel.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="103"/>
-        <CursorPos X="9" Y="114"/>
-        <UsageCount Value="140"/>
-      </Unit38>
-      <Unit39>
+        <TopLine Value="24"/>
+        <CursorPos X="14" Y="39"/>
+        <UsageCount Value="200"/>
+      </Unit37>
+      <Unit38>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppparameter.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppParameter"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="170"/>
-        <CursorPos X="28" Y="196"/>
-        <UsageCount Value="140"/>
-      </Unit39>
-      <Unit40>
+        <TopLine Value="37"/>
+        <CursorPos X="61" Y="47"/>
+        <UsageCount Value="200"/>
+      </Unit38>
+      <Unit39>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppcompiler.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppCompiler"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="19"/>
-        <UsageCount Value="140"/>
-      </Unit40>
-      <Unit41>
+        <TopLine Value="87"/>
+        <CursorPos Y="103"/>
+        <UsageCount Value="200"/>
+      </Unit39>
+      <Unit40>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppprinter.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppPrinter"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="18"/>
-        <CursorPos X="10" Y="34"/>
-        <UsageCount Value="140"/>
-      </Unit41>
-      <Unit42>
+        <TopLine Value="90"/>
+        <CursorPos X="10" Y="106"/>
+        <UsageCount Value="200"/>
+      </Unit40>
+      <Unit41>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppmoduleimporter.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="69"/>
-        <CursorPos X="43" Y="85"/>
-        <UsageCount Value="128"/>
-      </Unit42>
-      <Unit43>
+        <TopLine Value="74"/>
+        <CursorPos X="20" Y="74"/>
+        <UsageCount Value="192"/>
+      </Unit41>
+      <Unit42>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppstrings.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="24"/>
-        <CursorPos X="8" Y="40"/>
-        <UsageCount Value="125"/>
-      </Unit43>
-      <Unit44>
+        <TopLine Value="177"/>
+        <CursorPos X="15" Y="193"/>
+        <UsageCount Value="189"/>
+      </Unit42>
+      <Unit43>
         <Filename Value="utils\jeezlabels.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="59"/>
-        <CursorPos X="31" Y="75"/>
-        <UsageCount Value="119"/>
-      </Unit44>
-      <Unit45>
+        <CursorPos X="27" Y="62"/>
+        <UsageCount Value="183"/>
+      </Unit43>
+      <Unit44>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppiterate.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="30"/>
-        <CursorPos X="36" Y="34"/>
-        <UsageCount Value="96"/>
-      </Unit45>
-      <Unit46>
+        <TopLine Value="49"/>
+        <CursorPos X="19" Y="65"/>
+        <UsageCount Value="160"/>
+      </Unit44>
+      <Unit45>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppparserloops.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppParserLoops"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="18"/>
-        <CursorPos X="10" Y="34"/>
-        <UsageCount Value="96"/>
-      </Unit46>
-      <Unit47>
+        <TopLine Value="22"/>
+        <CursorPos X="40" Y="38"/>
+        <UsageCount Value="160"/>
+      </Unit45>
+      <Unit46>
         <Filename Value="..\jes2cpp\j2c.base\jes2cpptoken.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="32"/>
-        <CursorPos X="16" Y="57"/>
-        <UsageCount Value="65"/>
-      </Unit47>
-      <Unit48>
+        <TopLine Value="25"/>
+        <CursorPos X="20" Y="41"/>
+        <UsageCount Value="129"/>
+      </Unit46>
+      <Unit47>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppfunctionidentifiers.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppFunctionIdentifiers"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="115"/>
-        <CursorPos X="3" Y="60"/>
-        <UsageCount Value="25"/>
+        <TopLine Value="20"/>
+        <CursorPos X="54" Y="47"/>
+        <UsageCount Value="89"/>
+      </Unit47>
+      <Unit48>
+        <Filename Value="..\soda\soda.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Soda"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="27"/>
+        <CursorPos X="55" Y="42"/>
+        <UsageCount Value="43"/>
       </Unit48>
       <Unit49>
-        <Filename Value="..\jes2cpp\j2c.components\jes2cppcomponent.pas"/>
+        <Filename Value="..\soda\soda.inc"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="33"/>
-        <CursorPos X="24" Y="50"/>
-        <UsageCount Value="23"/>
+        <TopLine Value="27"/>
+        <CursorPos X="26" Y="28"/>
+        <UsageCount Value="41"/>
       </Unit49>
       <Unit50>
+        <Filename Value="..\soda\soda_basic.inc"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="77"/>
+        <CursorPos X="15" Y="31"/>
+        <UsageCount Value="41"/>
+      </Unit50>
+      <Unit51>
+        <Filename Value="..\jes2cpp\j2c.components\jes2cppcomponent.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="17"/>
+        <CursorPos X="38" Y="41"/>
+        <UsageCount Value="85"/>
+      </Unit51>
+      <Unit52>
+        <Filename Value="..\fizz\fizz.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="22"/>
+        <CursorPos X="16" Y="33"/>
+        <UsageCount Value="22"/>
+      </Unit52>
+      <Unit53>
+        <Filename Value="..\jes2cpp\j2c.base\jes2cppitem.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="10"/>
+        <CursorPos X="15" Y="36"/>
+        <UsageCount Value="59"/>
+      </Unit53>
+      <Unit54>
+        <Filename Value="forms\ujeezguieditor.pas"/>
+        <ComponentName Value="JeezGuiEditor"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="59"/>
+        <CursorPos X="36" Y="81"/>
+        <UsageCount Value="199"/>
+      </Unit54>
+      <Unit55>
         <Filename Value="forms\ujeezimportmodule.pas"/>
         <ComponentName Value="JeezImportModule"/>
         <HasResources Value="True"/>
@@ -443,65 +502,65 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="43"/>
         <CursorPos X="45" Y="45"/>
-        <UsageCount Value="198"/>
-      </Unit50>
-      <Unit51>
+        <UsageCount Value="197"/>
+      </Unit55>
+      <Unit56>
         <Filename Value="..\jes2cpp\jes2cppprinter.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="22"/>
         <CursorPos X="40" Y="38"/>
-        <UsageCount Value="198"/>
-      </Unit51>
-      <Unit52>
+        <UsageCount Value="197"/>
+      </Unit56>
+      <Unit57>
         <Filename Value="..\jes2cpp\jes2cppcompiler.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="113"/>
         <CursorPos X="15" Y="54"/>
-        <UsageCount Value="198"/>
-      </Unit52>
-      <Unit53>
+        <UsageCount Value="197"/>
+      </Unit57>
+      <Unit58>
         <Filename Value="..\jes2cpp\jes2cppparameter.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="41"/>
         <CursorPos X="55" Y="53"/>
-        <UsageCount Value="198"/>
-      </Unit53>
-      <Unit54>
+        <UsageCount Value="197"/>
+      </Unit58>
+      <Unit59>
         <Filename Value="..\jes2cpp\jes2cppeel.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="19"/>
         <CursorPos X="16" Y="39"/>
-        <UsageCount Value="198"/>
-      </Unit54>
-      <Unit55>
-        <Filename Value="..\jes2cpp\jes2cppfilenames.pas"/>
-        <UsageCount Value="18"/>
-      </Unit55>
-      <Unit56>
-        <Filename Value="..\jes2cpp\jes2cpptranslate.pas"/>
-        <UsageCount Value="18"/>
-      </Unit56>
-      <Unit57>
-        <Filename Value="..\jes2cpp\jes2cppprocess.pas"/>
-        <UsageCount Value="18"/>
-      </Unit57>
-      <Unit58>
-        <Filename Value="jeezresources.pas"/>
-        <UsageCount Value="18"/>
-      </Unit58>
-      <Unit59>
-        <Filename Value="jeezinifile.pas"/>
-        <UsageCount Value="18"/>
+        <UsageCount Value="197"/>
       </Unit59>
       <Unit60>
-        <Filename Value="jeeztreeview.pas"/>
-        <UsageCount Value="18"/>
+        <Filename Value="..\jes2cpp\jes2cppfilenames.pas"/>
+        <UsageCount Value="17"/>
       </Unit60>
       <Unit61>
-        <Filename Value="jeezsynedit.pas"/>
-        <UsageCount Value="18"/>
+        <Filename Value="..\jes2cpp\jes2cpptranslate.pas"/>
+        <UsageCount Value="17"/>
       </Unit61>
       <Unit62>
+        <Filename Value="..\jes2cpp\jes2cppprocess.pas"/>
+        <UsageCount Value="17"/>
+      </Unit62>
+      <Unit63>
+        <Filename Value="jeezresources.pas"/>
+        <UsageCount Value="17"/>
+      </Unit63>
+      <Unit64>
+        <Filename Value="jeezinifile.pas"/>
+        <UsageCount Value="17"/>
+      </Unit64>
+      <Unit65>
+        <Filename Value="jeeztreeview.pas"/>
+        <UsageCount Value="17"/>
+      </Unit65>
+      <Unit66>
+        <Filename Value="jeezsynedit.pas"/>
+        <UsageCount Value="17"/>
+      </Unit66>
+      <Unit67>
         <Filename Value="ujeezide.pas"/>
         <ComponentName Value="JeezIde"/>
         <HasResources Value="True"/>
@@ -510,1421 +569,1574 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="571"/>
         <CursorPos X="62" Y="578"/>
-        <UsageCount Value="198"/>
-      </Unit62>
-      <Unit63>
+        <UsageCount Value="197"/>
+      </Unit67>
+      <Unit68>
         <Filename Value="ujeezdata.pas"/>
         <ComponentName Value="JeezData"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
-        <UsageCount Value="18"/>
-      </Unit63>
-      <Unit64>
+        <UsageCount Value="17"/>
+      </Unit68>
+      <Unit69>
         <Filename Value="ujeezproperties.pas"/>
         <ComponentName Value="JeezProperties"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="18"/>
-      </Unit64>
-      <Unit65>
+        <UsageCount Value="17"/>
+      </Unit69>
+      <Unit70>
         <Filename Value="ujeezimportmodule.pas"/>
         <ComponentName Value="JeezImportModule"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="18"/>
-      </Unit65>
-      <Unit66>
+        <UsageCount Value="17"/>
+      </Unit70>
+      <Unit71>
         <Filename Value="ujeezsplash.pas"/>
         <ComponentName Value="JeezSplash"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="18"/>
-      </Unit66>
-      <Unit67>
+        <UsageCount Value="17"/>
+      </Unit71>
+      <Unit72>
         <Filename Value="ujeezguieditor.pas"/>
         <ComponentName Value="JeezGuiEditor"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="18"/>
-      </Unit67>
-      <Unit68>
+        <UsageCount Value="17"/>
+      </Unit72>
+      <Unit73>
         <Filename Value="ujeezmessages.pas"/>
         <ComponentName Value="JeezMessages"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UsageCount Value="18"/>
-      </Unit68>
-      <Unit69>
+        <UsageCount Value="17"/>
+      </Unit73>
+      <Unit74>
         <Filename Value="..\jes2cpp\jes2cppparserfunctions.pas"/>
-        <UsageCount Value="18"/>
-      </Unit69>
-      <Unit70>
+        <UsageCount Value="17"/>
+      </Unit74>
+      <Unit75>
         <Filename Value="..\jes2cpp\parser\jes2cppparser.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="21"/>
         <CursorPos X="19" Y="27"/>
-        <UsageCount Value="198"/>
-      </Unit70>
-      <Unit71>
+        <UsageCount Value="197"/>
+      </Unit75>
+      <Unit76>
         <Filename Value="..\jes2cpp\parser\jes2cppparseroperator.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="24"/>
         <CursorPos X="46" Y="40"/>
-        <UsageCount Value="198"/>
-      </Unit71>
-      <Unit72>
+        <UsageCount Value="197"/>
+      </Unit76>
+      <Unit77>
         <Filename Value="..\jes2cpp\parser\jes2cppparserelements.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="27"/>
         <CursorPos X="51" Y="39"/>
-        <UsageCount Value="110"/>
-      </Unit72>
-      <Unit73>
+        <UsageCount Value="109"/>
+      </Unit77>
+      <Unit78>
         <Filename Value="..\jes2cpp\parser\jes2cppparserexpression.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="22"/>
         <CursorPos X="41" Y="38"/>
-        <UsageCount Value="22"/>
-      </Unit73>
-      <Unit74>
+        <UsageCount Value="21"/>
+      </Unit78>
+      <Unit79>
         <Filename Value="..\jes2cpp\parser\jes2cppparserfunctions.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos X="28" Y="27"/>
-        <UsageCount Value="198"/>
-      </Unit74>
-      <Unit75>
+        <UsageCount Value="197"/>
+      </Unit79>
+      <Unit80>
         <Filename Value="..\pastem\stlenumeratorclasses.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="56" Y="4"/>
-        <UsageCount Value="26"/>
-      </Unit75>
-      <Unit76>
+        <UsageCount Value="25"/>
+      </Unit80>
+      <Unit81>
         <Filename Value="..\pastem\stlenumerator.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="44"/>
         <CursorPos Y="60"/>
-        <UsageCount Value="23"/>
-      </Unit76>
-      <Unit77>
+        <UsageCount Value="22"/>
+      </Unit81>
+      <Unit82>
         <Filename Value="jeezwindows.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="8"/>
         <CursorPos X="24" Y="38"/>
-        <UsageCount Value="198"/>
-      </Unit77>
-      <Unit78>
+        <UsageCount Value="197"/>
+      </Unit82>
+      <Unit83>
         <Filename Value="..\jes2cpp\stl.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2"/>
         <CursorPos X="7" Y="41"/>
-        <UsageCount Value="93"/>
-      </Unit78>
-      <Unit79>
+        <UsageCount Value="92"/>
+      </Unit83>
+      <Unit84>
         <Filename Value="..\jes2cpp\jes2cppeelconstants.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="8"/>
         <CursorPos Y="36"/>
-        <UsageCount Value="62"/>
-      </Unit79>
-      <Unit80>
+        <UsageCount Value="61"/>
+      </Unit84>
+      <Unit85>
         <Filename Value="uniteditor.pas"/>
-        <UsageCount Value="8"/>
-      </Unit80>
-      <Unit81>
+        <UsageCount Value="7"/>
+      </Unit85>
+      <Unit86>
         <Filename Value="..\..\src\unitdatamodule.pas"/>
         <ComponentName Value="JideDataModule"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
         <TopLine Value="7"/>
         <CursorPos Y="37"/>
-        <UsageCount Value="8"/>
-      </Unit81>
-      <Unit82>
+        <UsageCount Value="7"/>
+      </Unit86>
+      <Unit87>
         <Filename Value="C:\lazarus\lcl\graphics.pp"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="2657"/>
-        <CursorPos X="24" Y="2666"/>
+        <TopLine Value="299"/>
+        <CursorPos X="3" Y="317"/>
         <UsageCount Value="10"/>
-      </Unit82>
-      <Unit83>
+      </Unit87>
+      <Unit88>
         <Filename Value="..\jes2cpp\jes2cpp.h"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="26"/>
         <CursorPos Y="29"/>
-        <UsageCount Value="7"/>
+        <UsageCount Value="6"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit83>
-      <Unit84>
+      </Unit88>
+      <Unit89>
         <Filename Value="C:\wascal.net\dev\lib\toolbox\tbprocess.pas"/>
         <TopLine Value="24"/>
         <CursorPos X="61" Y="42"/>
-        <UsageCount Value="9"/>
-      </Unit84>
-      <Unit85>
+        <UsageCount Value="8"/>
+      </Unit89>
+      <Unit90>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-process\src\process.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="100"/>
         <CursorPos X="20" Y="115"/>
-        <UsageCount Value="10"/>
-      </Unit85>
-      <Unit86>
+        <UsageCount Value="9"/>
+      </Unit90>
+      <Unit91>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-process\src\win\process.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="231"/>
         <CursorPos X="47" Y="266"/>
-        <UsageCount Value="10"/>
-      </Unit86>
-      <Unit87>
+        <UsageCount Value="9"/>
+      </Unit91>
+      <Unit92>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win\windirs.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="24"/>
         <CursorPos X="40" Y="40"/>
-        <UsageCount Value="7"/>
-      </Unit87>
-      <Unit88>
+        <UsageCount Value="6"/>
+      </Unit92>
+      <Unit93>
         <Filename Value="C:\lazarus\components\mrumenu\demo\frmmain.pp"/>
         <CursorPos X="8" Y="78"/>
-        <UsageCount Value="8"/>
-      </Unit88>
-      <Unit89>
+        <UsageCount Value="7"/>
+      </Unit93>
+      <Unit94>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\morphos\graphics.pas"/>
         <TopLine Value="2182"/>
         <CursorPos X="40" Y="2199"/>
-        <UsageCount Value="8"/>
-      </Unit89>
-      <Unit90>
+        <UsageCount Value="7"/>
+      </Unit94>
+      <Unit95>
         <Filename Value="C:\lazarus\doceditor\frmmain.pp"/>
         <TopLine Value="175"/>
         <CursorPos X="15" Y="192"/>
-        <UsageCount Value="8"/>
-      </Unit90>
-      <Unit91>
+        <UsageCount Value="7"/>
+      </Unit95>
+      <Unit96>
         <Filename Value="C:\lazarus\examples\dockmanager\easyedit\editmain.pas"/>
         <TopLine Value="88"/>
         <CursorPos Y="91"/>
-        <UsageCount Value="8"/>
-      </Unit91>
-      <Unit92>
+        <UsageCount Value="7"/>
+      </Unit96>
+      <Unit97>
         <Filename Value="C:\lazarus\components\turbopower_ipro\iphtml.pas"/>
         <TopLine Value="3272"/>
         <CursorPos X="15" Y="3289"/>
-        <UsageCount Value="8"/>
-      </Unit92>
-      <Unit93>
+        <UsageCount Value="7"/>
+      </Unit97>
+      <Unit98>
         <Filename Value="C:\lazarus\components\chmhelp\lhelp\lhelpcore.pas"/>
         <TopLine Value="14"/>
         <CursorPos X="72" Y="41"/>
-        <UsageCount Value="8"/>
-      </Unit93>
-      <Unit94>
+        <UsageCount Value="7"/>
+      </Unit98>
+      <Unit99>
         <Filename Value="C:\DOCUME~1\Admin\LOCALS~1\Temp\Jes2Cpp\output.cpp"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1318"/>
-        <CursorPos X="17" Y="22"/>
-        <UsageCount Value="7"/>
+        <TopLine Value="5348"/>
+        <CursorPos X="60" Y="5372"/>
+        <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit94>
-      <Unit95>
+      </Unit99>
+      <Unit100>
         <Filename Value="C:\ujeezide.pas"/>
         <TopLine Value="368"/>
         <CursorPos X="35" Y="377"/>
-        <UsageCount Value="8"/>
-      </Unit95>
-      <Unit96>
+        <UsageCount Value="7"/>
+      </Unit100>
+      <Unit101>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\classes\classesh.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1738"/>
-        <CursorPos X="70" Y="1754"/>
+        <TopLine Value="1601"/>
+        <CursorPos X="3" Y="1616"/>
         <UsageCount Value="10"/>
-      </Unit96>
-      <Unit97>
+      </Unit101>
+      <Unit102>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\classes\streams.inc"/>
         <TopLine Value="27"/>
         <CursorPos X="3" Y="29"/>
-        <UsageCount Value="8"/>
-      </Unit97>
-      <Unit98>
+        <UsageCount Value="7"/>
+      </Unit102>
+      <Unit103>
         <Filename Value="C:\lazarus\components\lazutils\fileutil.pas"/>
-        <TopLine Value="62"/>
-        <CursorPos X="18" Y="78"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="181"/>
         <UsageCount Value="9"/>
-      </Unit98>
-      <Unit99>
+      </Unit103>
+      <Unit104>
         <Filename Value="C:\lazarus\components\lazutils\fileutil.inc"/>
         <TopLine Value="449"/>
         <CursorPos X="3" Y="456"/>
-        <UsageCount Value="9"/>
-      </Unit99>
-      <Unit100>
+        <UsageCount Value="8"/>
+      </Unit104>
+      <Unit105>
         <Filename Value="C:\lazarus\components\lazutils\lazfileutils.pas"/>
         <TopLine Value="411"/>
         <CursorPos X="3" Y="415"/>
-        <UsageCount Value="8"/>
-      </Unit100>
-      <Unit101>
+        <UsageCount Value="7"/>
+      </Unit105>
+      <Unit106>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\osutilsh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="34"/>
         <CursorPos X="31" Y="15"/>
-        <UsageCount Value="7"/>
-      </Unit101>
-      <Unit102>
+        <UsageCount Value="6"/>
+      </Unit106>
+      <Unit107>
         <Filename Value="..\jes2cpp\vstplug.def"/>
         <CursorPos X="16" Y="2"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="7"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit102>
-      <Unit103>
+      </Unit107>
+      <Unit108>
         <Filename Value="C:\Testing\aeffect.h"/>
         <TopLine Value="113"/>
         <CursorPos X="26" Y="127"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="7"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit103>
-      <Unit104>
+      </Unit108>
+      <Unit109>
         <Filename Value="C:\lazarus\lcl\dialogs.pp"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="68"/>
-        <CursorPos X="18" Y="83"/>
+        <TopLine Value="57"/>
+        <CursorPos X="20" Y="84"/>
         <UsageCount Value="10"/>
-      </Unit104>
-      <Unit105>
+      </Unit109>
+      <Unit110>
         <Filename Value="C:\DOCUME~1\Admin\LOCALS~1\Temp\Jes2Cpp\Copy of output.cpp"/>
         <TopLine Value="74"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="7"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit105>
-      <Unit106>
+      </Unit110>
+      <Unit111>
         <Filename Value="..\jes2cpp\default.jsfx"/>
         <CursorPos X="35"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit106>
-      <Unit107>
+      </Unit111>
+      <Unit112>
         <Filename Value="C:\lazarus\components\synedit\synedittypes.pp"/>
         <TopLine Value="70"/>
         <CursorPos X="3" Y="87"/>
-        <UsageCount Value="9"/>
-      </Unit107>
-      <Unit108>
+        <UsageCount Value="8"/>
+      </Unit112>
+      <Unit113>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\sysstrh.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="230"/>
-        <CursorPos X="18" Y="252"/>
-        <UsageCount Value="8"/>
-      </Unit108>
-      <Unit109>
+        <TopLine Value="64"/>
+        <CursorPos X="21" Y="79"/>
+        <UsageCount Value="10"/>
+      </Unit113>
+      <Unit114>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\sysstr.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="2776"/>
-        <CursorPos X="10" Y="2757"/>
-        <UsageCount Value="8"/>
-      </Unit109>
-      <Unit110>
+        <TopLine Value="125"/>
+        <CursorPos X="10" Y="180"/>
+        <UsageCount Value="10"/>
+      </Unit114>
+      <Unit115>
         <Filename Value="C:\lazarus\components\synedit\synedit.pp"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1675"/>
-        <CursorPos X="3" Y="1679"/>
+        <TopLine Value="2574"/>
+        <CursorPos X="3" Y="2578"/>
         <UsageCount Value="10"/>
-      </Unit110>
-      <Unit111>
+      </Unit115>
+      <Unit116>
         <Filename Value="C:\lazarus\components\synedit\syneditmiscclasses.pp"/>
         <TopLine Value="196"/>
         <CursorPos X="3" Y="213"/>
-        <UsageCount Value="9"/>
-      </Unit111>
-      <Unit112>
+        <UsageCount Value="8"/>
+      </Unit116>
+      <Unit117>
         <Filename Value="C:\Application Data\REAPER\Effects\MIDI\midi_choke"/>
         <TopLine Value="51"/>
         <CursorPos X="18" Y="55"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="None"/>
-      </Unit112>
-      <Unit113>
-        <Filename Value="C:\Application Data\REAPER\Effects\schwa\gaussian_noise_generator"/>
-        <TopLine Value="7"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="None"/>
-      </Unit113>
-      <Unit114>
-        <Filename Value="..\..\http\index.html"/>
-        <TopLine Value="58"/>
-        <CursorPos X="52" Y="70"/>
-        <UsageCount Value="10"/>
-        <DefaultSyntaxHighlighter Value="HTML"/>
-      </Unit114>
-      <Unit115>
-        <Filename Value="..\vst\audioeffect.h"/>
-        <CursorPos X="28" Y="7"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit115>
-      <Unit116>
-        <Filename Value="C:\My Documents\Downloads\wdl-ol-master\wdl-ol-master\WDL\blowfish.c"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit116>
-      <Unit117>
-        <Filename Value="C:\Application Data\REAPER\Effects\Synthesis\midi_drumseq"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit117>
       <Unit118>
-        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\classes\compon.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="542"/>
-        <CursorPos X="38" Y="550"/>
-        <UsageCount Value="10"/>
+        <Filename Value="C:\Application Data\REAPER\Effects\schwa\gaussian_noise_generator"/>
+        <TopLine Value="7"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="None"/>
       </Unit118>
       <Unit119>
+        <Filename Value="..\..\http\index.html"/>
+        <TopLine Value="58"/>
+        <CursorPos X="52" Y="70"/>
+        <UsageCount Value="9"/>
+        <DefaultSyntaxHighlighter Value="HTML"/>
+      </Unit119>
+      <Unit120>
+        <Filename Value="..\vst\audioeffect.h"/>
+        <CursorPos X="28" Y="7"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit120>
+      <Unit121>
+        <Filename Value="C:\My Documents\Downloads\wdl-ol-master\wdl-ol-master\WDL\blowfish.c"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit121>
+      <Unit122>
+        <Filename Value="C:\Application Data\REAPER\Effects\Synthesis\midi_drumseq"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit122>
+      <Unit123>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\classes\compon.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="214"/>
+        <CursorPos X="3" Y="217"/>
+        <UsageCount Value="10"/>
+      </Unit123>
+      <Unit124>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\osutil.inc"/>
         <TopLine Value="63"/>
         <CursorPos X="22" Y="84"/>
-        <UsageCount Value="10"/>
-      </Unit119>
-      <Unit120>
+        <UsageCount Value="9"/>
+      </Unit124>
+      <Unit125>
         <Filename Value="C:\lazarus\components\synedit\syneditkeycmds.pp"/>
         <TopLine Value="271"/>
         <CursorPos X="3" Y="289"/>
-        <UsageCount Value="9"/>
-      </Unit120>
-      <Unit121>
+        <UsageCount Value="8"/>
+      </Unit125>
+      <Unit126>
         <Filename Value="C:\lazarus\lcl\forms.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="388"/>
         <CursorPos X="43" Y="404"/>
-        <UsageCount Value="7"/>
-      </Unit121>
-      <Unit122>
+        <UsageCount Value="6"/>
+      </Unit126>
+      <Unit127>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win\sysutils.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="32"/>
         <CursorPos X="16" Y="47"/>
-        <UsageCount Value="10"/>
-      </Unit122>
-      <Unit123>
+        <UsageCount Value="9"/>
+      </Unit127>
+      <Unit128>
         <Filename Value="C:\wascal.net\www\style.css"/>
         <TopLine Value="133"/>
         <CursorPos X="39" Y="6"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit123>
-      <Unit124>
+      </Unit128>
+      <Unit129>
         <Filename Value="C:\Application Data\REAPER\Effects\ccernn\syn_formant"/>
         <TopLine Value="48"/>
         <CursorPos X="21" Y="62"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit124>
-      <Unit125>
+      </Unit129>
+      <Unit130>
         <Filename Value="C:\Application Data\REAPER\Effects\Delay\fft-delay"/>
         <TopLine Value="63"/>
         <CursorPos X="16" Y="114"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit125>
-      <Unit126>
+      </Unit130>
+      <Unit131>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\sysinth.inc"/>
         <TopLine Value="41"/>
         <CursorPos X="42" Y="57"/>
-        <UsageCount Value="2"/>
-      </Unit126>
-      <Unit127>
+        <UsageCount Value="1"/>
+      </Unit131>
+      <Unit132>
         <Filename Value="..\jes2cpp\jes2cpp.cpp"/>
         <TopLine Value="42"/>
         <CursorPos X="19" Y="55"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit127>
-      <Unit128>
+      </Unit132>
+      <Unit133>
         <Filename Value="C:\lazarus\components\synedit\syneditexport.pas"/>
         <TopLine Value="63"/>
         <CursorPos X="18" Y="81"/>
-        <UsageCount Value="9"/>
-      </Unit128>
-      <Unit129>
+        <UsageCount Value="8"/>
+      </Unit133>
+      <Unit134>
         <Filename Value="C:\lazarus\components\synedit\synedithighlighter.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="102"/>
         <CursorPos X="28" Y="114"/>
-        <UsageCount Value="10"/>
-      </Unit129>
-      <Unit130>
+        <UsageCount Value="9"/>
+      </Unit134>
+      <Unit135>
         <Filename Value="C:\lazarus\components\synedit\synexporthtml.pas"/>
         <TopLine Value="320"/>
         <CursorPos X="3" Y="338"/>
-        <UsageCount Value="9"/>
-      </Unit130>
-      <Unit131>
+        <UsageCount Value="8"/>
+      </Unit135>
+      <Unit136>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win32\system.pp"/>
         <TopLine Value="81"/>
         <CursorPos X="3" Y="97"/>
-        <UsageCount Value="9"/>
-      </Unit131>
-      <Unit132>
+        <UsageCount Value="8"/>
+      </Unit136>
+      <Unit137>
         <Filename Value="C:\lazarus\components\jcf2\Parse\Tokens.pas"/>
         <TopLine Value="542"/>
         <CursorPos X="11" Y="551"/>
-        <UsageCount Value="9"/>
-      </Unit132>
-      <Unit133>
+        <UsageCount Value="8"/>
+      </Unit137>
+      <Unit138>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win\wininc\ascdef.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="167"/>
         <CursorPos X="71" Y="183"/>
-        <UsageCount Value="4"/>
-      </Unit133>
-      <Unit134>
+        <UsageCount Value="3"/>
+      </Unit138>
+      <Unit139>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win\wininc\struct.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1517"/>
         <CursorPos X="6" Y="1533"/>
-        <UsageCount Value="4"/>
-      </Unit134>
-      <Unit135>
+        <UsageCount Value="3"/>
+      </Unit139>
+      <Unit140>
         <Filename Value="C:\lazarus\lcl\controls.pp"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1119"/>
-        <CursorPos X="18" Y="1134"/>
+        <TopLine Value="2234"/>
+        <CursorPos X="25" Y="2252"/>
         <UsageCount Value="10"/>
-      </Unit135>
-      <Unit136>
+      </Unit140>
+      <Unit141>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win\wininc\messages.inc"/>
         <TopLine Value="969"/>
         <CursorPos X="6" Y="986"/>
-        <UsageCount Value="9"/>
-      </Unit136>
-      <Unit137>
+        <UsageCount Value="8"/>
+      </Unit141>
+      <Unit142>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win\wininc\base.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="71"/>
         <CursorPos X="21" Y="87"/>
-        <UsageCount Value="4"/>
-      </Unit137>
-      <Unit138>
+        <UsageCount Value="3"/>
+      </Unit142>
+      <Unit143>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\inc\systemh.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="237"/>
-        <CursorPos X="3" Y="253"/>
-        <UsageCount Value="4"/>
-      </Unit138>
-      <Unit139>
+        <TopLine Value="608"/>
+        <CursorPos X="53" Y="582"/>
+        <UsageCount Value="9"/>
+      </Unit143>
+      <Unit144>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win\syswin.inc"/>
         <TopLine Value="226"/>
         <CursorPos X="26" Y="238"/>
-        <UsageCount Value="9"/>
-      </Unit139>
-      <Unit140>
+        <UsageCount Value="8"/>
+      </Unit144>
+      <Unit145>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win\wininc\errors.inc"/>
         <TopLine Value="772"/>
         <CursorPos X="6" Y="788"/>
-        <UsageCount Value="9"/>
-      </Unit140>
-      <Unit141>
+        <UsageCount Value="8"/>
+      </Unit145>
+      <Unit146>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win\wininc\defines.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="3107"/>
         <CursorPos X="25" Y="3121"/>
-        <UsageCount Value="10"/>
-      </Unit141>
-      <Unit142>
+        <UsageCount Value="9"/>
+      </Unit146>
+      <Unit147>
         <Filename Value="..\..\3rd VST Stuff\mda-vst-src-2010-02-14\mda-vst\src\mdaPiano.cpp"/>
         <TopLine Value="494"/>
         <CursorPos X="11" Y="521"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit142>
-      <Unit143>
+      </Unit147>
+      <Unit148>
         <Filename Value="C:\Application Data\REAPER\Effects\Synthesis\tonegenerator"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit143>
-      <Unit144>
+      </Unit148>
+      <Unit149>
         <Filename Value="C:\Application Data\REAPER\Effects\LoopSamplers\loopsampler-m2-midi"/>
         <TopLine Value="57"/>
         <CursorPos X="10" Y="78"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit144>
-      <Unit145>
+      </Unit149>
+      <Unit150>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\sysutilh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="209"/>
         <CursorPos X="28" Y="236"/>
-        <UsageCount Value="7"/>
-      </Unit145>
-      <Unit146>
+        <UsageCount Value="6"/>
+      </Unit150>
+      <Unit151>
         <Filename Value="..\vst\readme.txt"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit146>
-      <Unit147>
+      </Unit151>
+      <Unit152>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\objpas.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="10"/>
         <CursorPos X="24" Y="26"/>
-        <UsageCount Value="4"/>
-      </Unit147>
-      <Unit148>
+        <UsageCount Value="3"/>
+      </Unit152>
+      <Unit153>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\datih.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="152"/>
         <CursorPos X="23" Y="184"/>
-        <UsageCount Value="7"/>
-      </Unit148>
-      <Unit149>
+        <UsageCount Value="6"/>
+      </Unit153>
+      <Unit154>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\dati.inc"/>
         <TopLine Value="310"/>
         <CursorPos X="19" Y="312"/>
-        <UsageCount Value="9"/>
-      </Unit149>
-      <Unit150>
+        <UsageCount Value="8"/>
+      </Unit154>
+      <Unit155>
         <Filename Value="C:\Cockos\WDL\eel2\eel_fft.h"/>
         <TopLine Value="25"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit150>
-      <Unit151>
+      </Unit155>
+      <Unit156>
         <Filename Value="..\wdl\eel_fft.cpp"/>
         <TopLine Value="58"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit151>
-      <Unit152>
+      </Unit156>
+      <Unit157>
         <Filename Value="C:\lazarus\lcl\comctrls.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2034"/>
         <CursorPos X="15" Y="2051"/>
-        <UsageCount Value="8"/>
-      </Unit152>
-      <Unit153>
+        <UsageCount Value="7"/>
+      </Unit157>
+      <Unit158>
         <Filename Value="C:\lazarus\lcl\include\treeview.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1006"/>
         <CursorPos X="3" Y="1008"/>
-        <UsageCount Value="8"/>
-      </Unit153>
-      <Unit154>
+        <UsageCount Value="7"/>
+      </Unit158>
+      <Unit159>
         <Filename Value="C:\lazarus\lcl\include\winapih.inc"/>
         <TopLine Value="180"/>
         <CursorPos X="10" Y="196"/>
-        <UsageCount Value="9"/>
-      </Unit154>
-      <Unit155>
+        <UsageCount Value="8"/>
+      </Unit159>
+      <Unit160>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\finah.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos X="19" Y="20"/>
-        <UsageCount Value="10"/>
-      </Unit155>
-      <Unit156>
-        <Filename Value="C:\DOCUME~1\Admin\LOCALS~1\Application Data\Geep Jeez!\Geep Jeez!.cfg"/>
         <UsageCount Value="9"/>
+      </Unit160>
+      <Unit161>
+        <Filename Value="C:\DOCUME~1\Admin\LOCALS~1\Application Data\Geep Jeez!\Geep Jeez!.cfg"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit156>
-      <Unit157>
+      </Unit161>
+      <Unit162>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-web\src\base\httpdefs.pp"/>
         <TopLine Value="468"/>
         <CursorPos X="20" Y="474"/>
-        <UsageCount Value="9"/>
-      </Unit157>
-      <Unit158>
-        <Filename Value="C:\Cockos\WDL\eel2\eel_files.h"/>
-        <TopLine Value="212"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit158>
-      <Unit159>
-        <Filename Value="C:\Cockos\WDL\eel2\eel_misc.h"/>
-        <TopLine Value="22"/>
-        <CursorPos X="36" Y="18"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit159>
-      <Unit160>
-        <Filename Value="C:\Cockos\WDL\eel2\eel_eval.h"/>
-        <TopLine Value="33"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit160>
-      <Unit161>
-        <Filename Value="C:\Cockos\WDL\eel2\eelscript.h"/>
-        <TopLine Value="47"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit161>
-      <Unit162>
-        <Filename Value="C:\Cockos\WDL\eel2\eel_strings.h"/>
-        <TopLine Value="1475"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
+        <UsageCount Value="8"/>
       </Unit162>
       <Unit163>
-        <Filename Value="C:\Cockos\WDL\eel2\eel_net.h"/>
-        <TopLine Value="533"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\eel_files.h"/>
+        <TopLine Value="212"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit163>
       <Unit164>
-        <Filename Value="C:\Cockos\WDL\eel2\eel_lice.h"/>
-        <TopLine Value="716"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\eel_misc.h"/>
+        <TopLine Value="22"/>
+        <CursorPos X="36" Y="18"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit164>
       <Unit165>
-        <Filename Value="C:\Cockos\WDL\eel2\loose_eel.cpp"/>
-        <TopLine Value="121"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\eel_eval.h"/>
+        <TopLine Value="33"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit165>
       <Unit166>
-        <Filename Value="C:\Cockos\WDL\eel2\nseel-compiler.c"/>
-        <TopLine Value="4035"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\eelscript.h"/>
+        <TopLine Value="47"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit166>
       <Unit167>
-        <Filename Value="C:\Cockos\WDL\eel2\y.tab.c"/>
-        <TopLine Value="2150"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\eel_strings.h"/>
+        <TopLine Value="1475"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit167>
       <Unit168>
-        <Filename Value="C:\Cockos\WDL\eel2\nseel-lextab.c"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\eel_net.h"/>
+        <TopLine Value="533"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit168>
       <Unit169>
-        <Filename Value="C:\Cockos\WDL\eel2\ns-eel-int.h"/>
-        <TopLine Value="282"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\eel_lice.h"/>
+        <TopLine Value="716"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit169>
       <Unit170>
-        <Filename Value="C:\Cockos\WDL\resample.cpp"/>
-        <TopLine Value="199"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\loose_eel.cpp"/>
+        <TopLine Value="121"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit170>
       <Unit171>
-        <Filename Value="C:\Cockos\WDL\simple_pitchshift.h"/>
-        <TopLine Value="270"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\nseel-compiler.c"/>
+        <TopLine Value="4035"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit171>
       <Unit172>
-        <Filename Value="C:\Cockos\WDL\fileread.h"/>
-        <TopLine Value="656"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\y.tab.c"/>
+        <TopLine Value="2150"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit172>
       <Unit173>
-        <Filename Value="C:\Cockos\WDL\denormal.h"/>
-        <TopLine Value="91"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\nseel-lextab.c"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit173>
       <Unit174>
-        <Filename Value="C:\Cockos\WDL\wavwrite.h"/>
-        <TopLine Value="137"/>
-        <CursorPos X="17" Y="102"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\eel2\ns-eel-int.h"/>
+        <TopLine Value="282"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit174>
       <Unit175>
-        <Filename Value="C:\Cockos\WDL\sinewavegen.h"/>
-        <TopLine Value="9"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\resample.cpp"/>
+        <TopLine Value="199"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit175>
       <Unit176>
-        <Filename Value="..\..\3rd VST Stuff\bass24\delphi\bass.pas"/>
-        <TopLine Value="764"/>
-        <CursorPos X="10" Y="780"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\simple_pitchshift.h"/>
+        <TopLine Value="270"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
       </Unit176>
       <Unit177>
-        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\sysutils.inc"/>
-        <TopLine Value="715"/>
-        <CursorPos X="20" Y="726"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\fileread.h"/>
+        <TopLine Value="656"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
       </Unit177>
       <Unit178>
-        <Filename Value="C:\lazarus\components\synedit\synhighlighterany.pas"/>
-        <TopLine Value="197"/>
-        <CursorPos X="14" Y="211"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\denormal.h"/>
+        <TopLine Value="91"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
       </Unit178>
       <Unit179>
-        <Filename Value="..\VeST\VeST.h"/>
-        <TopLine Value="4"/>
-        <CursorPos X="2" Y="84"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\wavwrite.h"/>
+        <TopLine Value="137"/>
+        <CursorPos X="17" Y="102"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit179>
       <Unit180>
-        <Filename Value="..\VeST\VeST.cpp"/>
-        <CursorPos X="23" Y="23"/>
-        <UsageCount Value="9"/>
+        <Filename Value="C:\Cockos\WDL\sinewavegen.h"/>
+        <TopLine Value="9"/>
+        <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit180>
       <Unit181>
-        <Filename Value="..\jes2cpp\jes2cpp\file.cpp"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
+        <Filename Value="..\..\3rd VST Stuff\bass24\delphi\bass.pas"/>
+        <TopLine Value="764"/>
+        <CursorPos X="10" Y="780"/>
+        <UsageCount Value="8"/>
       </Unit181>
       <Unit182>
-        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\strutils.pp"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="929"/>
-        <CursorPos X="15" Y="944"/>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\sysutils.inc"/>
+        <TopLine Value="715"/>
+        <CursorPos X="20" Y="726"/>
         <UsageCount Value="8"/>
       </Unit182>
       <Unit183>
+        <Filename Value="C:\lazarus\components\synedit\synhighlighterany.pas"/>
+        <TopLine Value="197"/>
+        <CursorPos X="14" Y="211"/>
+        <UsageCount Value="8"/>
+      </Unit183>
+      <Unit184>
+        <Filename Value="..\VeST\VeST.h"/>
+        <TopLine Value="4"/>
+        <CursorPos X="2" Y="84"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit184>
+      <Unit185>
+        <Filename Value="..\VeST\VeST.cpp"/>
+        <CursorPos X="23" Y="23"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit185>
+      <Unit186>
+        <Filename Value="..\jes2cpp\jes2cpp\file.cpp"/>
+        <UsageCount Value="8"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit186>
+      <Unit187>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\strutils.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2177"/>
+        <CursorPos X="3" Y="950"/>
+        <UsageCount Value="9"/>
+      </Unit187>
+      <Unit188>
         <Filename Value="C:\jes2cpptranspilerparser.pas"/>
         <TopLine Value="165"/>
         <CursorPos Y="166"/>
-        <UsageCount Value="1"/>
-      </Unit183>
-      <Unit184>
+        <UsageCount Value="10"/>
+      </Unit188>
+      <Unit189>
         <Filename Value="C:\Program Files\Geep Software\Jeez!\jes2cpp\jes2cpptranspilerparser.pas"/>
         <TopLine Value="179"/>
-        <UsageCount Value="2"/>
-      </Unit184>
-      <Unit185>
+        <UsageCount Value="1"/>
+      </Unit189>
+      <Unit190>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win\wininc\func.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="483"/>
         <CursorPos X="45" Y="44"/>
-        <UsageCount Value="2"/>
-      </Unit185>
-      <Unit186>
+        <UsageCount Value="1"/>
+      </Unit190>
+      <Unit191>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\inc\system.inc"/>
         <TopLine Value="951"/>
         <CursorPos X="13" Y="1002"/>
-        <UsageCount Value="2"/>
-      </Unit186>
-      <Unit187>
+        <UsageCount Value="1"/>
+      </Unit191>
+      <Unit192>
         <Filename Value="C:\TDM-GCC-64\x86_64-w64-mingw32\include\gdiplus\gdiplusimpl.h"/>
         <TopLine Value="411"/>
         <CursorPos X="26" Y="429"/>
-        <UsageCount Value="3"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit187>
-      <Unit188>
-        <Filename Value="..\VeST\VST3 SDK\doc\basemodule\functions_0x67.html"/>
-        <TopLine Value="152"/>
-        <CursorPos X="5" Y="168"/>
-        <UsageCount Value="2"/>
-        <DefaultSyntaxHighlighter Value="HTML"/>
-      </Unit188>
-      <Unit189>
-        <Filename Value="..\VeST\VST3 SDK\doc\basemodule\classSteinberg_1_1BitSet.html"/>
-        <TopLine Value="698"/>
-        <CursorPos X="103" Y="714"/>
-        <UsageCount Value="2"/>
-        <DefaultSyntaxHighlighter Value="HTML"/>
-      </Unit189>
-      <Unit190>
-        <Filename Value="..\VeST\VST3 SDK\pluginterfaces\vst2.x\aeffect.h"/>
-        <TopLine Value="265"/>
-        <CursorPos X="6" Y="290"/>
-        <UsageCount Value="2"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit190>
-      <Unit191>
-        <Filename Value="..\VeST\VST3 SDK\public.sdk\source\vst\vst2wrapper\vst2wrapper.cpp"/>
-        <TopLine Value="1098"/>
-        <CursorPos X="23" Y="1099"/>
-        <UsageCount Value="2"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit191>
-      <Unit192>
-        <Filename Value="..\VeST\VST3 SDK\public.sdk\source\vst\vst2wrapper\vst2wrapper.h"/>
-        <TopLine Value="113"/>
-        <CursorPos X="20" Y="132"/>
         <UsageCount Value="2"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit192>
       <Unit193>
-        <Filename Value="..\VeST\VST3 SDK\public.sdk\source\vst2.x\audioeffect.h"/>
-        <TopLine Value="88"/>
-        <CursorPos X="112" Y="119"/>
-        <UsageCount Value="2"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
+        <Filename Value="..\VeST\VST3 SDK\doc\basemodule\functions_0x67.html"/>
+        <TopLine Value="152"/>
+        <CursorPos X="5" Y="168"/>
+        <UsageCount Value="1"/>
+        <DefaultSyntaxHighlighter Value="HTML"/>
       </Unit193>
       <Unit194>
-        <Filename Value="..\VeST\VST3 SDK\public.sdk\source\vst2.x\audioeffectx.cpp"/>
-        <TopLine Value="1294"/>
-        <CursorPos X="44" Y="1301"/>
-        <UsageCount Value="2"/>
-        <DefaultSyntaxHighlighter Value="C++"/>
+        <Filename Value="..\VeST\VST3 SDK\doc\basemodule\classSteinberg_1_1BitSet.html"/>
+        <TopLine Value="698"/>
+        <CursorPos X="103" Y="714"/>
+        <UsageCount Value="1"/>
+        <DefaultSyntaxHighlighter Value="HTML"/>
       </Unit194>
       <Unit195>
-        <Filename Value="..\VeST\VST3 SDK\public.sdk\source\vst\vstpresetfile.cpp"/>
-        <TopLine Value="46"/>
-        <CursorPos X="16" Y="62"/>
-        <UsageCount Value="2"/>
+        <Filename Value="..\VeST\VST3 SDK\pluginterfaces\vst2.x\aeffect.h"/>
+        <TopLine Value="265"/>
+        <CursorPos X="6" Y="290"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit195>
       <Unit196>
-        <Filename Value="..\VeST\VST3 SDK\pluginterfaces\vst2.x\aeffectx.h"/>
-        <TopLine Value="323"/>
-        <CursorPos X="38" Y="339"/>
-        <UsageCount Value="2"/>
+        <Filename Value="..\VeST\VST3 SDK\public.sdk\source\vst\vst2wrapper\vst2wrapper.cpp"/>
+        <TopLine Value="1098"/>
+        <CursorPos X="23" Y="1099"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit196>
       <Unit197>
-        <Filename Value="C:\My Documents\Downloads\wdl-ol-master\wdl-ol-master\WDL\IPlug\IPlugAAX.h"/>
-        <TopLine Value="55"/>
-        <CursorPos X="14" Y="71"/>
-        <UsageCount Value="2"/>
+        <Filename Value="..\VeST\VST3 SDK\public.sdk\source\vst\vst2wrapper\vst2wrapper.h"/>
+        <TopLine Value="113"/>
+        <CursorPos X="20" Y="132"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit197>
       <Unit198>
-        <Filename Value="C:\My Documents\Downloads\wdl-ol-master\wdl-ol-master\WDL\IPlug\IPlugAAX.cpp"/>
-        <TopLine Value="371"/>
-        <CursorPos X="22" Y="381"/>
-        <UsageCount Value="2"/>
+        <Filename Value="..\VeST\VST3 SDK\public.sdk\source\vst2.x\audioeffect.h"/>
+        <TopLine Value="88"/>
+        <CursorPos X="112" Y="119"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit198>
       <Unit199>
-        <Filename Value="C:\My Documents\Downloads\wdl-ol-master\wdl-ol-master\WDL\IPlug\RTAS\IPlugProcess.h"/>
-        <TopLine Value="18"/>
-        <CursorPos X="27" Y="34"/>
-        <UsageCount Value="2"/>
+        <Filename Value="..\VeST\VST3 SDK\public.sdk\source\vst2.x\audioeffectx.cpp"/>
+        <TopLine Value="1294"/>
+        <CursorPos X="44" Y="1301"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit199>
       <Unit200>
-        <Filename Value="C:\My Documents\Downloads\wdl-ol-master\wdl-ol-master\WDL\IPlug\RTAS\IPlugProcess.cpp"/>
-        <TopLine Value="316"/>
-        <CursorPos X="31" Y="332"/>
-        <UsageCount Value="2"/>
+        <Filename Value="..\VeST\VST3 SDK\public.sdk\source\vst\vstpresetfile.cpp"/>
+        <TopLine Value="46"/>
+        <CursorPos X="16" Y="62"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="C++"/>
       </Unit200>
       <Unit201>
+        <Filename Value="..\VeST\VST3 SDK\pluginterfaces\vst2.x\aeffectx.h"/>
+        <TopLine Value="323"/>
+        <CursorPos X="38" Y="339"/>
+        <UsageCount Value="1"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit201>
+      <Unit202>
+        <Filename Value="C:\My Documents\Downloads\wdl-ol-master\wdl-ol-master\WDL\IPlug\IPlugAAX.h"/>
+        <TopLine Value="55"/>
+        <CursorPos X="14" Y="71"/>
+        <UsageCount Value="1"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit202>
+      <Unit203>
+        <Filename Value="C:\My Documents\Downloads\wdl-ol-master\wdl-ol-master\WDL\IPlug\IPlugAAX.cpp"/>
+        <TopLine Value="371"/>
+        <CursorPos X="22" Y="381"/>
+        <UsageCount Value="1"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit203>
+      <Unit204>
+        <Filename Value="C:\My Documents\Downloads\wdl-ol-master\wdl-ol-master\WDL\IPlug\RTAS\IPlugProcess.h"/>
+        <TopLine Value="18"/>
+        <CursorPos X="27" Y="34"/>
+        <UsageCount Value="1"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit204>
+      <Unit205>
+        <Filename Value="C:\My Documents\Downloads\wdl-ol-master\wdl-ol-master\WDL\IPlug\RTAS\IPlugProcess.cpp"/>
+        <TopLine Value="316"/>
+        <CursorPos X="31" Y="332"/>
+        <UsageCount Value="1"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit205>
+      <Unit206>
         <Filename Value="..\VeST\VST3 SDK\vstgui.sf\vstgui\cocoasupport.mm"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="303"/>
         <CursorPos X="6" Y="319"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit201>
-      <Unit202>
+      </Unit206>
+      <Unit207>
         <Filename Value="..\VeST\VST3 SDK\base\source\fthread.cpp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="728"/>
         <CursorPos X="14" Y="746"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit202>
-      <Unit203>
+      </Unit207>
+      <Unit208>
         <Filename Value="C:\Program Files\Geep Software\Jeez!\jes2cpp\jes2cppcompiler.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="132"/>
-        <UsageCount Value="2"/>
-      </Unit203>
-      <Unit204>
+        <UsageCount Value="1"/>
+      </Unit208>
+      <Unit209>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-base\src\contnrs.pp"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="2752"/>
-        <CursorPos X="3" Y="2368"/>
-        <UsageCount Value="2"/>
-      </Unit204>
-      <Unit205>
+        <TopLine Value="787"/>
+        <CursorPos X="3" Y="790"/>
+        <UsageCount Value="9"/>
+      </Unit209>
+      <Unit210>
         <Filename Value="C:\lazarus\lcl\grids.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="118"/>
         <CursorPos X="16" Y="138"/>
-        <UsageCount Value="3"/>
-      </Unit205>
-      <Unit206>
+        <UsageCount Value="2"/>
+      </Unit210>
+      <Unit211>
         <Filename Value="C:\lazarus\lcl\graphtype.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="31"/>
         <CursorPos X="3" Y="46"/>
-        <UsageCount Value="3"/>
-      </Unit206>
-      <Unit207>
+        <UsageCount Value="2"/>
+      </Unit211>
+      <Unit212>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\dateutil.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="111"/>
         <CursorPos X="23" Y="128"/>
-        <UsageCount Value="3"/>
-      </Unit207>
-      <Unit208>
+        <UsageCount Value="2"/>
+      </Unit212>
+      <Unit213>
         <Filename Value="C:\My Documents\Downloads\New Downloads\axonlib_v0.1.1b_290610\axonlib\extern\mverb\Editor.cpp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="202"/>
         <CursorPos X="3" Y="34"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="2"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit208>
-      <Unit209>
+      </Unit213>
+      <Unit214>
         <Filename Value="C:\My Documents\Downloads\New Downloads\axonlib_v0.1.1b_290610\axonlib\extern\mverb\Editor.h"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="59"/>
         <CursorPos X="23" Y="31"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="2"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit209>
-      <Unit210>
+      </Unit214>
+      <Unit215>
         <Filename Value="C:\My Documents\Downloads\New Downloads\axonlib_v0.1.1b_290610\axonlib\extern\mverb\VstPlugin.cpp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="196"/>
         <CursorPos X="7" Y="212"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="2"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit210>
-      <Unit211>
+      </Unit215>
+      <Unit216>
         <Filename Value="..\jes2cpp\jes2cpp\mdct.jes2cpp.cpp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="44"/>
         <CursorPos X="7" Y="60"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="2"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit211>
-      <Unit212>
+      </Unit216>
+      <Unit217>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\classes\stringl.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1325"/>
         <CursorPos X="3" Y="1328"/>
-        <UsageCount Value="8"/>
-      </Unit212>
-      <Unit213>
+        <UsageCount Value="7"/>
+      </Unit217>
+      <Unit218>
         <Filename Value="C:\Application Data\REAPER\Effects\SWIPE\readme.txt"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="4"/>
+        <UsageCount Value="3"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit213>
-      <Unit214>
+      </Unit218>
+      <Unit219>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\inc\varianth.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="66"/>
         <CursorPos X="4" Y="82"/>
-        <UsageCount Value="4"/>
-      </Unit214>
-      <Unit215>
+        <UsageCount Value="3"/>
+      </Unit219>
+      <Unit220>
         <Filename Value="C:\lazarus\lcl\include\messagedialogs.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="159"/>
         <CursorPos X="69" Y="185"/>
-        <UsageCount Value="4"/>
-      </Unit215>
-      <Unit216>
+        <UsageCount Value="3"/>
+      </Unit220>
+      <Unit221>
         <Filename Value="C:\lazarus\lcl\stdctrls.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="383"/>
         <CursorPos X="16" Y="398"/>
-        <UsageCount Value="10"/>
-      </Unit216>
-      <Unit217>
+        <UsageCount Value="9"/>
+      </Unit221>
+      <Unit222>
         <Filename Value="C:\lazarus\lcl\lcltype.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1628"/>
         <CursorPos X="3" Y="1644"/>
-        <UsageCount Value="10"/>
-      </Unit217>
-      <Unit218>
+        <UsageCount Value="9"/>
+      </Unit222>
+      <Unit223>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\winunits-base\src\mmsystem.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2597"/>
         <CursorPos X="10" Y="2613"/>
-        <UsageCount Value="6"/>
-      </Unit218>
-      <Unit219>
+        <UsageCount Value="5"/>
+      </Unit223>
+      <Unit224>
         <Filename Value="..\jes2cpp\jes2cpp\special.jes2cpp.h"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="104"/>
         <CursorPos X="60" Y="119"/>
-        <UsageCount Value="6"/>
+        <UsageCount Value="5"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit219>
-      <Unit220>
+      </Unit224>
+      <Unit225>
         <Filename Value="..\jes2cpp\jes2cpp.jsfx"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="450"/>
         <CursorPos Y="473"/>
-        <UsageCount Value="6"/>
+        <UsageCount Value="5"/>
         <DefaultSyntaxHighlighter Value="None"/>
-      </Unit220>
-      <Unit221>
+      </Unit225>
+      <Unit226>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\inc\objpash.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="185"/>
         <CursorPos X="21" Y="201"/>
-        <UsageCount Value="6"/>
-      </Unit221>
-      <Unit222>
+        <UsageCount Value="5"/>
+      </Unit226>
+      <Unit227>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-stl\src\gvector.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="22"/>
         <CursorPos X="10" Y="20"/>
-        <UsageCount Value="7"/>
-      </Unit222>
-      <Unit223>
+        <UsageCount Value="6"/>
+      </Unit227>
+      <Unit228>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-stl\src\ghashmap.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="31"/>
         <CursorPos X="91" Y="10"/>
-        <UsageCount Value="7"/>
-      </Unit223>
-      <Unit224>
+        <UsageCount Value="6"/>
+      </Unit228>
+      <Unit229>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-stl\src\garrayutils.pp"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="7"/>
-      </Unit224>
-      <Unit225>
+        <UsageCount Value="6"/>
+      </Unit229>
+      <Unit230>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-stl\src\gmap.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="127"/>
-        <UsageCount Value="7"/>
-      </Unit225>
-      <Unit226>
+        <UsageCount Value="6"/>
+      </Unit230>
+      <Unit231>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\inc\threadh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="127"/>
         <CursorPos X="114" Y="154"/>
-        <UsageCount Value="7"/>
-      </Unit226>
-      <Unit227>
+        <UsageCount Value="6"/>
+      </Unit231>
+      <Unit232>
         <Filename Value="C:\usr\lib\lazarus\lcl\interfaces\win32\win32wsdialogs.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="13"/>
         <CursorPos X="3" Y="32"/>
-        <UsageCount Value="7"/>
-      </Unit227>
-      <Unit228>
+        <UsageCount Value="6"/>
+      </Unit232>
+      <Unit233>
         <Filename Value="C:\usr\lib\lazarus\lcl\extctrls.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="997"/>
         <CursorPos X="29" Y="1015"/>
-        <UsageCount Value="7"/>
-      </Unit228>
-      <Unit229>
+        <UsageCount Value="6"/>
+      </Unit233>
+      <Unit234>
         <Filename Value="C:\usr\share\fpcsrc\2.6.4\rtl\objpas\classes\classesh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="78"/>
         <CursorPos X="46" Y="95"/>
-        <UsageCount Value="7"/>
-      </Unit229>
-      <Unit230>
+        <UsageCount Value="6"/>
+      </Unit234>
+      <Unit235>
         <Filename Value="C:\usr\lib\lazarus\lcl\editbtn.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="37"/>
         <CursorPos X="43" Y="54"/>
-        <UsageCount Value="7"/>
-      </Unit230>
-      <Unit231>
+        <UsageCount Value="6"/>
+      </Unit235>
+      <Unit236>
         <Filename Value="C:\usr\lib\lazarus\lcl\stdctrls.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="675"/>
         <CursorPos X="3" Y="692"/>
-        <UsageCount Value="7"/>
-      </Unit231>
-      <Unit232>
+        <UsageCount Value="6"/>
+      </Unit236>
+      <Unit237>
         <Filename Value="C:\usr\lib\lazarus\lcl\controls.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="198"/>
         <CursorPos X="9" Y="223"/>
-        <UsageCount Value="7"/>
-      </Unit232>
-      <Unit233>
+        <UsageCount Value="6"/>
+      </Unit237>
+      <Unit238>
         <Filename Value="C:\usr\lib\lazarus\lcl\spin.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="15"/>
         <CursorPos X="43" Y="32"/>
-        <UsageCount Value="7"/>
-      </Unit233>
-      <Unit234>
+        <UsageCount Value="6"/>
+      </Unit238>
+      <Unit239>
         <Filename Value="C:\usr\share\fpcsrc\2.6.4\rtl\objpas\types.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="280"/>
         <CursorPos X="23" Y="296"/>
-        <UsageCount Value="7"/>
-      </Unit234>
-      <Unit235>
+        <UsageCount Value="6"/>
+      </Unit239>
+      <Unit240>
         <Filename Value="C:\lazarus\lcl\imglist.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="86"/>
         <CursorPos X="3" Y="102"/>
-        <UsageCount Value="7"/>
-      </Unit235>
-      <Unit236>
+        <UsageCount Value="6"/>
+      </Unit240>
+      <Unit241>
         <Filename Value="C:\usr\include\php5\TSRM\readdir.h"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="11"/>
         <CursorPos X="13" Y="12"/>
-        <UsageCount Value="7"/>
+        <UsageCount Value="6"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit236>
-      <Unit237>
+      </Unit241>
+      <Unit242>
         <Filename Value="C:\usr\include\php5\main\php_scandir.h"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos X="17" Y="33"/>
-        <UsageCount Value="7"/>
+        <UsageCount Value="6"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit237>
-      <Unit238>
+      </Unit242>
+      <Unit243>
         <Filename Value="..\..\..\jklhj.html"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="27" Y="64"/>
-        <UsageCount Value="7"/>
+        <UsageCount Value="6"/>
         <DefaultSyntaxHighlighter Value="HTML"/>
-      </Unit238>
-      <Unit239>
+      </Unit243>
+      <Unit244>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-xml\src\htmlelements.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="10"/>
         <CursorPos X="29" Y="21"/>
-        <UsageCount Value="10"/>
-      </Unit239>
-      <Unit240>
+        <UsageCount Value="9"/>
+      </Unit244>
+      <Unit245>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-xml\src\htmldefs.pp"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="10"/>
-      </Unit240>
-      <Unit241>
+        <UsageCount Value="9"/>
+      </Unit245>
+      <Unit246>
         <Filename Value="C:\lazarus\lcl\asyncprocess.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="28"/>
         <CursorPos X="40" Y="31"/>
-        <UsageCount Value="7"/>
-      </Unit241>
-      <Unit242>
+        <UsageCount Value="6"/>
+      </Unit246>
+      <Unit247>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-base\src\inifiles.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="50"/>
         <CursorPos X="95" Y="129"/>
-        <UsageCount Value="7"/>
-      </Unit242>
-      <Unit243>
+        <UsageCount Value="6"/>
+      </Unit247>
+      <Unit248>
         <Filename Value="C:\lazarus\lcl\include\customcontrol.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="100"/>
         <CursorPos Y="102"/>
-        <UsageCount Value="7"/>
-      </Unit243>
-      <Unit244>
+        <UsageCount Value="6"/>
+      </Unit248>
+      <Unit249>
         <Filename Value="C:\lazarus\lcl\extctrls.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="976"/>
         <CursorPos X="29" Y="992"/>
-        <UsageCount Value="7"/>
-      </Unit244>
-      <Unit245>
+        <UsageCount Value="6"/>
+      </Unit249>
+      <Unit250>
         <Filename Value="C:\lazarus\lcl\include\wincontrol.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="4881"/>
         <CursorPos X="23" Y="4881"/>
-        <UsageCount Value="7"/>
-      </Unit245>
-      <Unit246>
+        <UsageCount Value="6"/>
+      </Unit250>
+      <Unit251>
         <Filename Value="C:\lazarus\lcl\lclintf.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="136"/>
-        <CursorPos X="44" Y="150"/>
-        <UsageCount Value="8"/>
-      </Unit246>
-      <Unit247>
+        <TopLine Value="33"/>
+        <CursorPos X="13" Y="38"/>
+        <UsageCount Value="10"/>
+      </Unit251>
+      <Unit252>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\types.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="47"/>
         <CursorPos X="3" Y="63"/>
-        <UsageCount Value="8"/>
-      </Unit247>
-      <Unit248>
+        <UsageCount Value="7"/>
+      </Unit252>
+      <Unit253>
         <Filename Value="C:\lazarus\lcl\colorbox.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="66"/>
         <CursorPos X="3" Y="82"/>
-        <UsageCount Value="7"/>
-      </Unit248>
-      <Unit249>
+        <UsageCount Value="6"/>
+      </Unit253>
+      <Unit254>
         <Filename Value="C:\lazarus\components\synedit\syngutter.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="376"/>
         <CursorPos X="3" Y="379"/>
-        <UsageCount Value="8"/>
-      </Unit249>
-      <Unit250>
+        <UsageCount Value="7"/>
+      </Unit254>
+      <Unit255>
         <Filename Value="C:\lazarus\components\synedit\syngutterbase.pp"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="3" Y="18"/>
-        <UsageCount Value="8"/>
-      </Unit250>
-      <Unit251>
+        <UsageCount Value="7"/>
+      </Unit255>
+      <Unit256>
         <Filename Value="C:\lazarus\components\synedit\syngutterlinenumber.pp"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="25"/>
-        <UsageCount Value="8"/>
-      </Unit251>
-      <Unit252>
+        <UsageCount Value="7"/>
+      </Unit256>
+      <Unit257>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-db\src\base\db.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="94"/>
         <CursorPos X="23" Y="111"/>
-        <UsageCount Value="8"/>
-      </Unit252>
-      <Unit253>
+        <UsageCount Value="7"/>
+      </Unit257>
+      <Unit258>
         <Filename Value="C:\lazarus\lcl\lclproc.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1053"/>
         <CursorPos X="3" Y="1061"/>
-        <UsageCount Value="8"/>
-      </Unit253>
-      <Unit254>
+        <UsageCount Value="7"/>
+      </Unit258>
+      <Unit259>
         <Filename Value="C:\lazarus\lcl\menus.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="20"/>
         <CursorPos X="136" Y="24"/>
-        <UsageCount Value="10"/>
-      </Unit254>
-      <Unit255>
+        <UsageCount Value="9"/>
+      </Unit259>
+      <Unit260>
         <Filename Value="C:\lazarus\lcl\graphutil.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="37"/>
         <CursorPos X="27" Y="62"/>
-        <UsageCount Value="10"/>
-      </Unit255>
-      <Unit256>
+        <UsageCount Value="9"/>
+      </Unit260>
+      <Unit261>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\win32\classes.pp"/>
         <EditorIndex Value="-1"/>
-        <CursorPos X="29" Y="10"/>
-        <UsageCount Value="10"/>
-      </Unit256>
-      <Unit257>
+        <TopLine Value="58"/>
+        <CursorPos X="30" Y="77"/>
+        <UsageCount Value="9"/>
+      </Unit261>
+      <Unit262>
         <Filename Value="..\pastem\stldescribeclasses.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="15" Y="10"/>
-        <UsageCount Value="19"/>
-      </Unit257>
-      <Unit258>
+        <UsageCount Value="18"/>
+      </Unit262>
+      <Unit263>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\math.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="166"/>
         <CursorPos X="3" Y="182"/>
-        <UsageCount Value="8"/>
-      </Unit258>
-      <Unit259>
+        <UsageCount Value="7"/>
+      </Unit263>
+      <Unit264>
         <Filename Value="C:\lazarus\lcl\include\pagecontrol.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="35"/>
         <CursorPos X="17" Y="37"/>
-        <UsageCount Value="8"/>
-      </Unit259>
-      <Unit260>
+        <UsageCount Value="7"/>
+      </Unit264>
+      <Unit265>
         <Filename Value="C:\lazarus\lcl\include\customnotebook.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="984"/>
         <CursorPos X="3" Y="986"/>
-        <UsageCount Value="8"/>
-      </Unit260>
-      <Unit261>
+        <UsageCount Value="7"/>
+      </Unit265>
+      <Unit266>
         <Filename Value="C:\lazarus\lcl\spin.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="133"/>
         <CursorPos X="3" Y="149"/>
-        <UsageCount Value="8"/>
-      </Unit261>
-      <Unit262>
+        <UsageCount Value="7"/>
+      </Unit266>
+      <Unit267>
         <Filename Value="C:\Documents and Settings\Admin\My Documents\Downloads\Plugin Dev\wdl-ol-master\wdl-ol-master\WDL\eel2\eel_misc.h"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="17" Y="63"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="7"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit262>
-      <Unit263>
+      </Unit267>
+      <Unit268>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\hash\src\md5.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="19"/>
-        <UsageCount Value="8"/>
-      </Unit263>
-      <Unit264>
+        <UsageCount Value="7"/>
+      </Unit268>
+      <Unit269>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\hash\src\crc.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="37"/>
-        <UsageCount Value="8"/>
-      </Unit264>
-      <Unit265>
+        <UsageCount Value="7"/>
+      </Unit269>
+      <Unit270>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\hash\src\sha1.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="274"/>
         <CursorPos X="3" Y="287"/>
-        <UsageCount Value="9"/>
-      </Unit265>
-      <Unit266>
+        <UsageCount Value="8"/>
+      </Unit270>
+      <Unit271>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\hash\src\uuid.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="105"/>
-        <UsageCount Value="8"/>
-      </Unit266>
-      <Unit267>
+        <UsageCount Value="7"/>
+      </Unit271>
+      <Unit272>
         <Filename Value="C:\lazarus\components\lazutils\masks.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="79"/>
-        <CursorPos X="21" Y="88"/>
+        <TopLine Value="72"/>
+        <CursorPos X="71" Y="88"/>
         <UsageCount Value="10"/>
-      </Unit267>
-      <Unit268>
+      </Unit272>
+      <Unit273>
         <Filename Value="C:\Documents and Settings\Admin\My Documents\Downloads\Plugin Dev\wdl-ol-master\wdl-ol-master\WDL\eel2\a2i.php"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="210"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="PHP"/>
-      </Unit268>
-      <Unit269>
+      </Unit273>
+      <Unit274>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\fina.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="17"/>
         <CursorPos X="3" Y="22"/>
-        <UsageCount Value="10"/>
-      </Unit269>
-      <Unit270>
+        <UsageCount Value="9"/>
+      </Unit274>
+      <Unit275>
         <Filename Value="C:\lazarus\lcl\include\control.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="3250"/>
         <CursorPos X="3" Y="3258"/>
-        <UsageCount Value="10"/>
-      </Unit270>
-      <Unit271>
+        <UsageCount Value="9"/>
+      </Unit275>
+      <Unit276>
         <Filename Value="C:\lazarus\lcl\include\commondialog.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="13"/>
         <CursorPos X="3" Y="29"/>
-        <UsageCount Value="10"/>
-      </Unit271>
-      <Unit272>
+        <UsageCount Value="9"/>
+      </Unit276>
+      <Unit277>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\winunits-jedi\src\jwanative.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2567"/>
         <CursorPos X="3" Y="2583"/>
-        <UsageCount Value="10"/>
-      </Unit272>
-      <Unit273>
+        <UsageCount Value="9"/>
+      </Unit277>
+      <Unit278>
         <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\ptc\src\win32\directx\win32directxdisplay.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="127"/>
         <CursorPos X="41" Y="142"/>
-        <UsageCount Value="10"/>
-      </Unit273>
-      <Unit274>
+        <UsageCount Value="9"/>
+      </Unit278>
+      <Unit279>
         <Filename Value="C:\lazarus\components\PascalScript\Source\uPSUtils.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="630"/>
         <CursorPos X="22" Y="646"/>
-        <UsageCount Value="10"/>
-      </Unit274>
-      <Unit275>
+        <UsageCount Value="9"/>
+      </Unit279>
+      <Unit280>
         <Filename Value="C:\lazarus\components\lazreport\source\lr_utils.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="69"/>
         <CursorPos X="62" Y="85"/>
+        <UsageCount Value="9"/>
+      </Unit280>
+      <Unit281>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\inc\wstringh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="16"/>
+        <CursorPos X="17" Y="31"/>
+        <UsageCount Value="9"/>
+      </Unit281>
+      <Unit282>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\inc\wstrings.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="998"/>
+        <CursorPos X="3" Y="1006"/>
+        <UsageCount Value="9"/>
+      </Unit282>
+      <Unit283>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-base\src\avl_tree.pp"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="9"/>
+      </Unit283>
+      <Unit284>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\classes\collect.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="312"/>
+        <CursorPos X="3" Y="314"/>
+        <UsageCount Value="9"/>
+      </Unit284>
+      <Unit285>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\objpas\sysutils\syspchh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="12"/>
+        <CursorPos X="16" Y="29"/>
+        <UsageCount Value="9"/>
+      </Unit285>
+      <Unit286>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\i386\strings.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="332"/>
+        <CursorPos X="10" Y="348"/>
+        <UsageCount Value="9"/>
+      </Unit286>
+      <Unit287>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-xml\src\dom.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="452"/>
+        <CursorPos X="17" Y="440"/>
         <UsageCount Value="10"/>
-      </Unit275>
+      </Unit287>
+      <Unit288>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-xml\src\xmlutils.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="210"/>
+        <UsageCount Value="10"/>
+      </Unit288>
+      <Unit289>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\i386\fastmove.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="836"/>
+        <CursorPos X="11" Y="834"/>
+        <UsageCount Value="9"/>
+      </Unit289>
+      <Unit290>
+        <Filename Value="C:\lazarus\lcl\maskedit.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="937"/>
+        <CursorPos X="53" Y="952"/>
+        <UsageCount Value="9"/>
+      </Unit290>
+      <Unit291>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fv\src\editors.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2033"/>
+        <CursorPos X="132" Y="2046"/>
+        <UsageCount Value="9"/>
+      </Unit291>
+      <Unit292>
+        <Filename Value="C:\lazarus\components\codetools\fileprocs.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2205"/>
+        <CursorPos X="5" Y="2221"/>
+        <UsageCount Value="9"/>
+      </Unit292>
+      <Unit293>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-db\src\base\bufdataset.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="807"/>
+        <CursorPos X="56" Y="823"/>
+        <UsageCount Value="9"/>
+      </Unit293>
+      <Unit294>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\rtl\inc\heaph.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="13"/>
+        <CursorPos X="19" Y="29"/>
+        <UsageCount Value="9"/>
+      </Unit294>
+      <Unit295>
+        <Filename Value="C:\DOCUME~1\Admin\LOCALS~1\Temp\Temporary Directory 1 for DelphiASIOVST-v1.3.zip\Source\ASIO.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="91"/>
+        <UsageCount Value="9"/>
+      </Unit295>
+      <Unit296>
+        <Filename Value="C:\DOCUME~1\Admin\LOCALS~1\Temp\Temporary Directory 2 for DelphiASIOVST-v1.3.zip\Source\DDspFFT.pas"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="9"/>
+      </Unit296>
+      <Unit297>
+        <Filename Value="C:\DOCUME~1\Admin\LOCALS~1\Temp\Temporary Directory 6 for DelphiASIOVST-v1.3.zip\Examples\Standalone\Analyser\Analyser.lpr"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="9"/>
+      </Unit297>
+      <Unit298>
+        <Filename Value="C:\DOCUME~1\Admin\LOCALS~1\Temp\Temporary Directory 7 for DelphiASIOVST-v1.3.zip\Examples\Standalone\Analyser\AnalyserForm.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="189"/>
+        <UsageCount Value="9"/>
+      </Unit298>
+      <Unit299>
+        <Filename Value="C:\lazarus\fpc\2.6.4\source\packages\fcl-json\src\fpjson.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="565"/>
+        <CursorPos X="3" Y="565"/>
+        <UsageCount Value="10"/>
+      </Unit299>
+      <Unit300>
+        <Filename Value="C:\Program Files\Geep Software\Jeez!\soda\soda.pas"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+      </Unit300>
+      <Unit301>
+        <Filename Value="C:\Program Files\Geep Software\Jeez!\soda\soda.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="13"/>
+        <UsageCount Value="10"/>
+      </Unit301>
+      <Unit302>
+        <Filename Value="..\..\..\soda\src\sodacontrols.pas"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="10"/>
+      </Unit302>
+      <Unit303>
+        <Filename Value="C:\lazarus\lcl\include\finddialog.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="490"/>
+        <CursorPos X="36" Y="506"/>
+        <UsageCount Value="10"/>
+      </Unit303>
     </Units>
-    <JumpHistory HistoryIndex="-1"/>
+    <JumpHistory Count="1">
+      <Position1>
+        <Filename Value="forms\ujeezide.pas"/>
+        <Caret Line="288" Column="22" TopLine="278"/>
+      </Position1>
+    </JumpHistory>
   </ProjectSession>
 </CONFIG>

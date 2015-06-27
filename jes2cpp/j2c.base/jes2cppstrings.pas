@@ -49,7 +49,7 @@ procedure J2C_StringAppendCSV(var AString: String; const AValue: String);
 function J2C_DecodeNameValue(AString: String; out AName, AValue: String): Boolean;
 function J2C_StringSplit(const AString: String; const ACharSet: TSysCharSet; out ALeft, ARight: String): Boolean;
 
-function J2C_StringsGetValue(const AStrings: TStrings; const AName, AValue: String; const ADecodeMeta: Boolean = False): String;
+function J2C_StringsGetValue(const AStrings: TStrings; const AName, ADefault: String; const ADecodeMeta: Boolean = False): String;
 function J2C_StringsIndexOfName(const AStrings: TStrings; const AName: String): Integer;
 procedure J2C_StringsAddComment(const AStrings: TStrings; const AString: String);
 procedure J2C_StringsAddCommentLine(const AStrings: TStrings);
@@ -113,16 +113,12 @@ begin
   begin
     AName := GsEelDescDesc;
   end;
-  Result := Trim(AName) + ': ' + Trim(AValue);
+  Result := Trim(AName) + CharColon + CharSpace + Trim(AValue);
 end;
 
 function J2C_DecodeNameValue(AString: String; out AName, AValue: String): Boolean;
 begin
   AString := Trim(AString);
-  if AnsiStartsStr(GsCppCommentLine, AString) then
-  begin
-    AString := Trim(Copy(AString, Length(GsCppCommentLine) + 1, MaxInt));
-  end;
   Result := J2C_StringSplit(AString, [CharColon, CharEqualSign], AName, AValue);
   if Result then
   begin
@@ -150,12 +146,12 @@ begin
   Result := -1;
 end;
 
-function J2C_StringsGetValue(const AStrings: TStrings; const AName, AValue: String; const ADecodeMeta: Boolean): String;
+function J2C_StringsGetValue(const AStrings: TStrings; const AName, ADefault: String; const ADecodeMeta: Boolean): String;
 var
   LIndex: Integer;
   LName, LValue: String;
 begin
-  Result := AValue;
+  Result := ADefault;
   for LIndex := 0 to EelDescHigh(AStrings) do
   begin
     if J2C_DecodeNameValue(AStrings[LIndex], LName, LValue) and SameText(LName, AName) and (Length(LValue) > 0) then
@@ -166,7 +162,7 @@ begin
   end;
   if ADecodeMeta then
   begin
-    Result := TJes2CppFileNames.DecodeMeta(Result);
+    Result := NSFileNames.DecodeMeta(Result);
   end;
 end;
 
@@ -183,6 +179,7 @@ begin
       Exit;
     end;
   end;
+  // TODO: Find a better place to insert new values.
   AStrings.Insert(LIndex + 1, J2C_EncodeNameValue(AName, AValue));
 end;
 

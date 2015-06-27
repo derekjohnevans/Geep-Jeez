@@ -31,7 +31,7 @@ unit Jes2CppIdentString;
 interface
 
 uses
-  Jes2CppConstants, Jes2CppEat, Jes2CppEel, Jes2CppToken, Math, StrUtils, SysUtils;
+  Jes2CppConstants, Jes2CppEel, Jes2CppParserSimple, Jes2CppToken, Math, StrUtils, SysUtils;
 
 type
 
@@ -42,9 +42,9 @@ function J2C_IdentIsNameSpace(const AIdent, ANameSpace: TIdentString): Boolean; 
 
 function J2C_IdentIsNameSpaceThis(const AIdent: TIdentString): Boolean;
 
-function J2C_IdentIsNamedString(const AIdent: TIdentString): Boolean;
-function J2C_IdentIsConstString(const AIdent: TIdentString): Boolean;
-function J2C_IdentIsTempString(const AIdent: TIdentString): Boolean;
+function J2C_IdentIsStringNamed(const AIdent: TIdentString): Boolean;
+function J2C_IdentIsStringLiteral(const AIdent: TIdentString): Boolean;
+function J2C_IdentIsStringTemp(const AIdent: TIdentString): Boolean;
 
 function J2C_IdentIsSlider(AIdent: TIdentString; out AIndex: Integer): Boolean;
 function J2C_IdentIsSample(AIdent: TIdentString; out AIndex: Integer): Boolean;
@@ -74,14 +74,14 @@ begin
   Result := J2C_IdentIsNameSpace(AIdent, GsEelSpaceThis);
 end;
 
-function J2C_IdentIsConstString(const AIdent: TIdentString): Boolean;
+function J2C_IdentIsStringLiteral(const AIdent: TIdentString): Boolean;
 begin
-  Result := J2C_IdentIsNameSpace(AIdent, GsEelSpaceConstString);
+  Result := J2C_IdentIsNameSpace(AIdent, GsEelSpaceStringLiteral);
 end;
 
-function J2C_IdentIsTempString(const AIdent: TIdentString): Boolean;
+function J2C_IdentIsStringTemp(const AIdent: TIdentString): Boolean;
 begin
-  Result := J2C_IdentIsNameSpace(AIdent, GsEelSpaceTempString);
+  Result := J2C_IdentIsNameSpace(AIdent, GsEelSpaceStringTemp);
 end;
 
 function J2C_IdentIsRef(const AIdent: TIdentString): Boolean;
@@ -89,7 +89,7 @@ begin
   Result := (AIdent <> EmptyStr) and (AIdent[Length(AIdent)] = CharAsterisk);
 end;
 
-function J2C_IdentIsNamedString(const AIdent: TIdentString): Boolean;
+function J2C_IdentIsStringNamed(const AIdent: TIdentString): Boolean;
 begin
   Result := (AIdent <> EmptyStr) and (AIdent[1] = CharHash);
 end;
@@ -189,7 +189,7 @@ end;
 function J2C_IdentExtract(const AString: String; const APos: Integer; out AIdent: TIdentString; out AIsFunction: Boolean): Boolean;
 var
   LPos, LEnd: Integer;
-  LEmptyStr: TIdentString;
+  LParser: TJes2CppParserSimple;
 begin
   LPos := J2C_RPosSetEx(CharSetAll - CharSetIdentFull, AString, APos) + 1;
   LEnd := PosSetEx(CharSetAll - CharSetIdentFull, AString, LPos);
@@ -199,7 +199,8 @@ begin
   end;
   AIdent := Trim(Copy(AString, LPos, LEnd - LPos));
   Result := J2C_IsIdent(AIdent);
-  AIsFunction := Result and (EatUntil(AString, LEnd, LEmptyStr, ['(']) = '(') and IsEmptyStr(LEmptyStr, CharSetWhite);
+  LParser.SetSource(AString, LEnd);
+  AIsFunction := Result and LParser.TryUntil([CharOpeningParenthesis]) and IsEmptyStr(LParser.AsString, CharSetWhite);
 end;
 
 function J2C_IdentRemoveRef(const AIdent: TIdentString): TIdentString;

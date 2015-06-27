@@ -31,19 +31,19 @@ unit Jes2CppSections;
 interface
 
 uses
-  Classes, Jes2CppEel, Jes2CppUtils, StrUtils, SysUtils;
+  Classes, Jes2CppEel, Jes2CppUtils, Soda, StrUtils, SysUtils;
 
 type
 
-  CJes2CppSections = class(TComponent)
+  CJes2CppSections = class(CComponent)
   strict private
     FAtInit, FAtSlider, FAtBlock, FAtSample, FAtGfx, FAtSerialize: String;
     FGfxWidth, FGfxHeight: Integer;
     FGfxEnabled: Boolean;
+  protected
+    procedure DoCreate; override;
   public
-    constructor Create(AOwner: TComponent); override;
-  public
-    procedure ImportFrom(const AScript: TStrings; const AFileName: TFileName); overload;
+    procedure ImportFromScript(const AScript: TStrings; const AFileName: TFileName); overload;
   public
     property AtBlock: String read FAtBlock;
     property AtGfx: String read FAtGfx;
@@ -58,15 +58,15 @@ type
 
 implementation
 
-constructor CJes2CppSections.Create(AOwner: TComponent);
+procedure CJes2CppSections.DoCreate;
 begin
-  inherited Create(AOwner);
+  inherited DoCreate;
   FGfxWidth := 400;
   FGfxHeight := 300;
   FGfxEnabled := True;
 end;
 
-procedure CJes2CppSections.ImportFrom(const AScript: TStrings; const AFileName: TFileName);
+procedure CJes2CppSections.ImportFromScript(const AScript: TStrings; const AFileName: TFileName);
 var
   LSectionHeader: String;
 begin

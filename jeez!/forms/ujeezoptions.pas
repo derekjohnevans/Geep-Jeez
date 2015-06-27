@@ -136,17 +136,18 @@ uses UJeezIde;
 
 procedure TJeezOptions.FormCreate(ASender: TObject);
 begin
-  TJes2CppPlatform.ScrollingWinControlPrepare(Self);
+  NsPlatform.ScrollingWinControlPrepare(Self);
   EditRecentFiles.Font.Size := 8;
   FStorage := TJeezStorage.Create(GetAppConfigFile(False));
   PageControl.ActivePageIndex := 0;
-  EditDefVstPath.Directory := TJes2CppFileNames.PathToVstEffects;
+  EditDefVstPath.Directory := NSFileNames.PathToVstEffects;
   with EditCompiler.Items do
   begin
     Add('g++ (Default GCC)');
 {$IFDEF WINDOWS}
     Add('x86_64-w64-mingw32-g++ (LDM-GCC-64)');
     Add('mingw32-g++ (LDM-GCC-32)');
+    Add('x86_64-pc-cygwin-gcc (cygwin)');
 {$ENDIF}
   end;
   EditCompiler.ItemIndex := 0;
@@ -211,7 +212,7 @@ end;
 
 procedure TJeezOptions.ButtonPresetDefaultClick(ASender: TObject);
 begin
-  ColorBackground.Selected := $0f0f0f;
+  ColorBackground.Selected := $0e0e0e;
   ColorComments.Selected := $C08060;
   ColorFunctions.Selected := clYellow;
   ColorGutter.Selected := $333333;
@@ -326,19 +327,22 @@ procedure TJeezOptions.AddRecentFile(const AFileName: TFileName);
 var
   LIndex: Integer;
 begin
-  for LIndex := EditRecentFiles.Count - 1 downto 0 do
+  if not SameText(ExtractFileExt(AFileName), GsFileExtJsFxInc) then
   begin
-    if SameFileName(EditRecentFiles.Items[LIndex], AFileName) then
+    for LIndex := EditRecentFiles.Count - 1 downto 0 do
     begin
-      EditRecentFiles.Items.Delete(LIndex);
+      if SameFileName(EditRecentFiles.Items[LIndex], AFileName) then
+      begin
+        EditRecentFiles.Items.Delete(LIndex);
+      end;
     end;
+    while EditRecentFiles.Count > 30 do
+    begin
+      EditRecentFiles.Items.Delete(EditRecentFiles.Count - 1);
+    end;
+    EditRecentFiles.Items.Insert(0, AFileName);
+    SettingsSave;
   end;
-  while EditRecentFiles.Count > 20 do
-  begin
-    EditRecentFiles.Items.Delete(EditRecentFiles.Count - 1);
-  end;
-  EditRecentFiles.Items.Insert(0, AFileName);
-  SettingsSave;
 end;
 
 function TJeezOptions.GetCompiler: TFileName;

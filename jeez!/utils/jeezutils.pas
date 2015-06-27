@@ -32,7 +32,7 @@ interface
 
 uses
   Classes, ComCtrls, Controls, Forms, Graphics, ImgList, Jes2Cpp, Jes2CppCompiler,
-  Jes2CppConstants, LCLType, Math, StdCtrls, SysUtils, Types;
+  Jes2CppConstants, LCLType, Math, StdCtrls, StrUtils, SysUtils, Types;
 
 const
 
@@ -58,17 +58,59 @@ type
     destructor Destroy; override;
   end;
 
-procedure J2C_DrawItemBackground(const ACanvas: TCanvas; const ARect: TRect; const ASelected: Boolean);
-procedure J2C_CanvasDrawItem(const ACanvas: TCanvas; const AString: String; const ARect: TRect; const ASelected: Boolean;
-  const AImageList: TCustomImageList; const AImageIndex: Integer);
-procedure J2C_ComboBoxDrawItem(const AComboBox: TComboBox; const AIndex: Integer; const ARect: TRect;
-  const ADrawState: TOwnerDrawState; const AImageList: TImageList);
+  NSJeezCanvas = object
+    class procedure DrawFunctionDefine(const ACanvas: TCanvas; const AX, AY: Integer; AString: String;
+      const AColorFunctions, AColorVariables, AColorSymbols: TColor);
+    class procedure DrawItemBackground(const ACanvas: TCanvas; const ARect: TRect; const ASelected: Boolean);
+    class procedure DrawItem(const ACanvas: TCanvas; const AString: String; const ARect: TRect; const ASelected: Boolean;
+      const AImageList: TCustomImageList; const AImageIndex: Integer);
+    class procedure DrawComboBoxItem(const AComboBox: TComboBox; const AIndex: Integer; const ARect: TRect;
+      const ADrawState: TOwnerDrawState; const AImageList: TImageList);
+  end;
 
 implementation
 
 uses UJeezBuild, UJeezIde, UJeezMessages, UJeezOptions;
 
-procedure J2C_DrawItemBackground(const ACanvas: TCanvas; const ARect: TRect; const ASelected: Boolean);
+class procedure NSJeezCanvas.DrawFunctionDefine(const ACanvas: TCanvas; const AX, AY: Integer; AString: String;
+  const AColorFunctions, AColorVariables, AColorSymbols: TColor);
+var
+  LPos, LEnd: Integer;
+begin
+  with ACanvas do
+  begin
+    LPos := 1;
+    LEnd := PosEx(CharOpeningParenthesis, AString, LPos);
+    if LEnd > 0 then
+    begin
+      PenPos := Point(AX, AY);
+      Font.Color := AColorFunctions;
+      TextOut(PenPos.X, PenPos.Y, Copy(AString, LPos, LEnd - LPos));
+      Font.Color := AColorSymbols;
+      TextOut(PenPos.X, PenPos.Y, CharOpeningParenthesis);
+      repeat
+        LPos := LEnd + 1;
+        LEnd := PosSetEx([CharClosingParenthesis, CharComma], AString, LPos);
+        if LEnd = 0 then
+        begin
+          Break;
+        end;
+        Font.Color := AColorVariables;
+        TextOut(PenPos.X, PenPos.Y, Copy(AString, LPos, LEnd - LPos));
+        if AString[LEnd] = CharComma then
+        begin
+          Font.Color := AColorSymbols;
+          TextOut(PenPos.X, PenPos.Y, CharComma);
+        end;
+      until AString[LEnd] = CharClosingParenthesis;
+      Font.Color := AColorSymbols;
+      TextOut(PenPos.X, PenPos.Y, CharClosingParenthesis);
+      TextOut(PenPos.X, PenPos.Y, Copy(AString, LEnd + 1, MaxInt));
+    end;
+  end;
+end;
+
+class procedure NSJeezCanvas.DrawItemBackground(const ACanvas: TCanvas; const ARect: TRect; const ASelected: Boolean);
 begin
   if ASelected then
   begin
@@ -81,10 +123,10 @@ begin
   ACanvas.Rectangle(ARect);
 end;
 
-procedure J2C_CanvasDrawItem(const ACanvas: TCanvas; const AString: String; const ARect: TRect; const ASelected: Boolean;
-  const AImageList: TCustomImageList; const AImageIndex: Integer);
+class procedure NSJeezCanvas.DrawItem(const ACanvas: TCanvas; const AString: String; const ARect: TRect;
+  const ASelected: Boolean; const AImageList: TCustomImageList; const AImageIndex: Integer);
 begin
-  J2C_DrawItemBackground(ACanvas, ARect, ASelected);
+  NSJeezCanvas.DrawItemBackground(ACanvas, ARect, ASelected);
   ACanvas.Font.Color := JeezOptions.ColorIdentifiers.Selected;
   ACanvas.TextRect(ARect, 25, (ARect.Top + ARect.Bottom - ACanvas.TextHeight(AString)) div 2, AString);
   if Assigned(AImageList) then
@@ -94,10 +136,10 @@ begin
   end;
 end;
 
-procedure J2C_ComboBoxDrawItem(const AComboBox: TComboBox; const AIndex: Integer; const ARect: TRect;
+class procedure NSJeezCanvas.DrawComboBoxItem(const AComboBox: TComboBox; const AIndex: Integer; const ARect: TRect;
   const ADrawState: TOwnerDrawState; const AImageList: TImageList);
 begin
-  J2C_CanvasDrawItem(AComboBox.Canvas, AComboBox.Items[AIndex], ARect, odSelected in ADrawState, AImageList,
+  NSJeezCanvas.DrawItem(AComboBox.Canvas, AComboBox.Items[AIndex], ARect, odSelected in ADrawState, AImageList,
     TTreeNode(AComboBox.Items.Objects[AIndex]).ImageIndex);
 end;
 

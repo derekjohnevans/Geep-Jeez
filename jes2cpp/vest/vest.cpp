@@ -92,7 +92,7 @@ class CVeST : public AudioEffectX
     {
       FDrawContext = ADrawContext;
     }
-    CFontDesc* GetFont(char* AName)
+    CFontDesc* GetFont(const char* AName)
     {
       for (int LIndex = FFonts.size(); LIndex-- > 0;) {
         if (!stricmp(FFonts[LIndex]->getName(), AName)) {

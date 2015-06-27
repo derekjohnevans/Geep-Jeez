@@ -27,194 +27,215 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 unit Jes2CppParameter;
 
 {$MODE DELPHI}
+{$MACRO ON}
 
 interface
 
 uses
-  Jes2CppConstants, Jes2CppEat, Jes2CppEel, Jes2CppTranslate, Math, StrUtils, SysUtils, Types;
+  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppParserSimple, Jes2CppTranslate, Math, Soda, StrUtils, SysUtils, Types;
 
 type
 
-  TJes2CppParameter = object
+  CJes2CppParameters = class;
+
+  CJes2CppParameter = class
+    {$DEFINE DItemClass := CJes2CppParameter}
+    {$DEFINE DItemSuper := CComponent}
+    {$DEFINE DItemOwner := CJes2CppParameters}
+    {$INCLUDE soda.inc}
   strict private
     FIsFileSelection: Boolean;
-    FSlider: TEelSliderIndex;
-    FVariable, FLabel, FName: String;
+    FSlider: Integer;
+    FVariable, FLabel, FDataType: String;
     FFilePath, FFileName: TFileName;
     FDefValue, FMinValue, FMaxValue, FStepValue: Extended;
     FOptions: TStringDynArray;
   strict private
     procedure AddOption(const AOption: String);
-    procedure Clear;
+    procedure ExpectEmptyStr(const AString: String);
   public
-    function EelDecode(const AString: String): Boolean;
-    function CppEncode: String;
+    procedure DecodeEel(const ASlider: Integer; const ASource: String);
+    function EncodeCpp: String;
     function IsHidden: Boolean;
-  public
-    property Slider: TEelSliderIndex read FSlider;
-    property DefValue: Extended read FDefValue;
-    property MinValue: Extended read FMinValue;
-    property MaxValue: Extended read FMaxValue;
-    property StepValue: Extended read FStepValue;
   end;
 
-  TJes2CppParameterDynArray = array of TJes2CppParameter;
+  CJes2CppParameters = class
+    {$DEFINE DItemClass := CJes2CppParameters}
+    {$DEFINE DItemSuper := CComponent}
+    {$DEFINE DItemItems := CJes2CppParameter}
+    {$INCLUDE soda.inc}
+  end;
 
 implementation
 
+{$DEFINE DItemClass := CJes2CppParameter} {$INCLUDE soda.inc}
+
+{$DEFINE DItemClass := CJes2CppParameters} {$INCLUDE soda.inc}
+
 const
 
-  CharSetSliderTypes = ['<', ',', ':', '='];
+  CharSetSliderTypes = ['<', CharComma, CharColon, CharEqualSign];
 
 var
 
-  GPossibleLabels: array[0..5] of String = ('%', 's', 'ms', 'hz', 'db', 'deg');
+  GDataTypes: array[0..5] of String = ('%', 's', 'ms', 'hz', 'db', 'deg');
 
-procedure TJes2CppParameter.Clear;
+
+type
+  TEaterEx = object(TJes2CppParserSimple)
+    procedure ParseUntilDef(out AResult: Extended; const ACharSet: TSysCharSet; const ADefault: Extended);
+  end;
+
+
+procedure TEaterEx.ParseUntilDef(out AResult: Extended; const ACharSet: TSysCharSet; const ADefault: Extended);
 begin
-  FIsFileSelection := False;
-  FSlider := 1;
-  FDefValue := 0;
-  FMinValue := 0;
-  FMaxValue := 1;
-  FStepValue := GfEelEpsilon;
-  FVariable := EmptyStr;
-  FName := EmptyStr;
-  FLabel := EmptyStr;
-  SetLength(FOptions, 0);
+  GetUntil(ACharSet);
+  if FToken = EmptyStr then
+  begin
+    AResult := ADefault;
+  end else begin
+    AResult := EelStrToFloat(FToken);
+  end;
 end;
 
-function TJes2CppParameter.IsHidden: Boolean;
+function CJes2CppParameter.IsHidden: Boolean;
 begin
-  Result := AnsiStartsStr(CharMinusSign, FName);
+  Result := AnsiStartsStr(CharMinusSign, FLabel);
 end;
 
-procedure TJes2CppParameter.AddOption(const AOption: String);
+procedure CJes2CppParameter.ExpectEmptyStr(const AString: String);
+begin
+  if AString <> EmptyStr then
+  begin
+    raise Exception.CreateFmt('Found unexpected data. ''%s''.', [AString]);
+  end;
+end;
+
+procedure CJes2CppParameter.AddOption(const AOption: String);
 begin
   SetLength(FOptions, Length(FOptions) + 1);
   FOptions[High(FOptions)] := AOption;
 end;
 
-function TJes2CppParameter.EelDecode(const AString: String): Boolean;
+procedure CJes2CppParameter.DecodeEel(const ASlider: Integer; const ASource: String);
 var
-  LPos, LSliderIndex: Integer;
-  LToken: String;
-  LTerm: Char;
+  LEater: TEaterEx;
+  LPos: Integer;
+  LDataType: String;
 begin
-  LSliderIndex := 0;
-  LPos := 1;
-  Clear;
-  Result := False;
+  FIsFileSelection := False;
+  FSlider := ASlider;
+  FDefValue := 0;
+  FMinValue := 0;
+  FMaxValue := 1;
+  FStepValue := GfEelEpsilon;
+  FVariable := EmptyStr;
+  FLabel := EmptyStr;
+  FDataType := EmptyStr;
+  SetLength(FOptions, 0);
 
-  // TODO: Use EEL untils here?
-  if (EatUntil(AString, LPos, LToken, [':']) <> CharNull) and AnsiStartsText(GsEelPreVarSlider, LToken) and
-    TryStrToInt(Copy(LToken, Length(GsEelPreVarSlider) + 1, MaxInt), LSliderIndex) and InRange(LSliderIndex,
-    Low(TEelSliderIndex), High(TEelSliderIndex)) then
+  LEater.SetSource(ASource);
+
+  if not InRange(FSlider, Low(TEelSliderIndex), High(TEelSliderIndex)) then
   begin
-    LTerm := EatUntil(AString, LPos, LToken, CharSetSliderTypes);
-    if LTerm = '=' then
-    begin
-      FVariable := LToken + CharDot;
-      LTerm := EatUntil(AString, LPos, LToken, CharSetSliderTypes);
+    raise Exception.Create('Index out of range.');
+  end;
+  LEater.GetUntil(CharSetSliderTypes);
+  if LEater.Terminator = CharEqualSign then
+  begin
+    FVariable := LEater.AsName + CharDot;
+    LEater.GetUntil(CharSetSliderTypes);
+  end;
+  case LEater.Terminator of
+    CharComma: begin
+      FDefValue := EelStrToFloat(LEater.AsString);
+      LEater.GetUntil([CharNull]);
+      FLabel := LEater.AsName;
     end;
-    case LTerm of
-      ',': begin
-        FDefValue := StrToInt(LToken);
-        Result := EatUntil(AString, LPos, FName, [CharNull]) = CharNull;
-      end;
-      ':': begin
-        FFilePath := LToken;
-        Result := (EatUntil(AString, LPos, FFileName, [':']) = ':') and (EatUntil(AString, LPos, FName, [CharNull]) = CharNull);
-        if Result then
-        begin
-          FIsFileSelection := True;
-          FFilePath := SetDirSeparators(ExcludeLeadingPathDelimiter(IncludeTrailingPathDelimiter(FFilePath)));
-        end;
-      end;
-      '<': begin
-        FDefValue := EelStrToFloat(LToken);
-        case EatUntil(AString, LPos, FMinValue, [',', '>'], 0) of
-          '>': begin
-            Result := EatUntil(AString, LPos, FName, [CharNull]) = CharNull;
-          end;
-          ',': begin
-            case EatUntil(AString, LPos, FMaxValue, [',', '>'], 0) of
-              '>': begin
-                Result := EatUntil(AString, LPos, FName, [CharNull]) = CharNull;
-              end;
-              ',': begin
-                case EatUntil(AString, LPos, FStepValue, ['>', '{'], GfEelEpsilon) of
-                  '>': begin
-                    Result := EatUntil(AString, LPos, FName, [CharNull]) = CharNull;
-                  end;
-                  '{': begin
-                    repeat
-                      LTerm := EatUntil(AString, LPos, LToken, [',', '}']);
-                      if LTerm in [',', '}'] then
-                      begin
-                        AddOption(LToken);
-                      end;
-                    until not (LTerm in [',']);
-                    Result := (EatUntil(AString, LPos, LToken, ['>']) <> CharNull) and
-                      (EatUntil(AString, LPos, FName, [CharNull]) = CharNull);
-                    if Result then
-                    begin
-                      // Reaper ignors the min and max values when there are FOptions, so,
-                      // lets override them here to the correct values.
-                      FMinValue := 0;
-                      FMaxValue := Length(FOptions) - 1;
-                      FStepValue := 1;
-                    end;
-                  end;
-                end;
-              end;
-            end;
-          end;
-        end;
+    CharColon: begin
+      FFilePath := LEater.AsFileName;
+      LEater.GetUntil([CharColon]);
+      FFileName := LEater.AsFileName;
+      LEater.GetUntil([CharNull]);
+      FLabel := LEater.AsName;
+      FIsFileSelection := True;
+      FFilePath := SetDirSeparators(ExcludeLeadingPathDelimiter(IncludeTrailingPathDelimiter(FFilePath)));
+    end;
+    '<': begin
+      if LEater.AsString = EmptyStr then
+      begin
+        FDefValue := M_ZERO;
       end else begin
-        raise Exception.Create('Bad slider');
+        FDefValue := EelStrToFloat(LEater.AsString);
       end;
+      LEater.ParseUntilDef(FMinValue, [CharComma, '>'], 0);
+      if LEater.Terminator = CharComma then
+      begin
+        LEater.ParseUntilDef(FMaxValue, [CharComma, '>'], 0);
+        if LEater.Terminator = CharComma then
+        begin
+          LEater.ParseUntilDef(FStepValue, [CharComma, '>', CharOpeningBrace], GfEelEpsilon);
+          if LEater.Terminator in [CharComma, CharOpeningBrace] then
+          begin
+            if LEater.Terminator <> CharOpeningBrace then
+            begin
+              LEater.GetUntil([CharOpeningBrace]);
+              ExpectEmptyStr(LEater.AsString);
+            end;
+            repeat
+              LEater.GetUntil([CharComma, CharClosingBrace]);
+              if LEater.Terminator in [CharComma, CharClosingBrace] then
+              begin
+                AddOption(LEater.AsString('Option'));
+              end;
+            until not (LEater.Terminator in [CharComma]);
+            LEater.GetUntil(['>']);
+            ExpectEmptyStr(LEater.AsString);
+            FMinValue := 0;
+            FMaxValue := Length(FOptions) - 1;
+            FStepValue := 1;
+          end;
+        end;
+      end;
+      LEater.GetUntil([CharNull]);
+      FLabel := LEater.AsName;
     end;
   end;
-  if Result then
+  for LDataType in GDataTypes do
   begin
-    for LToken in GPossibleLabels do
+    LPos := Pos(CharOpeningParenthesis + LDataType + CharClosingParenthesis, LowerCase(FLabel));
+    if LPos > 0 then
     begin
-      LPos := Pos('(' + LToken + ')', LowerCase(FName));
-      if LPos > 0 then
-      begin
-        FLabel := Copy(FName, LPos + 1, Length(LToken));
-        Delete(FName, LPos, Length(LToken) + 2);
-        Break;
-      end;
+      FDataType := Copy(FLabel, LPos + 1, Length(LDataType));
+      Delete(FLabel, LPos, Length(LDataType) + 2);
+      Break;
     end;
-    FName := Trim(ReplaceStr(FName, '  ', ' '));
-    if FStepValue = 0 then
-    begin
-      FStepValue := GfEelEpsilon;
-    end;
-    FSlider := LSliderIndex;
+  end;
+  // TODO: Replace with a normalize spaces function?
+  FLabel := Trim(ReplaceStr(FLabel, CharSpace + CharSpace, CharSpace));
+  if FStepValue = 0 then
+  begin
+    FStepValue := GfEelEpsilon;
   end;
 end;
 
-function TJes2CppParameter.CppEncode: String;
+function CJes2CppParameter.EncodeCpp: String;
 var
-  LIndex: Integer;
-  LName: String;
+  LString: String;
 begin
-  LName := FName;
-  if AnsiStartsStr('-', LName) then
+  LString := FLabel;
+  if AnsiStartsStr(CharMinusSign, LString) then
   begin
-    LName := Copy(LName, 2, MaxInt);
+    LString := Copy(LString, 2, MaxInt);
   end;
   Result := Format('AddParam(%d, %s, %s, %s, %s, %s, %s, %s, %s, %s);', [FSlider, IfThen(FVariable <>
-    EmptyStr, '&' + CppEncodeVariable(FVariable), GsCppNull), CppEncodeFloat(FDefValue), CppEncodeFloat(FMinValue),
-    CppEncodeFloat(FMaxValue), CppEncodeFloat(FStepValue), CppEncodeString(FFilePath), CppEncodeString(FFileName),
-    CppEncodeString(FLabel), CppEncodeString(LName)]) + LineEnding;
+    EmptyStr, CharAmpersand + CppEncodeVariable(FVariable), GsCppNullPtr), CppEncodeFloat(FDefValue),
+    CppEncodeFloat(FMinValue), CppEncodeFloat(FMaxValue), CppEncodeFloat(FStepValue), CppEncodeString(FFilePath),
+    CppEncodeString(FFileName), CppEncodeString(FDataType), CppEncodeString(LString)]) + LineEnding;
 
-  for LIndex := Low(FOptions) to High(FOptions) do
+  for LString in FOptions do
   begin
-    Result += Format('FParameters[FParameters.size() - 1].FOptions.push_back(%s);', [CppEncodeString(FOptions[LIndex])]) + LineEnding;
+    Result += Format('FParameters[FParameters.size() - 1].AddOption(%s);', [CppEncodeString(LString)]) + LineEnding;
   end;
 end;
 

@@ -48,14 +48,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sys/stat.h>
 #include <strings.h>
 #include <dirent.h>
-#endif
+#endif // __GNUC__
 
 #ifdef _WIN32
 #include <io.h>
 #include <windows.h>
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
-#endif
+#endif // _WIN32
 
 // The future supported plugin types are...
 // VEST_VST (done)
@@ -93,7 +93,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define VEST_EXPORT __declspec(dllexport)
 #else
 #define VEST_EXPORT extern
-#endif
+#endif // VEST_IS_DLL
 
 #ifdef _WIN32
 #define VEST_CALLBACK CALLBACK
@@ -105,11 +105,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define VEST_WINAPI
 #define VEST_HANDLE void*
 #define VEST_DECLARE_HANDLE(AName) typedef struct AName##__ { int FUnused; } *AName
-#endif
+#endif // _WIN32
+
+#define VEST_F double
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif // __cplusplus
 
 VEST_DECLARE_HANDLE(HVEST);
 VEST_DECLARE_HANDLE(HVEST_DATA);
@@ -122,15 +124,15 @@ typedef bool (VEST_CALLBACK TVeST_GetString)(HVEST AVeST, char* AString);
 typedef void (VEST_CALLBACK TVeST_SetString)(HVEST AVeST, char* AString);
 typedef int (VEST_CALLBACK TVeST_GetInteger)(HVEST AVeST);
 typedef bool (VEST_CALLBACK TVeST_GetCategoryIndexedString)(HVEST AVeST, int ACategory, int AIndex, char* AString);
-typedef void (VEST_CALLBACK TVeST_SetIndexedDouble)(HVEST AVeST, int AIndex, double AValue);
-typedef double (VEST_CALLBACK TVeST_GetIndexedDouble)(HVEST AVeST, int AIndex);
+typedef void (VEST_CALLBACK TVeST_SetIndexedValue)(HVEST AVeST, int AIndex, VEST_F AValue);
+typedef VEST_F (VEST_CALLBACK TVeST_GetIndexedValue)(HVEST AVeST, int AIndex);
 typedef void (VEST_CALLBACK TVeST_GetIndexedString)(HVEST AVeST, int AIndex, char* AString);
 typedef void (VEST_CALLBACK TVeST_ProcessReplacing)(HVEST AVeST, float** AInputs, float** AOutputs, int ASampleFrames);
 typedef void (VEST_CALLBACK TVeST_ProcessDoubleReplacing)(HVEST AVeST, double** AInputs, double** AOutputs,
     int ASampleFrames);
-typedef void (VEST_CALLBACK TVeST_MouseEvent)(HVEST AVeST, double AX, double AY, int AButtons);
+typedef void (VEST_CALLBACK TVeST_MouseEvent)(HVEST AVeST, VEST_F AX, VEST_F AY, int AButtons);
 typedef void (VEST_CALLBACK TVeST_KeyEvent)(HVEST AVeST, int AChar, int AVirtual, int AModifier);
-typedef void (VEST_CALLBACK TVeST_Draw)(HVEST AVeST, double AWidth, double AHeight);
+typedef void (VEST_CALLBACK TVeST_Draw)(HVEST AVeST, VEST_F AWidth, VEST_F AHeight);
 typedef int (VEST_CALLBACK TVeST_GetChunk)(HVEST AVeST, void** AData, bool AIsPreset);
 typedef int (VEST_CALLBACK TVeST_SetChunk)(HVEST AVeST, void* AData, int ASize, bool AIsPreset);
 
@@ -155,8 +157,8 @@ typedef struct {
   TVeST_GetString* OnGetProgramName;
   TVeST_SetString* OnSetProgramName;
   TVeST_GetCategoryIndexedString* OnGetProgramNameIndexed;
-  TVeST_GetIndexedDouble* OnGetParameter;
-  TVeST_SetIndexedDouble* OnSetParameter;
+  TVeST_GetIndexedValue* OnGetParameter;
+  TVeST_SetIndexedValue* OnSetParameter;
   TVeST_GetIndexedString* OnGetParameterName;
   TVeST_GetIndexedString* OnGetParameterLabel;
   TVeST_GetIndexedString* OnGetParameterDisplay;
@@ -177,12 +179,12 @@ typedef struct {
 #define VEST_SETNUMOUTPUTS VEST_EXPORT bool VEST_WINAPI VeST_SetNumOutputs(HVEST AVeST, int ACount)
 #define VEST_SETUNIQUEID VEST_EXPORT bool VEST_WINAPI VeST_SetUniqueID(HVEST AVeST, int AValue)
 #define VEST_GETSAMPLERATE VEST_EXPORT float VEST_WINAPI VeST_GetSampleRate(HVEST AVeST)
-#define VEST_GETTEMPO VEST_EXPORT double VEST_WINAPI VeST_GetTempo(HVEST AVeST)
+#define VEST_GETTEMPO VEST_EXPORT VEST_F VEST_WINAPI VeST_GetTempo(HVEST AVeST)
 #define VEST_GETTRANSPORTRECORDING VEST_EXPORT bool VEST_WINAPI VeST_GetTransportRecording(HVEST AVeST)
 #define VEST_GETTRANSPORTPLAYING VEST_EXPORT bool VEST_WINAPI VeST_GetTransportPlaying(HVEST AVeST)
-#define VEST_GETPPQPOS VEST_EXPORT double VEST_WINAPI VeST_GetPpqPos(HVEST AVeST)
-#define VEST_GETBARSTARTPOS VEST_EXPORT double VEST_WINAPI VeST_GetBarStartPos(HVEST AVeST)
-#define VEST_GETTIMEINFO3 VEST_EXPORT bool VEST_WINAPI VeST_GetTimeInfo3(HVEST AVeST, double* ATempo, double* ASigNumerator, double* ASigDenominator)
+#define VEST_GETPPQPOS VEST_EXPORT VEST_F VEST_WINAPI VeST_GetPpqPos(HVEST AVeST)
+#define VEST_GETBARSTARTPOS VEST_EXPORT VEST_F VEST_WINAPI VeST_GetBarStartPos(HVEST AVeST)
+#define VEST_GETTIMEINFO3 VEST_EXPORT bool VEST_WINAPI VeST_GetTimeInfo3(HVEST AVeST, VEST_F* ATempo, VEST_F* ASigNumerator, VEST_F* ASigDenominator)
 #define VEST_GETBLOCKSIZE VEST_EXPORT int VEST_WINAPI VeST_GetBlockSize(HVEST AVeST)
 #define VEST_GETHOSTLANGUAGE VEST_EXPORT int VEST_WINAPI VeST_GetHostLanguage(HVEST AVeST)
 #define VEST_GETHOSTPRODUCTSTRING VEST_EXPORT bool VEST_WINAPI VeST_GetHostProductString(HVEST AVeST, char* AString)
@@ -205,28 +207,28 @@ typedef struct {
 #define VEST_SETFRAMECOLOR VEST_EXPORT bool VEST_WINAPI VeST_SetFrameColor(HVEST AVeST, int AR, int AG, int AB, int AA)
 #define VEST_SETFONT VEST_EXPORT bool VEST_WINAPI VeST_SetFont(HVEST AVeST, char* AName, int ASize, int AStyle)
 #define VEST_GETFONTSIZE VEST_EXPORT int VEST_WINAPI VeST_GetFontSize(HVEST AVeST)
-#define VEST_GETSTRINGWIDTH VEST_EXPORT double VEST_WINAPI VeST_GetStringWidth(HVEST AVeST, const char* AString)
-#define VEST_MOVETO VEST_EXPORT bool VEST_WINAPI VeST_MoveTo(HVEST AVeST, double AX, double AY)
-#define VEST_LINETO VEST_EXPORT bool VEST_WINAPI VeST_LineTo(HVEST AVeST, double AX, double AY)
-#define VEST_DRAWRECT VEST_EXPORT bool VEST_WINAPI VeST_DrawRect(HVEST AVeST, double AX1, double AY1, double AX2, double AY2, int AStyle)
-#define VEST_DRAWELLIPSE VEST_EXPORT bool VEST_WINAPI VeST_DrawEllipse(HVEST AVeST, double AX1, double AY1, double AX2, double AY2, int AStyle)
-#define VEST_DRAWPOINT VEST_EXPORT bool VEST_WINAPI VeST_DrawPoint(HVEST AVeST, double AX, double AY, int AR, int AG, int AB, int AA)
-#define VEST_DRAWSTRING VEST_EXPORT bool VEST_WINAPI VeST_DrawString(HVEST AVeST, const char* AString, double AX1, double AY1, double AX2, double AY2, bool AIsOpaque, int AAlign)
-#define VEST_DRAWSTRINGUTF8_XY VEST_EXPORT bool VEST_WINAPI VeST_DrawStringUTF8_XY(HVEST AVeST, const char* AString, double AX, double AY, bool AAntiAlias)
-#define VEST_DRAWSTRINGUTF8 VEST_EXPORT bool VEST_WINAPI VeST_DrawStringUTF8(HVEST AVeST, const char* AString, double AX1, double AY1, double AX2, double AY2, int AAlign, bool AAntiAlias)
-#define VEST_GETPOINT VEST_EXPORT bool VEST_WINAPI VeST_GetPoint(HVEST AVeST, double AX, double AY, int* AR, int* AG, int* AB, int* AA)
+#define VEST_GETSTRINGWIDTH VEST_EXPORT VEST_F VEST_WINAPI VeST_GetStringWidth(HVEST AVeST, const char* AString)
+#define VEST_MOVETO VEST_EXPORT bool VEST_WINAPI VeST_MoveTo(HVEST AVeST, VEST_F AX, VEST_F AY)
+#define VEST_LINETO VEST_EXPORT bool VEST_WINAPI VeST_LineTo(HVEST AVeST, VEST_F AX, VEST_F AY)
+#define VEST_DRAWRECT VEST_EXPORT bool VEST_WINAPI VeST_DrawRect(HVEST AVeST, VEST_F AX1, VEST_F AY1, VEST_F AX2, VEST_F AY2, int AStyle)
+#define VEST_DRAWELLIPSE VEST_EXPORT bool VEST_WINAPI VeST_DrawEllipse(HVEST AVeST, VEST_F AX1, VEST_F AY1, VEST_F AX2, VEST_F AY2, int AStyle)
+#define VEST_DRAWPOINT VEST_EXPORT bool VEST_WINAPI VeST_DrawPoint(HVEST AVeST, VEST_F AX, VEST_F AY, int AR, int AG, int AB, int AA)
+#define VEST_DRAWSTRING VEST_EXPORT bool VEST_WINAPI VeST_DrawString(HVEST AVeST, const char* AString, VEST_F AX1, VEST_F AY1, VEST_F AX2, VEST_F AY2, bool AIsOpaque, int AAlign)
+#define VEST_DRAWSTRINGUTF8_XY VEST_EXPORT bool VEST_WINAPI VeST_DrawStringUTF8_XY(HVEST AVeST, const char* AString, VEST_F AX, VEST_F AY, bool AAntiAlias)
+#define VEST_DRAWSTRINGUTF8 VEST_EXPORT bool VEST_WINAPI VeST_DrawStringUTF8(HVEST AVeST, const char* AString, VEST_F AX1, VEST_F AY1, VEST_F AX2, VEST_F AY2, int AAlign, bool AAntiAlias)
+#define VEST_GETPOINT VEST_EXPORT bool VEST_WINAPI VeST_GetPoint(HVEST AVeST, VEST_F AX, VEST_F AY, int* AR, int* AG, int* AB, int* AA)
 #define VEST_BITMAP_CREATE VEST_EXPORT HVEST_BITMAP VEST_WINAPI VeST_BitmapCreate()
 #define VEST_BITMAP_FREE VEST_EXPORT bool VEST_WINAPI VeST_BitmapFree(HVEST_BITMAP ABitmap)
 #define VEST_BITMAP_LOADFROMFILE VEST_EXPORT bool VEST_WINAPI VeST_BitmapLoadFromFile(HVEST_BITMAP ABitmap, char* AFileName)
-#define VEST_BITMAP_GETWIDTH VEST_EXPORT double VEST_WINAPI VeST_BitmapGetWidth(HVEST_BITMAP ABitmap)
-#define VEST_BITMAP_GETHEIGHT VEST_EXPORT double VEST_WINAPI VeST_BitmapGetHeight(HVEST_BITMAP ABitmap)
+#define VEST_BITMAP_GETWIDTH VEST_EXPORT VEST_F VEST_WINAPI VeST_BitmapGetWidth(HVEST_BITMAP ABitmap)
+#define VEST_BITMAP_GETHEIGHT VEST_EXPORT VEST_F VEST_WINAPI VeST_BitmapGetHeight(HVEST_BITMAP ABitmap)
 #define VEST_BITMAP_GETTRANSPARENTCOLOR VEST_EXPORT bool VEST_WINAPI VeST_BitmapGetTransparentColor(HVEST_BITMAP ABitmap, int* AR, int* AG, int* AB, int* AA)
 #define VEST_BITMAP_SETTRANSPARENTCOLOR VEST_EXPORT bool VEST_WINAPI VeST_BitmapSetTransparentColor(HVEST_BITMAP ABitmap, int AR, int AG, int AB, int AA)
 #define VEST_BITMAP_GETNOALPHA VEST_EXPORT bool VEST_WINAPI VeST_BitmapGetNoAlpha(HVEST_BITMAP ABitmap)
 #define VEST_BITMAP_SETNOTALPHA VEST_EXPORT bool VEST_WINAPI VeST_BitmapSetNoAlpha(HVEST_BITMAP ABitmap, bool AState)
-#define VEST_BITMAP_DRAW VEST_EXPORT bool VEST_WINAPI VeST_BitmapDraw(HVEST_BITMAP ABitmap, HVEST AVeST, double AX1, double AY1, double AX2, double AY2, double AX, double AY)
-#define VEST_BITMAP_DRAW_ALPHABLEND VEST_EXPORT bool VEST_WINAPI VeST_BitmapDrawAlphaBlend(HVEST_BITMAP ABitmap, HVEST AVeST, double AX1, double AY1, double AX2, double AY2, double AX, double AY, char AAlpha)
-#define VEST_BITMAP_DRAW_TRANSPARENT VEST_EXPORT bool VEST_WINAPI VeST_BitmapDrawTransparent(HVEST_BITMAP ABitmap, HVEST AVeST, double AX1, double AY1, double AX2, double AY2, double AX, double AY)
+#define VEST_BITMAP_DRAW VEST_EXPORT bool VEST_WINAPI VeST_BitmapDraw(HVEST_BITMAP ABitmap, HVEST AVeST, VEST_F AX1, VEST_F AY1, VEST_F AX2, VEST_F AY2, VEST_F AX, VEST_F AY)
+#define VEST_BITMAP_DRAW_ALPHABLEND VEST_EXPORT bool VEST_WINAPI VeST_BitmapDrawAlphaBlend(HVEST_BITMAP ABitmap, HVEST AVeST, VEST_F AX1, VEST_F AY1, VEST_F AX2, VEST_F AY2, VEST_F AX, VEST_F AY, char AAlpha)
+#define VEST_BITMAP_DRAW_TRANSPARENT VEST_EXPORT bool VEST_WINAPI VeST_BitmapDrawTransparent(HVEST_BITMAP ABitmap, HVEST AVeST, VEST_F AX1, VEST_F AY1, VEST_F AX2, VEST_F AY2, VEST_F AX, VEST_F AY)
 #define VEST_MASTERIDLE VEST_EXPORT bool VEST_WINAPI VeST_MasterIdle(HVEST AVeST)
 #define VEST_PROGRAMSARECHUNKS VEST_EXPORT bool VEST_WINAPI VeST_ProgramsAreChunks(HVEST AVeST, bool AState)
 
@@ -307,10 +309,134 @@ VEST_EXPORT LV2_Descriptor* VEST_WINAPI VeST_GetLADSPA(HVEST AVeST);
 
 #ifdef __cplusplus
 }
-#endif
+#endif // __cplusplus
 
 // VST Defines hInstance as an untyped handle.
 extern VEST_HANDLE hInstance;
+
+// Useful endian functions.
+
+inline int EndianInt(uint8_t a, uint8_t b, bool ALittleEndian)
+{
+return ALittleEndian ? (int8_t)b << 8 | a : (int8_t)a << 8 | b;
+}
+
+inline int EndianInt(uint8_t a, uint8_t b, uint8_t c, bool ALittleEndian)
+{
+return ALittleEndian ? (int8_t)c << 16 | b << 8 | a : (int8_t)a << 16 | b << 8 | c;
+}
+
+inline int EndianInt(uint8_t a, uint8_t b, uint8_t c, uint8_t d, bool ALittleEndian)
+{
+return ALittleEndian ? (int8_t)d << 24 | c << 16 | b << 8 | a : (int8_t)a << 24 | b << 16 | c << 8 | d;
+}
+
+#define WAVE_RIFF EndianInt('R', 'I', 'F', 'F', true)
+#define WAVE_WAVE EndianInt('W', 'A', 'V', 'E', true)
+#define WAVE_FMT  EndianInt('f', 'm', 't', ' ', true)
+#define WAVE_FACT EndianInt('f', 'a', 'c', 't', true)
+#define WAVE_CUE  EndianInt('c', 'u', 'e', ' ', true)
+#define WAVE_DATA EndianInt('d', 'a', 't', 'a', true)
+#define WAVE_LIST EndianInt('L', 'I', 'S', 'T', true)
+
+// This is the start of a general purpose RIFF parser. The class may change, so
+// I wouldn't use it just yet. The code might end up as WAV loading functions in VeST.
+
+class CVeST_RIFF
+{
+private:
+
+  FILE* FFile;
+  unsigned FHead;
+  int32_t FName;
+  uint32_t FSize;
+
+public:
+
+  CVeST_RIFF()
+  {
+    FFile = nullptr;
+    FName = FSize = FHead = 0;
+  }
+  uint32_t GetSize()
+  {
+    return FSize;
+  }
+  bool IsName(int32_t AName)
+  {
+    return FName == AName;
+  }
+  // Opens chunk. Returns true if successful.
+  // TODO: There is nothing to prevent reading behond a parent chunk,
+  // therefore, we should pass a parent chunk pointer and check its
+  // data avaliablity before opening. We should also check if a chunk
+  // is larger than the parent, which is a broken file, but we should check.
+  bool Open(FILE* AFile)
+  {
+    Close();
+    FFile = AFile;
+    FHead = ftell(FFile);
+    if (FHead >= 0) {
+      FSize = 8; // Header size is 8 bytes.
+      if (Read(FName) && Read(FSize)) {
+        FHead += 8; // Move head inside chunk.
+        return true;
+      }
+    }
+    return false;
+  }
+  // Opens a chunk and checks name. Returns true if successful.
+  bool Open(FILE* AFile, uint32_t AName)
+  {
+    return Open(AFile) && IsName(AName);
+  }
+  // Rewinds file position to beginning of chunk.
+  void Rewind()
+  {
+    fseek(FFile, FHead, SEEK_SET);
+  }
+  // Closes chunk and sets file position to next chunk, ready for opening.
+  void Close()
+  {
+    if (FFile) {
+      fseek(FFile, FHead + FSize, SEEK_SET);
+      FFile = nullptr;
+      FName = FHead = FSize = 0;
+    }
+  }
+  // Returns the number of bytes avaliable. May return a negitive value if file pos is behond chunk end.
+  long BytesAvaliable()
+  {
+    return (FHead + FSize) - ftell(FFile);
+  }
+  // Reads a variable length block of data from chunk. Returns true if successful.
+  bool Read(void* AValue, int ASize)
+  {
+    return BytesAvaliable() >= ASize && fread(memset(AValue, 0, ASize), ASize, 1, FFile) == 1;
+  }
+  // Rewinds chunk, and reads entire chunk into a vector. Returns true if successful.
+  bool ReadChunk(std::vector<uint8_t>& AData)
+  {
+    Rewind();
+    AData.resize(FSize);
+    return Read(&AData[0], AData.size());
+  }
+  // Reads a signed 16bit int from chunk. Returns true if successful.
+  bool Read(int16_t& AValue)
+  {
+    return Read(&AValue, sizeof(AValue));
+  }
+  // Reads an unsigned 32bit int from chunk. Returns true if successful.
+  bool Read(uint32_t& AValue)
+  {
+    return Read(&AValue, sizeof(AValue));
+  }
+  // Reads a signed 32bit int from chunk. Returns true if successful.
+  bool Read(int32_t& AValue)
+  {
+    return Read(&AValue, sizeof(AValue));
+  }
+};
 
 #endif
 

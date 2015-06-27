@@ -27,20 +27,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 unit Jes2CppFunctionIdentifiers;
 
 {$MODE DELPHI}
+{$MACRO ON}
 
 interface
 
 uses
-  Jes2CppComponent, Jes2CppConstants, Jes2CppEel, Jes2CppIdentString, Jes2CppIterate, Jes2CppMessageLog,
-  Jes2CppTranslate, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppIdentifier, Jes2CppIdentString, Jes2CppMessageLog,
+  Jes2CppTranslate, Soda, SysUtils;
 
 type
 
-  CJes2CppFunctionIdentifier = class(CJes2CppComponent)
-
+  CJes2CppFunctionIdentifier = class(CJes2CppDataType)
   end;
 
-  CJes2CppFunctionIdentifiers = class(CJes2CppComponent)
+  CJes2CppFunctionIdentifiers = class
+    {$DEFINE DItemClass := CJes2CppFunctionIdentifiers}
+    {$DEFINE DItemSuper := CComponent}
+    {$DEFINE DItemOwner := CComponent}
+    {$DEFINE DItemItems := CJes2CppFunctionIdentifier}
+    {$INCLUDE soda.inc}
   public
     function ExistsIdent(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
     function IndexOfIdent(AIdent: TIdentString): Integer;
@@ -48,38 +53,35 @@ type
     function IsNameSpaceMatch(const AIdent: TIdentString): Boolean;
     function IsVariadic: Boolean;
   public
-    procedure Append(const AIdent: TIdentString);
     procedure AppendParams(var AResult: String; const AIsDefine, AIsInstance: Boolean);
     procedure CopyFrom(const AIdentifiers: CJes2CppFunctionIdentifiers);
   end;
 
 implementation
 
-procedure CJes2CppFunctionIdentifiers.Append(const AIdent: TIdentString);
-begin
-  CJes2CppFunctionIdentifier.Create(Self, AIdent);
-end;
+{$DEFINE DItemClass := CJes2CppFunctionIdentifiers}
+{$INCLUDE soda.inc}
 
 procedure CJes2CppFunctionIdentifiers.CopyFrom(const AIdentifiers: CJes2CppFunctionIdentifiers);
 var
-  LIndex: Integer;
+  LComponent: TComponent;
 begin
-  Assert(ComponentCount = 0);
-  for LIndex := IndexFirst(AIdentifiers) to IndexLast(AIdentifiers) do
+  Assert(IsEmpty);
+  for LComponent in AIdentifiers do
   begin
-    Append(AIdentifiers[LIndex].Name);
+    CJes2CppFunctionIdentifier.CreateNamed(Self, LComponent.Name);
   end;
 end;
 
 function CJes2CppFunctionIdentifiers.IsVariadic: Boolean;
 begin
-  Result := (ComponentCount > 0) and (Self[ComponentCount - 1].Name = GsEelVariadic);
+  Result := HasComponents and (Self[ComponentCount - 1].Name = GsEelVariadic);
 end;
 
 function CJes2CppFunctionIdentifiers.IndexOfIdent(AIdent: TIdentString): Integer;
 begin
   AIdent := J2C_IdentRemoveRef(AIdent);
-  for Result := IndexFirst(Self) to IndexLast(Self) do
+  for Result := 0 to ComponentCount - 1 do
   begin
     if SameText(AIdent, J2C_IdentRemoveRef(Self[Result].Name)) then
     begin
@@ -104,16 +106,16 @@ end;
 
 function CJes2CppFunctionIdentifiers.IsCountMatch(const ACount: Integer): Boolean;
 begin
-  Result := (IsVariadic and (ACount >= (ComponentCount - 1))) or (ACount = ComponentCount);
+  Result := (IsVariadic and (ACount >= ComponentCount - 1)) or (ACount = ComponentCount);
 end;
 
 function CJes2CppFunctionIdentifiers.IsNameSpaceMatch(const AIdent: TIdentString): Boolean;
 var
-  LIndex: Integer;
+  LComponent: TComponent;
 begin
-  for LIndex := IndexFirst(Self) to IndexLast(Self) do
+  for LComponent in Self do
   begin
-    if J2C_IdentIsNameSpace(AIdent, Self[LIndex].Name) then
+    if J2C_IdentIsNameSpace(AIdent, LComponent.Name) then
     begin
       Exit(True);
     end;
@@ -123,9 +125,9 @@ end;
 
 procedure CJes2CppFunctionIdentifiers.AppendParams(var AResult: String; const AIsDefine, AIsInstance: Boolean);
 var
-  LIndex: Integer;
+  LComponent: TComponent;
 begin
-  for LIndex := IndexFirst(Self) to IndexLast(Self) do
+  for LComponent in Self do
   begin
     if AResult <> EmptyStr then
     begin
@@ -137,9 +139,9 @@ begin
     end;
     if AIsInstance then
     begin
-      AResult += CppEncodeVariable(GsEelSpaceThis + Self[LIndex].Name);
+      AResult += CppEncodeVariable(GsEelSpaceThis + LComponent.Name);
     end else begin
-      AResult += CppEncodeVariable(Self[LIndex].Name);
+      AResult += CppEncodeVariable(LComponent.Name);
     end;
   end;
 end;

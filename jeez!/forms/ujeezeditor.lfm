@@ -11,7 +11,7 @@ object JeezEditor: TJeezEditor
   DesignLeft = 551
   DesignTop = 377
   object SplitterRight: TSplitter
-    Left = 470
+    Left = 490
     Height = 243
     Top = 23
     Width = 5
@@ -24,17 +24,17 @@ object JeezEditor: TJeezEditor
     Left = 0
     Height = 243
     Top = 23
-    Width = 470
+    Width = 490
     Align = alClient
     BevelOuter = bvLowered
     ClientHeight = 243
-    ClientWidth = 470
+    ClientWidth = 490
     TabOrder = 1
     inline SynEdit: TSynEdit
       Left = 1
       Height = 209
       Top = 33
-      Width = 468
+      Width = 488
       Align = alClient
       Color = clWindow
       Font.Height = -13
@@ -536,12 +536,12 @@ object JeezEditor: TJeezEditor
       Left = 1
       Height = 32
       Top = 1
-      Width = 468
+      Width = 488
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 2
       ClientHeight = 32
-      ClientWidth = 468
+      ClientWidth = 488
       Color = 145
       ParentColor = False
       TabOrder = 1
@@ -578,7 +578,7 @@ object JeezEditor: TJeezEditor
         Left = 32
         Height = 20
         Top = 6
-        Width = 409
+        Width = 429
         Align = alClient
         BorderSpacing.Around = 4
         Font.Height = -13
@@ -1048,7 +1048,7 @@ object JeezEditor: TJeezEditor
         end
       end
       object ButtonFindError: TSpeedButton
-        Left = 445
+        Left = 465
         Height = 28
         Top = 2
         Width = 21
@@ -1199,21 +1199,21 @@ object JeezEditor: TJeezEditor
     end
   end
   object PanelRight: TPanel
-    Left = 475
+    Left = 495
     Height = 243
     Top = 23
-    Width = 320
+    Width = 300
     Align = alRight
     BevelOuter = bvLowered
     ClientHeight = 243
-    ClientWidth = 320
+    ClientWidth = 300
     TabOrder = 3
     OnResize = PanelRightResize
     object TreeView: TTreeView
       Left = 1
       Height = 241
       Top = 1
-      Width = 318
+      Width = 298
       Align = alClient
       BorderStyle = bsNone
       DefaultItemHeight = 16

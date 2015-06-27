@@ -27,23 +27,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 unit Jes2CppIdentifier;
 
 {$MODE DELPHI}
+{$MACRO ON}
 
 interface
 
 uses
-  Classes, Jes2CppComponent, Jes2CppFileNames, Jes2CppIdentString, Jes2CppReference, SysUtils;
+  Classes, Jes2CppFileNames, Jes2CppIdentString, Jes2CppReference, Jes2CppTranslate, Soda, SysUtils;
 
 type
 
   TJes2CppIdentifierType = (itInternal, itExternal);
 
-  CJes2CppIdentifier = class(CJes2CppComponent)
+  CJes2CppDataType = class(CComponent)
+  strict private
+    FDataType: String;
+  strict private
+    function GetDataType: String;
+  public
+    property DataType: String read GetDataType write FDataType;
+  end;
+
+  CJes2CppIdentifier = class(CJes2CppDataType)
   strict private
     FComment: String;
     FIdentType: TJes2CppIdentifierType;
     FReferences: CJes2CppReferences;
-  public
-    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
+  protected
+    procedure DoCreate; override;
   public
     function IsSystem: Boolean;
     function IsIdent(const AIdent: TIdentString): Boolean;
@@ -51,99 +61,44 @@ type
     property References: CJes2CppReferences read FReferences;
     property IdentType: TJes2CppIdentifierType read FIdentType write FIdentType;
     property Comment: String read FComment write FComment;
-    property Name: TComponentName read GetName;
   end;
 
-  CJes2CppIdentifiers = class(CJes2CppComponent)
-  public
-    function GetIdentifier(const AIndex: Integer): CJes2CppIdentifier;
+  CJes2CppIdentifiers = class
+    {$DEFINE DItemClass := CJes2CppIdentifiers}
+    {$DEFINE DItemSuper := CComponent}
+    {$DEFINE DItemItems := CJes2CppIdentifier}
+    {$INCLUDE soda.inc}
   end;
 
-  (*
-  CJes2CppIdentifiersFastFind = class(CJes2CppIdentifiers)
-  strict private
-    FNames: TStringList;
-  protected
-    procedure Notification(AComponent: TComponent; AOperation: TOperation); override;
-  public
-    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
-    destructor Destroy; override;
-  public
-    function FindComponent(const AName: TComponentName): TComponent;
-  end;
-  *)
 implementation
 
-constructor CJes2CppIdentifier.Create(const AOwner: TComponent; const AName: TComponentName);
+{$DEFINE DItemClass := CJes2CppIdentifiers}
+{$INCLUDE soda.inc}
+
+function CJes2CppDataType.GetDataType: String;
 begin
-  inherited Create(AOwner, AName);
-  FReferences := CJes2CppReferences.Create(Self, EmptyStr);
+  Result := FDataType;
+  if Result = EmptyStr then
+  begin
+    Result := GsCppEelF;
+  end;
+end;
+
+procedure CJes2CppIdentifier.DoCreate;
+begin
+  inherited DoCreate;
+  FReferences := CJes2CppReferences.Create(Self);
 end;
 
 function CJes2CppIdentifier.IsSystem: Boolean;
 begin
-  Result := (IdentType = itExternal) or ((References.ComponentCount > 0) and
-    SameText(References.GetReference(0).FilePartName, GsFilePartJes2Cpp + GsFileExtJsFxInc));
+  Result := (IdentType = itExternal) or (References.HasComponents and SameText(References[0].FilePartName,
+    GsFilePartJes2Cpp + GsFileExtJsFxInc));
 end;
 
 function CJes2CppIdentifier.IsIdent(const AIdent: TIdentString): Boolean;
 begin
   Result := SameText(Name, AIdent);
 end;
-
-function CJes2CppIdentifiers.GetIdentifier(const AIndex: Integer): CJes2CppIdentifier;
-begin
-  Result := Self[AIndex] as CJes2CppIdentifier;
-end;
-
-(*
-constructor CJes2CppIdentifiersFastFind.Create(const AOwner: TComponent; const AName: TComponentName);
-begin
-  FNames := TStringList.Create;
-  FNames.Sorted := True;
-  FNames.Duplicates := dupError;
-  FNames.CaseSensitive := False;
-  inherited Create(AOwner, AName);
-end;
-
-destructor CJes2CppIdentifiersFastFind.Destroy;
-begin
-  inherited Destroy;
-  FreeAndNil(FNames);
-end;
-
-procedure CJes2CppIdentifiersFastFind.Notification(AComponent: TComponent; AOperation: TOperation);
-var
-  LIndex: Integer;
-begin
-  inherited  Notification(AComponent, AOperation);
-  if AComponent.Owner = Self then
-  begin
-    case AOperation of
-      opInsert: begin
-        FNames.AddObject(AComponent.Name, AComponent);
-      end;
-      opRemove: begin
-        if FNames.Find(AComponent.Name, LIndex) then
-        begin
-          FNames.Delete(LIndex);
-        end;
-      end;
-    end;
-  end;
-end;
-
-function CJes2CppIdentifiersFastFind.FindComponent(const AName: TComponentName): TComponent;
-var
-  LIndex: Integer;
-begin
-  if FNames.Find(AName, LIndex) then
-  begin
-    Result := FNames.Objects[LIndex] as TComponent;
-  end else begin
-    Result := inherited FindComponent(AName);
-  end;
-end;
-*)
 
 end.

@@ -32,10 +32,9 @@ interface
 
 uses
   Buttons, Classes, ComCtrls, Controls, DateUtils, ExtCtrls, FileUtil, Forms, Graphics, JeezResources, JeezSynEdit,
-  JeezTreeView, JeezUtils, Jes2Cpp, Jes2CppCompiler, Jes2CppConstants, Jes2CppEel,
-  Jes2CppFileNames, Jes2CppFunction, Jes2CppIdentifier, Jes2CppIdentString, Jes2CppIterate, Jes2CppPlatform,
-  Jes2CppReference, Jes2CppStrings, Jes2CppUtils, Jes2CppVariable, LCLIntf, LCLType, Menus, StdCtrls, SynEdit,
-  SynEditTypes, SynHighlighterAny, SysUtils, types;
+  JeezTreeView, JeezUtils, Jes2Cpp, Jes2CppCompiler, Jes2CppConstants, Jes2CppEel, Jes2CppFileNames,
+  Jes2CppFunction, Jes2CppIdentifier, Jes2CppIdentString, Jes2CppPlatform, Jes2CppReference, Jes2CppStrings,
+  Jes2CppUtils, Jes2CppVariable, LCLIntf, LCLType, Menus, StdCtrls, SynEdit, SynEditTypes, SynHighlighterAny, SysUtils, types;
 
 type
 
@@ -119,18 +118,19 @@ type
   strict private
     FMousePoint: TPoint;
     FFileName: TFileName;
-    FTempStrings, FNamedStrings, FConstantStrings, FSampleVariables, FSliderVariables, FExternalVariables,
-    FInternalVariables, FFunctionsSystem, FFunctionsUser: TTreeNode;
+    FStringsTemp, FStringsNamed, FStringsLiteral, FVariablesSample, FVariablesSlider, FVariablesExternal,
+    FVariablesInternal, FFunctionsSystem, FFunctionsUser: TTreeNode;
   strict private
-    function AddFunction(const AFunction: CJes2CppFunction): TTreeNode;
-    function AddIdentifier(const AParent: TTreeNode; const AIdentifier: CJes2CppIdentifier): TTreeNode;
-    function AddVariable(const AVariable: CJes2CppVariable): TTreeNode;
+    function CreateFunction(const AFunction: CJes2CppFunction): TTreeNode;
+    function CreateIdentifier(const AParent: TTreeNode; const AIdentifier: CJes2CppIdentifier): TTreeNode;
+    function CreateVariable(const AVariable: CJes2CppVariable): TTreeNode;
+  strict private
     function FindTreeNodeFunction(const AName: String; const AStripParams: Boolean): TTreeNode;
     function FindTreeNodeVariable(const AName: String): TTreeNode;
     function FolderCreate(const AName: String; const AImageIndex: Integer): TTreeNode;
     function GetTabSheet: TTabSheet;
   strict private
-    procedure AddReferences(const AParent: TTreeNode; const AIdentifier: CJes2CppIdentifier);
+    procedure CreateReferences(const AParent: TTreeNode; const AIdentifier: CJes2CppIdentifier);
     procedure FoldersAlphaSort;
     procedure FoldersCollapse;
     procedure JumpToReferenceNode(const ATreeNode: TTreeNode; const ANoFileNameChange: Boolean);
@@ -159,27 +159,27 @@ constructor TJeezEditor.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
-  if TJes2CppPlatform.IsWindows9x then
+  if NsPlatform.IsWindows9x then
   begin
     PanelTop.ParentColor := False;
     PanelTop.Color := clBtnFace;
   end;
 
-  TJes2CppPlatform.ScrollingWinControlPrepare(Self);
-  TJeezSynEdit.SynJsFxInit(SynJsfxSyn);
+  NsPlatform.ScrollingWinControlPrepare(Self);
+  NsSynEdit.SynJsFxInit(SynJsfxSyn);
 
   ErrorMessage.LineHighlightColor.Background := ErrorMessage.Color;
 
-  FInternalVariables := FolderCreate('Variables (User)', GiImageIndexVariables);
-  FFunctionsUser := FolderCreate('Functions (User)', GiImageIndexFunctions);
-  FExternalVariables := FolderCreate('Variables (System)', GiImageIndexVariables);
-  FFunctionsSystem := FolderCreate('Functions (System)', GiImageIndexFunctions);
-  FSliderVariables := FolderCreate('Slider Variables', GiImageIndexVariables);
-  FSampleVariables := FolderCreate('Sample Variables', GiImageIndexVariables);
-  FConstantStrings := FolderCreate('Constant Strings', GiImageIndexVariables);
-  FNamedStrings := FolderCreate('Named Strings', GiImageIndexVariables);
-  FTempStrings := FolderCreate('Temporary Strings', GiImageIndexVariables);
-  TreeView.Selected := FInternalVariables;
+  FVariablesInternal := FolderCreate('Variables (User)', GiImageIndexVariablesUser);
+  FFunctionsUser := FolderCreate('Functions (User)', GiImageIndexFunctionsUser);
+  FVariablesExternal := FolderCreate('Variables (System)', GiImageIndexVariablesSystem);
+  FFunctionsSystem := FolderCreate('Functions (System)', GiImageIndexFunctionsSystem);
+  FVariablesSlider := FolderCreate('Slider Variables', GiImageIndexVariablesSystem);
+  FVariablesSample := FolderCreate('Sample Variables', GiImageIndexVariablesSystem);
+  FStringsLiteral := FolderCreate('Literal Strings', GiImageIndexString);
+  FStringsNamed := FolderCreate('Named Strings', GiImageIndexString);
+  FStringsTemp := FolderCreate('Temporary Strings', GiImageIndexString);
+  TreeView.Selected := FVariablesInternal;
 
   ApplyColors;
 end;
@@ -209,16 +209,16 @@ end;
 
 function TJeezEditor.FindTreeNodeVariable(const AName: String): TTreeNode;
 begin
-  Result := J2C_TreeNodeFind(FInternalVariables, AName);
+  Result := NSJeezTreeView.TreeNodeFind(FVariablesInternal, AName);
   if not Assigned(Result) then
   begin
-    Result := J2C_TreeNodeFind(FExternalVariables, AName);
+    Result := NSJeezTreeView.TreeNodeFind(FVariablesExternal, AName);
     if not Assigned(Result) then
     begin
-      Result := J2C_TreeNodeFind(FSliderVariables, AName);
+      Result := NSJeezTreeView.TreeNodeFind(FVariablesSlider, AName);
       if not Assigned(Result) then
       begin
-        Result := J2C_TreeNodeFind(FSampleVariables, AName);
+        Result := NSJeezTreeView.TreeNodeFind(FVariablesSample, AName);
       end;
     end;
   end;
@@ -226,10 +226,10 @@ end;
 
 function TJeezEditor.FindTreeNodeFunction(const AName: String; const AStripParams: Boolean): TTreeNode;
 begin
-  Result := J2C_TreeNodeFind(FFunctionsUser, AName, AStripParams);
+  Result := NSJeezTreeView.TreeNodeFind(FFunctionsUser, AName, AStripParams);
   if not Assigned(Result) then
   begin
-    Result := J2C_TreeNodeFind(FFunctionsSystem, AName, AStripParams);
+    Result := NSJeezTreeView.TreeNodeFind(FFunctionsSystem, AName, AStripParams);
   end;
 end;
 
@@ -243,7 +243,7 @@ end;
 
 procedure TJeezEditor.FoldersCollapse;
 begin
-  J2C_TreeViewRootNodesCollapse(TreeView);
+  NSJeezTreeView.TreeViewRootNodesCollapse(TreeView);
 end;
 
 procedure TJeezEditor.FoldersAlphaSort;
@@ -254,7 +254,7 @@ begin
   begin
     LTreeNode := TreeView.Items[0];
     repeat
-      if (LTreeNode <> FSliderVariables) and (LTreeNode <> FSampleVariables) then
+      if (LTreeNode <> FVariablesSlider) and (LTreeNode <> FVariablesSample) then
       begin
         LTreeNode.AlphaSort;
       end;
@@ -295,18 +295,18 @@ begin
   end;
 end;
 
-function TJeezEditor.AddIdentifier(const AParent: TTreeNode; const AIdentifier: CJes2CppIdentifier): TTreeNode;
+function TJeezEditor.CreateIdentifier(const AParent: TTreeNode; const AIdentifier: CJes2CppIdentifier): TTreeNode;
 begin
   if AIdentifier is CJes2CppFunction then
   begin
-    Result := J2C_TreeNodeFindOrAdd(AParent, CJes2CppFunction(AIdentifier).EelDefine);
+    Result := NSJeezTreeView.TreeNodeFindOrCreate(AParent, CJes2CppFunction(AIdentifier).EncodeDefineEel);
   end else begin
-    Result := J2C_TreeNodeFindOrAdd(AParent, J2C_IdentClean(AIdentifier.Name));
+    Result := NSJeezTreeView.TreeNodeFindOrCreate(AParent, J2C_IdentClean(AIdentifier.Name));
   end;
   CJes2CppTreeNodeData(Result.Data).FComment := AIdentifier.Comment;
 end;
 
-function TJeezEditor.AddVariable(const AVariable: CJes2CppVariable): TTreeNode;
+function TJeezEditor.CreateVariable(const AVariable: CJes2CppVariable): TTreeNode;
 var
   LDummy: Integer;
 begin
@@ -314,52 +314,50 @@ begin
   begin
     if J2C_IdentIsSlider(AVariable.Name, LDummy) then
     begin
-      Result := AddIdentifier(FSliderVariables, AVariable);
+      Result := CreateIdentifier(FVariablesSlider, AVariable);
     end else if J2C_IdentIsSample(AVariable.Name, LDummy) then
     begin
-      Result := AddIdentifier(FSampleVariables, AVariable);
+      Result := CreateIdentifier(FVariablesSample, AVariable);
     end else begin
-      Result := AddIdentifier(FExternalVariables, AVariable);
+      Result := CreateIdentifier(FVariablesExternal, AVariable);
     end;
   end else begin
-    if J2C_IdentIsNamedString(AVariable.Name) then
+    if J2C_IdentIsStringNamed(AVariable.Name) then
     begin
-      Result := AddIdentifier(FNamedStrings, AVariable);
-    end else if J2C_IdentIsConstString(AVariable.Name) then
+      Result := CreateIdentifier(FStringsNamed, AVariable);
+    end else if J2C_IdentIsStringLiteral(AVariable.Name) then
     begin
-      Result := J2C_TreeNodeFindOrAdd(FConstantStrings, AVariable.FConstantString);
-    end else if J2C_IdentIsTempString(AVariable.Name) then
+      Result := NSJeezTreeView.TreeNodeFindOrCreate(FStringsLiteral, AVariable.ConstantString);
+    end else if J2C_IdentIsStringTemp(AVariable.Name) then
     begin
-      Result := AddIdentifier(FTempStrings, AVariable);
+      Result := CreateIdentifier(FStringsTemp, AVariable);
     end else begin
-      Result := AddIdentifier(FInternalVariables, AVariable);
+      Result := CreateIdentifier(FVariablesInternal, AVariable);
     end;
   end;
-  AddReferences(Result, AVariable);
+  CreateReferences(Result, AVariable);
 end;
 
-function TJeezEditor.AddFunction(const AFunction: CJes2CppFunction): TTreeNode;
+function TJeezEditor.CreateFunction(const AFunction: CJes2CppFunction): TTreeNode;
 begin
   if AFunction.IsSystem then
   begin
-    Result := AddIdentifier(FFunctionsSystem, AFunction);
+    Result := CreateIdentifier(FFunctionsSystem, AFunction);
   end else begin
-    Result := AddIdentifier(FFunctionsUser, AFunction);
+    Result := CreateIdentifier(FFunctionsUser, AFunction);
   end;
-  AddReferences(Result, AFunction);
+  CreateReferences(Result, AFunction);
 end;
 
-procedure TJeezEditor.AddReferences(const AParent: TTreeNode; const AIdentifier: CJes2CppIdentifier);
+procedure TJeezEditor.CreateReferences(const AParent: TTreeNode; const AIdentifier: CJes2CppIdentifier);
 var
-  LIndex: Integer;
   LReference: CJes2CppReference;
   LTreeNode: TTreeNode;
 begin
-  for LIndex := IndexFirst(AIdentifier.References) to IndexLast(AIdentifier.References) do
+  for LReference in AIdentifier.References do
   begin
-    LReference := AIdentifier.References.GetReference(LIndex);
-    LTreeNode := J2C_TreeNodeFindOrAdd(AParent, LReference.EncodeLineFilePath);
-    if SameFileName(FFileName, LReference.FileName) then
+    LTreeNode := NSJeezTreeView.TreeNodeFindOrCreate(AParent, LReference.EncodeLineFilePath);
+    if SameFileName(FFileName, LReference.FileSource) then
     begin
       LTreeNode.ImageIndex := GiImageIndexRefInternal;
     end else begin
@@ -371,15 +369,16 @@ end;
 
 procedure TJeezEditor.TimerCodeInsightTimer(ASender: TObject);
 var
-  LIndex: Integer;
   LTimer: DWord;
+  LVariable: CJes2CppVariable;
+  LFunction: CJes2CppFunction;
 begin
   TimerCodeInsight.Enabled := False;
   TreeView.BeginUpdate;
   try
-    J2C_TreeNodesMarkNonRootsForCutting(TreeView.Items);
+    NSJeezTreeView.TreeNodesMarkNonRootsForCutting(TreeView.Items);
     try
-      with CJes2Cpp.Create(nil, EmptyStr) do
+      with CJes2Cpp.Create(Self) do
       begin
         try
           WarningsAsErrors := JeezOptions.EditWarningsAsErrors.Checked;
@@ -392,28 +391,28 @@ begin
           //JeezMessages.LogMessage('Timer: ' + IntToStr(LTimer));
           PanelError.Visible := False;
 
-          for LIndex := IndexFirst(Variables) to IndexLast(Variables) do
+          for LVariable in Variables do
           begin
-            AddVariable(Variables.GetVariable(LIndex));
+            CreateVariable(LVariable);
           end;
-          for LIndex := IndexFirst(Functions) to IndexLast(Functions) do
+          for LFunction in Functions do
           begin
-            AddFunction(Functions.GetFunction(LIndex));
+            CreateFunction(LFunction);
           end;
           if SynJsfxSyn.Objects.Count = 0 then
           begin
-            for LIndex := 0 to Functions.ComponentCount - 1 do
+            for LFunction in Functions do
             begin
-              if Functions.GetFunction(LIndex).IsSystem then
+              if LFunction.IsSystem then
               begin
-                SynJsfxSyn.Objects.Add(UpperCase(Functions[LIndex].Name));
+                SynJsfxSyn.Objects.Add(UpperCase(LFunction.Name));
               end;
             end;
-            for LIndex := 0 to Variables.ComponentCount - 1 do
+            for LVariable in Variables do
             begin
-              if Variables.GetIdentifier(LIndex).IsSystem then
+              if LVariable.IsSystem then
               begin
-                SynJsfxSyn.Constants.Add(UpperCase(J2C_IdentClean(Variables[LIndex].Name)));
+                SynJsfxSyn.Constants.Add(UpperCase(J2C_IdentClean(LVariable.Name)));
               end;
             end;
             SynEdit.Invalidate;
@@ -422,10 +421,10 @@ begin
           Free;
         end;
       end;
-      J2C_TreeNodesDeleteCuts(TreeView.Items);
+      NSJeezTreeView.TreeNodesDeleteCuts(TreeView.Items);
       FoldersAlphaSort;
       // TODO: Should these be here?
-      FInternalVariables.Expand(False);
+      FVariablesInternal.Expand(False);
       FFunctionsUser.Expand(False);
       FFunctionsSystem.Expand(False);
     except
@@ -444,12 +443,12 @@ end;
 
 procedure TJeezEditor.ButtonSectionPrevClick(ASender: TObject);
 begin
-  TJeezSynEdit.SynEditSectionPrev(SynEdit);
+  NsSynEdit.SectionPrev(SynEdit);
 end;
 
 procedure TJeezEditor.ButtonSectionNextClick(ASender: TObject);
 begin
-  TJeezSynEdit.SynEditSectionNext(SynEdit);
+  NsSynEdit.SectionNext(SynEdit);
 end;
 
 procedure TJeezEditor.PopupMenuSectionsPopup(ASender: TObject);
@@ -564,17 +563,24 @@ begin
   begin
     MenuPopupOpenImport.Caption := GsOpen + CharSpace + QuotedStr(LFileName);
   end;
+
+  MenuPopupUndo.Enabled := SynEdit.CanUndo;
+  MenuPopupRedo.Enabled := SynEdit.CanRedo;
+  MenuPopupCut.Enabled := SynEdit.SelAvail;
+  MenuPopupCopy.Enabled := SynEdit.SelAvail;
+  MenuPopupPaste.Enabled := SynEdit.CanPaste;
+  MenuPopupDelete.Enabled := SynEdit.SelAvail;
 end;
 
 procedure TJeezEditor.TreeViewAddition(ASender: TObject; ATreeNode: TTreeNode);
 begin
   ATreeNode.Data := CJes2CppTreeNodeData.Create;
-  J2C_TreeNodeUpdateCount(ATreeNode);
+  NSJeezTreeView.TreeNodeUpdateCount(ATreeNode);
 end;
 
 procedure TJeezEditor.TreeViewDeletion(ASender: TObject; ATreeNode: TTreeNode);
 begin
-  J2C_TreeNodeUpdateCount(ATreeNode);
+  NSJeezTreeView.TreeNodeUpdateCount(ATreeNode);
   if Assigned(ATreeNode.Data) then
   begin
     TObject(ATreeNode.Data).Free;
@@ -584,13 +590,15 @@ end;
 
 procedure TJeezEditor.TreeViewKeyPress(ASender: TObject; var AKey: Char);
 begin
-  J2C_TreeViewHandleKeyPress(TreeView, AKey);
+  NSJeezTreeView.TreeViewHandleKeyPress(TreeView, AKey);
 end;
 
 procedure TJeezEditor.TreeViewCustomDrawItem(ASender: TCustomTreeView; ATreeNode: TTreeNode; ADrawState: TCustomDrawState;
   var ADefaultDraw: Boolean);
 begin
-  J2C_TreeNodeDraw(ATreeNode);
+  NSJeezTreeView.TreeNodeDraw(ATreeNode, JeezOptions.ColorFunctions.Selected,
+    JeezOptions.ColorVariables.Selected, JeezOptions.ColorIdentifiers.Selected,
+    JeezOptions.ColorSymbols.Selected);
   ADefaultDraw := False;
 end;
 
@@ -612,20 +620,20 @@ var
   LTreeNode: TTreeNode;
 begin
   LText := ATreeNode.Text;
-  LFileName := J2C_ExtractFileName(LText);
+  LFileName := J2C_ExtractFileSource(LText);
   if ANoFileNameChange and not SameFileName(LFileName, FFileName) then
   begin
     Abort;
   end;
-  LEditor := JeezIde.LoadFromFile(LFileName, J2C_ExtractFileLine(LText));
+  LEditor := JeezIde.LoadFromFile(LFileName, J2C_ExtractFileCaretY(LText));
   if LEditor <> Self then
   begin
     LEditor.TimerCodeInsightTimer(LEditor.TimerCodeInsight);
-    if J2C_TreeNodeIsReference(ATreeNode) then
+    if NSJeezTreeView.TreeNodeIsReference(ATreeNode) then
     begin
-      LTreeNode := J2C_TreeNodesFind(LEditor.TreeView.Items, J2C_TreeNodeGetText(ATreeNode.Parent));
+      LTreeNode := NSJeezTreeView.TreeNodesFind(LEditor.TreeView.Items, NSJeezTreeView.TreeNodeGetText(ATreeNode.Parent));
     end else begin
-      LTreeNode := J2C_TreeNodesFind(LEditor.TreeView.Items, LText);
+      LTreeNode := NSJeezTreeView.TreeNodesFind(LEditor.TreeView.Items, LText);
     end;
     if Assigned(LTreeNode) then
     begin
@@ -752,13 +760,13 @@ end;
 
 procedure TJeezEditor.EditFolderDrawItem(AWinControl: TWinControl; AIndex: Integer; ARect: TRect; ADrawState: TOwnerDrawState);
 begin
-  J2C_ComboBoxDrawItem(AWinControl as TComboBox, AIndex, ARect, ADrawState, JeezData.ImageList16);
+  NSJeezCanvas.DrawComboBoxItem(AWinControl as TComboBox, AIndex, ARect, ADrawState, JeezData.ImageList16);
 end;
 
 procedure TJeezEditor.ButtonSyntaxCheckClick(ASender: TObject);
 begin
   JeezMessages.LogFileName(SMsgTypeSyntaxChecking, FFileName);
-  with Transpile.Create(nil, EmptyStr) do
+  with Transpile.Create(Self) do
   begin
     try
       WarningsAsErrors := JeezOptions.EditWarningsAsErrors.Checked;
@@ -768,7 +776,8 @@ begin
       Free;
     end;
   end;
-  JeezMessages.LogMessage(SMsgSyntaxCheckingCompleteNoErrorsFound);
+  JeezMessages.LogMessage(SMsgSyntaxCheckingCompleteNoErrorsFound + ' / Total heap allocated: ' +
+    IntToStr(GetHeapStatus.TotalAllocated) + ' bytes');
 end;
 
 procedure TJeezEditor.ButtonFindErrorClick(ASender: TObject);
@@ -805,6 +814,7 @@ begin
   SynEdit.Lines.LoadFromFile(AFileName);
   SetFileName(AFileName);
   JeezMessages.LogFileName(SMsgTypeLoaded, AFileName);
+  JeezOptions.AddRecentFile(AFileName);
 end;
 
 procedure TJeezEditor.SaveToFile(const AFileName: TFileName);
@@ -816,6 +826,7 @@ begin
   SynEdit.Lines.SaveToFile(AFileName);
   SynEdit.Modified := False;
   SetFileName(AFileName);
+  JeezOptions.AddRecentFile(AFileName);
 end;
 
 procedure TJeezEditor.SaveToFile;

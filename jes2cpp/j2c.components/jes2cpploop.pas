@@ -27,11 +27,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 unit Jes2CppLoop;
 
 {$MODE DELPHI}
+{$MACRO ON}
 
 interface
 
 uses
-  Jes2CppConstants, Jes2CppEel, Jes2CppFunction, Jes2CppIdentifier, Jes2CppTranslate, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppFunction, Jes2CppIdentifier, Jes2CppTranslate, Soda, SysUtils;
 
 type
 
@@ -52,20 +53,25 @@ type
     constructor Create(const AOwner: CJes2CppLoops; const AType: TJes2CppLoopType; const AFunction: CJes2CppFunction);
       virtual; reintroduce;
   public
-    function CppDefine: String;
-    function CppCall: String;
+    function EncodeDefineCpp: String;
+    function EncodeCallCpp: String;
   end;
 
-  CJes2CppLoops = class(CJes2CppIdentifiers)
-  public
-    function GetLoop(const AIndex: Integer): CJes2CppLoop;
+  CJes2CppLoops = class
+    {$DEFINE DItemClass := CJes2CppLoops}
+    {$DEFINE DItemSuper := CComponent}
+    {$DEFINE DItemItems := CJes2CppLoop}
+    {$INCLUDE soda.inc}
   end;
 
 implementation
 
+{$DEFINE DItemClass := CJes2CppLoops}
+{$INCLUDE soda.inc}
+
 constructor CJes2CppLoop.Create(const AOwner: CJes2CppLoops; const AType: TJes2CppLoopType; const AFunction: CJes2CppFunction);
 begin
-  inherited Create(AOwner, GsDoLoop + IntToStr(AOwner.ComponentCount));
+  inherited CreateNamed(AOwner, GsDoLoop + IntToStr(AOwner.ComponentCount));
   FType := AType;
   FFunction := AFunction;
 end;
@@ -81,7 +87,7 @@ begin
   end;
 end;
 
-function CJes2CppLoop.CppCall: String;
+function CJes2CppLoop.EncodeCallCpp: String;
 begin
   Result := Format(GsCppFunct2, [Name, CppParameters(False)]);
 end;
@@ -91,7 +97,7 @@ begin
   Result := GsCppJes2CppInlineSpace + GsCppEelF + CharSpace + Name + '(' + CppParameters(True) + ')' + LineEnding;
 end;
 
-function CJes2CppLoop.CppDefine: String;
+function CJes2CppLoop.EncodeDefineCpp: String;
 begin
   Result := CppDefineHead + '{' + LineEnding;
   Result += 'int LMax = 1000000;' + LineEnding;
@@ -110,11 +116,6 @@ begin
     end;
   end;
   Result += 'return ' + CppEncodeFloat(1) + ';' + LineEnding + '}' + LineEnding;
-end;
-
-function CJes2CppLoops.GetLoop(const AIndex: Integer): CJes2CppLoop;
-begin
-  Result := Self[AIndex] as CJes2CppLoop;
 end;
 
 end.

@@ -65,7 +65,7 @@ begin
   SaveDialogHtml.Filter := 'HTML Document (*.htm,*.html)|*.htm;*.html';
   SaveDialogHtml.DefaultExt := GsFileExtHtml;
 
-  OpenDialog.InitialDir := TJes2CppFileNames.PathToReaperEffects;
+  OpenDialog.InitialDir := NSFileNames.PathToReaperEffects;
   OpenDialog.Filter := 'Jesusonic Effects (*.*)|*';
   OpenDialog.DefaultExt := GsFileExtJsFx;
 

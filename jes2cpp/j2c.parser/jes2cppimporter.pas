@@ -38,32 +38,33 @@ type
   CJes2CppImporter = class(CJes2CppMessageLog)
   strict private
     FDescription: CJes2CppDescription;
-    FImportFileNames: TStringList;
+    FFileNamesImported: TStringList;
   protected
+    procedure WriteSliderSerializationCode;
     procedure LoadStringsFrom(const AStrings: TStrings; const AFileName: TFileName); virtual;
     procedure ImportFrom(const AScript: TStrings; const AScriptFileName: TFileName; const ALevel: Integer = 0); overload;
     procedure ImportFrom(const AScriptFileName: TFileName); overload;
-  public
-    constructor Create(const AOwner: TComponent; const AName: TComponentName); override;
-    destructor Destroy; override;
+  protected
+    procedure DoCreate; override;
+    procedure DoDestroy; override;
   public
     property Description: CJes2CppDescription read FDescription;
   end;
 
 implementation
 
-constructor CJes2CppImporter.Create(const AOwner: TComponent; const AName: TComponentName);
+procedure CJes2CppImporter.DoCreate;
 begin
-  inherited Create(AOwner, AName);
+  inherited DoCreate;
   FDescription := CJes2CppDescription.Create(Self);
-  FImportFileNames := TStringList.Create;
-  FImportFileNames.Sorted := True;
+  FFileNamesImported := TStringList.Create;
+  FFileNamesImported.Sorted := True;
 end;
 
-destructor CJes2CppImporter.Destroy;
+procedure CJes2CppImporter.DoDestroy;
 begin
-  FreeAndNil(FImportFileNames);
-  inherited Destroy;
+  FreeAndNil(FFileNamesImported);
+  inherited DoDestroy;
 end;
 
 procedure CJes2CppImporter.LoadStringsFrom(const AStrings: TStrings; const AFileName: TFileName);
@@ -81,7 +82,7 @@ begin
   begin
     LogException('Max Importing Depth Reached.');
   end else begin
-    if FImportFileNames.IndexOf(AScriptFileName) < 0 then
+    if FFileNamesImported.IndexOf(AScriptFileName) < 0 then
     begin
       LogFileName(SMsgTypeImporting, AScriptFileName);
       for LIndex := 0 to EelDescHigh(AScript) do
@@ -96,8 +97,8 @@ begin
             except
               on AException: Exception do
               begin
-                FileLine := LIndex + 1;
-                FileName := AScriptFileName;
+                FileCaretY := LIndex + 1;
+                FileSource := AScriptFileName;
                 LogException(AException.Message);
               end;
             end;
@@ -107,8 +108,8 @@ begin
           end;
         end;
       end;
-      FDescription.ImportFrom(AScript, AScriptFileName);
-      FImportFileNames.Add(AScriptFileName);
+      FDescription.ImportFromScript(AScript, AScriptFileName);
+      FFileNamesImported.Add(AScriptFileName);
     end;
   end;
 end;
@@ -124,6 +125,12 @@ begin
   finally
     FreeAndNil(LStrings);
   end;
+end;
+
+procedure CJes2CppImporter.WriteSliderSerializationCode;
+begin
+  LogMessage('HERE'+IntToStr(FDescription.Parameters.ComponentCount));
+  //FDescription.
 end;
 
 end.

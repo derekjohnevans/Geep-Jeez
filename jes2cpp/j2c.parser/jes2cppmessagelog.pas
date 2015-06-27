@@ -31,18 +31,19 @@ unit Jes2CppMessageLog;
 interface
 
 uses
-  Classes, Jes2CppComponent, Jes2CppConstants, Jes2CppFileNames, Jes2CppIdentString, Jes2CppStrings, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppFileNames, Jes2CppIdentString, Jes2CppStrings, Soda, SysUtils;
 
 type
 
-  CJes2CppMessageLog = class(CJes2CppComponent)
+  CJes2CppMessageLog = class(CComponent)
   strict private
     FWarningsAsErrors: Boolean;
-    FFileName: TFileName;
-    FFileLine: Integer;
+    FFileSource: TFileName;
+    FFileCaretY: Integer;
   protected
     procedure LogAssert(const ATrue: Boolean; const AMessage: String);
     procedure LogWarning(const AMessage: String);
+    procedure LogNotice(const AMessage: String);
     procedure LogException(const AMessage: String);
     procedure LogExpected(const AExpected: String);
     procedure LogExpectNotEmptyStr(const AString, AExpected: String);
@@ -57,51 +58,61 @@ type
     function IsJes2CppInc: Boolean;
     function CurrentToken: String; virtual; abstract;
   protected
-    property FileName: TFileName read FFileName write FFileName;
-    property FileLine: Integer read FFileLine write FFileLine;
+    property FileSource: TFileName read FFileSource write FFileSource;
+    property FileCaretY: Integer read FFileCaretY write FFileCaretY;
   public
     property WarningsAsErrors: Boolean read FWarningsAsErrors write FWarningsAsErrors;
   end;
 
-function J2C_StringLogMessage(const AType, AMessage: String): String;
-function J2C_StringLogFileName(const AType, AFileName: String): String;
+type
+
+  NSLog = object
+    class function MessageCaretYSource(const AMessage: String; const AFileCaretY: Integer; const AFileSource: TFileName): String;
+    class function TypeMessage(const AType, AMessage: String): String;
+    class function TypeFileName(const AType, AFileName: String): String;
+  end;
+
 
 implementation
 
-function J2C_StringLogMessage(const AType, AMessage: String): String;
+class function NSLog.MessageCaretYSource(const AMessage: String; const AFileCaretY: Integer; const AFileSource: TFileName): String;
+begin
+  Result := Format(GsErrorLineFile3, [AMessage, AFileCaretY, AFileSource]);
+end;
+
+class function NSLog.TypeMessage(const AType, AMessage: String): String;
 begin
   Result := AType + CharSpace + '->' + CharSpace + AMessage;
 end;
 
-function J2C_StringLogFileName(const AType, AFileName: String): String;
+class function NSLog.TypeFileName(const AType, AFileName: String): String;
 var
   LFilePath: TFileName;
 begin
   LFilePath := ExtractFilePath(AFileName);
   if LFilePath = EmptyStr then
   begin
-    Result := J2C_StringLogMessage(AType, QuotedStr(ExtractFilename(AFileName)));
+    Result := TypeMessage(AType, QuotedStr(ExtractFilename(AFileName)));
   end else begin
-    Result := J2C_StringLogMessage(AType, QuotedStr(ExtractFilename(AFileName)) + CharSpace + GsPath + ': ' + QuotedStr(LFilePath));
+    Result := TypeMessage(AType, QuotedStr(ExtractFilename(AFileName)) + CharSpace + GsPath + ': ' + QuotedStr(LFilePath));
   end;
 end;
 
 procedure CJes2CppMessageLog.LogMessage(const AMessage: String);
 begin
-
 end;
 
 procedure CJes2CppMessageLog.LogMessage(const AType, AMessage: String; const AAddReference, AException: Boolean);
 var
   LMessage: String;
 begin
-  if AAddReference and (FFileName <> EmptyStr) then
+  if AAddReference and (FFileSource <> EmptyStr) then
   begin
-    LMessage := Format(GsErrorLineFile3, [AMessage, FFileLine, FFileName]);
+    LMessage := NSLog.MessageCaretYSource(AMessage, FFileCaretY, FFileSource);
   end else begin
     LMessage := AMessage;
   end;
-  LogMessage(J2C_StringLogMessage(AType, LMessage));
+  LogMessage(NSLog.TypeMessage(AType, LMessage));
   if AException then
   begin
     raise Exception.Create(LMessage);
@@ -110,7 +121,7 @@ end;
 
 procedure CJes2CppMessageLog.LogFileName(const AType, AFileName: String);
 begin
-  LogMessage(J2C_StringLogFileName(AType, AFileName));
+  LogMessage(NSLog.TypeFileName(AType, AFileName));
 end;
 
 procedure CJes2CppMessageLog.LogException(const AMessage: String);
@@ -121,6 +132,11 @@ end;
 procedure CJes2CppMessageLog.LogWarning(const AMessage: String);
 begin
   LogMessage(SMsgTypeWarning, AMessage, True, FWarningsAsErrors);
+end;
+
+procedure CJes2CppMessageLog.LogNotice(const AMessage: String);
+begin
+  LogMessage(SMsgTypeNotice, AMessage, True, False);
 end;
 
 procedure CJes2CppMessageLog.LogWarningCaseCheck(const A, B: TIdentString);
@@ -168,7 +184,7 @@ end;
 function CJes2CppMessageLog.IsJes2CppInc: Boolean;
 begin
   // TODO: Improve this.
-  Result := SameText(ExtractFileName(FFileName), GsFilePartJes2Cpp + GsFileExtJsFxInc);
+  Result := SameText(ExtractFileName(FFileSource), GsFilePartJes2Cpp + GsFileExtJsFxInc);
 end;
 
 end.

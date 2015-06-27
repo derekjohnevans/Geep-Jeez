@@ -139,6 +139,7 @@ begin
   AddOption('W', 'no-reorder');
   AddOption('W', 'no-unused-value');
   AddOption('W', 'no-unused-variable');
+  AddOption('W', 'no-unused-but-set-variable');
   AddOption('O', '2');
   //AddOption('mmmx'); // Does this even do anything?
   AddOption('f', 'PIC');
@@ -165,32 +166,32 @@ end;
 
 procedure CJes2CppCompiler.AddInputFiles(const AFileName: TFileName);
 begin
-  AddInputFile(TJes2CppFileNames.PathToSdkJes2Cpp + GsFilePartJes2Cpp + GsFileExtCpp);
+  AddInputFile(NSFileNames.PathToSdkJes2Cpp + GsFilePartJes2Cpp + GsFileExtCpp);
   AddInputFile(AFileName);
   if coUseLibBass in FCompilerOptions then
   begin
-    AddInputFile(TJes2CppFileNames.FileNameBassLib(FTypeArchitecture = pa64bit));
+    AddInputFile(NSFileNames.FileNameBassLib(FTypeArchitecture = pa64bit));
   end;
   if coUseLibSndFile in FCompilerOptions then
   begin
-    AddInputFile(TJes2CppFileNames.FileNameSndFileLib(FTypeArchitecture = pa64bit));
+    AddInputFile(NSFileNames.FileNameSndFileLib(FTypeArchitecture = pa64bit));
   end;
   case FTypePlugin of
     ptVST: begin
       case FTypeArchitecture of
         pa32bit: begin
-          AddInputFile(TJes2CppFileNames.FileNameVeSTLib32);//, 'fab1c842d13a2f5842174ad4edea348cb4c37adb');
+          AddInputFile(NSFileNames.FileNameVeSTLib32);//, 'fab1c842d13a2f5842174ad4edea348cb4c37adb');
         end;
         pa64bit: begin
-          AddInputFile(TJes2CppFileNames.FileNameVeSTLib64);
+          AddInputFile(NSFileNames.FileNameVeSTLib64);
         end;
       end;
+      AddInputFile(NSFileNames.PathToSdkJes2Cpp + GsFilePartExports + GsFileExtDef);
     end;
     ptLV1: begin
-      AddInputFile(TJes2CppFileNames.PathToSdkVeST + GsFilePartVeST + GsFileExtCpp);
+      AddInputFile(NSFileNames.PathToSdkVeST + GsFilePartVeST + GsFileExtCpp);
     end;
   end;
-  AddInputFile(TJes2CppFileNames.PathToSdkJes2Cpp + GsFilePartExports + GsFileExtDef);
 end;
 
 procedure CJes2CppCompiler.DoOnLine(const AString: String);
@@ -230,11 +231,9 @@ begin
   end;
   case FTypePrecision of
     ptSingle: begin
-      AddDefine(GsCppEelF, GsCppFloat);
       AddDefine(GsCppWdlFftRealSize, '4');
     end;
     ptDouble: begin
-      AddDefine(GsCppEelF, GsCppDouble);
       AddDefine(GsCppWdlFftRealSize, '8');
     end;
   end;
@@ -246,8 +245,8 @@ begin
   begin
     AddDefine(GsCppJes2CppSndFile, True);
   end;
-  AddIncludePath(TJes2CppFileNames.PathToSdkJes2Cpp);
-  AddIncludePath(TJes2CppFileNames.PathToSdkVeST);
+  AddIncludePath(NSFileNames.PathToSdkJes2Cpp);
+  AddIncludePath(NSFileNames.PathToSdkVeST);
   AddInputFiles(AFilenameSrc);
 {$IFDEF WINDOWS}
   AddLibraries(['user32', 'kernel32', 'ole32', 'oleaut32', 'uuid', 'comdlg32', 'gdi32', 'gdiplus']);
@@ -273,7 +272,7 @@ begin
       if (coUseCompression in FCompilerOptions) and FileExists(AFilenameDst) then
       begin
         LogMessage(SMsgCompressing + CharSpace + QuotedStr(AFilenameDst) + CharDot);
-        Executable := TJes2CppFileNames.FileNameUpX;
+        Executable := NSFileNames.FileNameUpX;
         Parameters.Clear;
         AddInputFile(AFilenameDst);
         ExecuteAndWait;
@@ -301,13 +300,13 @@ end;
 
 function CJes2CppCompiler.Compile(const AExecutable, AFileNameSrc: TFileName): TFileName;
 begin
-  Result := TJes2CppFileNames.FileNameOutputDll;
+  Result := NSFileNames.FileNameOutputDll;
   Compile(AExecutable, AFileNameSrc, Result);
 end;
 
 function CJes2CppCompiler.Compile(const AExecutable: TFileName; const AStrings: TStrings): TFileName;
 begin
-  Result := TJes2CppFileNames.FileNameOutputCpp;
+  Result := NSFileNames.FileNameOutputCpp;
   AStrings.SaveToFile(Result);
   Result := Compile(AExecutable, Result);
 end;

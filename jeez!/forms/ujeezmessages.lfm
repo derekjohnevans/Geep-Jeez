@@ -55,6 +55,7 @@ object JeezMessages: TJeezMessages
     ParentColor = False
     ParentFont = False
     TabOrder = 1
+    OnMouseDown = SynEditMouseDown
     BorderStyle = bsNone
     Gutter.Visible = False
     Gutter.Width = 0

@@ -35,7 +35,7 @@ uses
   SynHighlighterAny, SysUtils;
 
 type
-  TJeezSynEdit = object
+  NsSynEdit = object
   const
 {$IF DEFINED(WINDOWS)}
     FontName = 'Courier New';
@@ -46,9 +46,9 @@ type
 {$ENDIF}
   public
     class procedure SynJsFxInit(const ASynAnySyn: TSynAnySyn);
-    class procedure SynEditSectionPrev(const ASynEdit: TSynEdit);
-    class procedure SynEditSectionNext(const ASynEdit: TSynEdit);
-    class procedure SynEditExport(const ASynEdit: TSynEdit; const AStrings: TStrings; const AFileName: TFileName);
+    class procedure SectionPrev(const ASynEdit: TSynEdit);
+    class procedure SectionNext(const ASynEdit: TSynEdit);
+    class procedure ExportHtml(const ASynEdit: TSynEdit; const AStrings: TStrings; const AFileName: TFileName);
   end;
 
 procedure SetHighlighterAttri(const A: TSynHighlighterAttributes; const AForeground: TColor);
@@ -61,7 +61,7 @@ begin
   A.Style := [];
 end;
 
-class procedure TJeezSynEdit.SynJsFxInit(const ASynAnySyn: TSynAnySyn);
+class procedure NsSynEdit.SynJsFxInit(const ASynAnySyn: TSynAnySyn);
 var
   LString: String;
 begin
@@ -76,7 +76,7 @@ begin
   end;
 end;
 
-class procedure TJeezSynEdit.SynEditSectionPrev(const ASynEdit: TSynEdit);
+class procedure NsSynEdit.SectionPrev(const ASynEdit: TSynEdit);
 var
   LIndex: Integer;
 begin
@@ -91,7 +91,7 @@ begin
   ASynEdit.CaretY := LIndex;
 end;
 
-class procedure TJeezSynEdit.SynEditSectionNext(const ASynEdit: TSynEdit);
+class procedure NsSynEdit.SectionNext(const ASynEdit: TSynEdit);
 var
   LIndex: Integer;
 begin
@@ -106,7 +106,7 @@ begin
   ASynEdit.CaretY := LIndex;
 end;
 
-class procedure TJeezSynEdit.SynEditExport(const ASynEdit: TSynEdit; const AStrings: TStrings; const AFileName: TFileName);
+class procedure NsSynEdit.ExportHtml(const ASynEdit: TSynEdit; const AStrings: TStrings; const AFileName: TFileName);
 const
 
   LHead = '<!--StartFragment-->';

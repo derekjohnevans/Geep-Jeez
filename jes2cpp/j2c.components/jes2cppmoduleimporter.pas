@@ -31,8 +31,7 @@ unit Jes2CppModuleImporter;
 interface
 
 uses
-  Classes, Jes2Cpp, Jes2CppConstants, Jes2CppEel, Jes2CppIdentString,
-  Jes2CppIterate, Jes2CppStrings, Jes2CppUtils, Jes2CppVariable, StrUtils, SysUtils;
+  Classes, Jes2Cpp, Jes2CppConstants, Jes2CppEel, Jes2CppIdentString, Jes2CppStrings, Jes2CppUtils, Jes2CppVariable, StrUtils, SysUtils;
 
 procedure J2C_ImportModule(const ADst: TStrings; const AFileName: TFileName);
 
@@ -72,7 +71,7 @@ end;
 
 procedure J2C_ImportSection(const ADst, ASrc: TStrings; const AFileName: TFileName; const ASectionName: String);
 var
-  LIndex, LUnused: Integer;
+  LUnused: Integer;
   LSectionHeader, LInstances: String;
   LSection: TStringList;
   LVariable: CJes2CppVariable;
@@ -82,7 +81,7 @@ begin
   try
     J2C_ExtractSection(ASectionName, LSection, ASrc, EmptyStr, False, LSectionHeader);
     LSection.Insert(0, EelSectionName(GsEelSectionInit));
-    with CJes2Cpp.Create(nil, EmptyStr) do
+    with CJes2Cpp.Create(nil) do
     begin
       try
         TranspileScript(LSection, AFileName);
@@ -90,9 +89,8 @@ begin
         ADst.AddText(WrapText(GsEelFunction + CharSpace + J2C_IdentFixUp(ASectionName + CharUnderscore +
           ChangeFileExt(ExtractFileName(AFileName), EmptyStr)) + CharOpeningParenthesis + CharClosingParenthesis, GiColWidth));
         LInstances := EmptyStr;
-        for LIndex := IndexFirst(Variables) to IndexLast(Variables) do
+        for LVariable in Variables do
         begin
-          LVariable := Variables.GetVariable(LIndex);
           if not LVariable.IsSystem or ((LVariable.References.ComponentCount > 1) and
             (J2C_IdentIsSlider(LVariable.Name, LUnused) or J2C_IdentIsSample(LVariable.Name, LUnused))) then
           begin

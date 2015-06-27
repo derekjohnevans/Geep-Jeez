@@ -27,77 +27,92 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 unit Jes2CppVariable;
 
 {$MODE DELPHI}
+{$MACRO ON}
 
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppIdentifier, Jes2CppIterate, Jes2CppStrings, Jes2CppTranslate, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppIdentifier, Jes2CppStrings, Jes2CppTranslate, Soda, SysUtils;
 
 type
 
-  CJes2CppVariable = class(CJes2CppIdentifier)
-  public
+  CJes2CppVariables = class;
+
+  CJes2CppVariable = class
+    {$DEFINE DItemClass := CJes2CppVariable}
+    {$DEFINE DItemSuper := CJes2CppIdentifier}
+    {$INCLUDE soda.inc}
+  strict private
     FConstantString: String;
+  public
+    property ConstantString: String read FConstantString write FConstantString;
   end;
 
-  CJes2CppVariables = class(CJes2CppIdentifiers)
+  CJes2CppVariables = class
+    {$DEFINE DItemClass := CJes2CppVariables}
+    {$DEFINE DItemSuper := CComponent}
+    {$DEFINE DItemItems := CJes2CppVariable}
+    {$INCLUDE soda.inc}
   strict private
-    function AddVariable(const AName: String; const AIdentType: TJes2CppIdentifierType): CJes2CppVariable;
+    function CreateVariable(const AName: String; const AIdentType: TJes2CppIdentifierType): CJes2CppVariable;
   public
-    function FindVariable(const AName: TComponentName): CJes2CppVariable;
-    function FindOrCreateVariable(const AName: TComponentName; const AFileName: TFileName; const AFileLine: Integer;
+    function CreateVariable(const AName: TComponentName; const AFileSource: TFileName; const AFileCaretY: Integer;
       const AComment: String): CJes2CppVariable;
-    function GetVariable(const AIndex: Integer): CJes2CppVariable;
-    function CppDefineVariables: String;
-    function CppClear: String;
-    function CppSetStringConstants: String;
+    function FindOrCreateVariable(const AName: TComponentName; const AFileSource: TFileName; const AFileCaretY: Integer;
+      const AComment: String; out AAlreadyCreated: Boolean): CJes2CppVariable;
+  public
+    function EncodeDefineCpp: String;
+    function EncodeClearCpp: String;
+    function EncodeStringLiteralsCpp: String;
   end;
 
 implementation
 
+{$DEFINE DItemClass := CJes2CppVariable} {$INCLUDE soda.inc}
 
-function CJes2CppVariables.GetVariable(const AIndex: Integer): CJes2CppVariable;
+{$DEFINE DItemClass := CJes2CppVariables} {$INCLUDE soda.inc}
+
+function CJes2CppVariables.CreateVariable(const AName: TComponentName; const AFileSource: TFileName;
+  const AFileCaretY: Integer; const AComment: String): CJes2CppVariable;
 begin
-  Result := Self[AIndex] as CJes2CppVariable;
+  Result := CreateComponent(AName);
+  Result.Comment := AComment;
+  Result.References.CreateReference(AFileSource, AFileCaretY);
 end;
 
-function CJes2CppVariables.FindVariable(const AName: TComponentName): CJes2CppVariable;
+function CJes2CppVariables.FindOrCreateVariable(const AName: TComponentName; const AFileSource: TFileName;
+  const AFileCaretY: Integer; const AComment: String; out AAlreadyCreated: Boolean): CJes2CppVariable;
 begin
-  Result := FindBySameText(AName) as CJes2CppVariable;
-end;
-
-function CJes2CppVariables.FindOrCreateVariable(const AName: TComponentName; const AFileName: TFileName;
-  const AFileLine: Integer; const AComment: String): CJes2CppVariable;
-begin
-  Result := FindVariable(AName);
-  if not Assigned(Result) then
+  Result := FindComponent(AName);
+  AAlreadyCreated := Assigned(Result);
+  if not AAlreadyCreated then
   begin
-    Result := CJes2CppVariable.Create(Self, AName);
+    Result := CreateComponent(AName);
     Result.Comment := AComment;
   end;
-  Result.References.AddReference(AFileName, AFileLine);
+  Result.References.CreateReference(AFileSource, AFileCaretY);
 end;
 
-function CJes2CppVariables.AddVariable(const AName: String; const AIdentType: TJes2CppIdentifierType): CJes2CppVariable;
+function CJes2CppVariables.CreateVariable(const AName: String; const AIdentType: TJes2CppIdentifierType): CJes2CppVariable;
 begin
-  if Assigned(FindBySameText(AName)) then
+  if ComponentExists(AName) then
   begin
-    raise Exception.Create('Duplicate Variable');
+    raise Exception.Create('Duplicate Variable Name');
   end;
-  Result := CJes2CppVariable.Create(Self, AName);
+  Result := CreateComponent(AName);
   Result.IdentType := AIdentType;
 end;
 
-function CJes2CppVariables.CppDefineVariables: String;
+function CJes2CppVariables.EncodeDefineCpp: String;
 var
-  LIndex: Integer;
+  LIdent: CJes2CppIdentifier;
 begin
   Result := EmptyStr;
-  for LIndex := IndexFirst(Self) to IndexLast(Self) do
+  for LIdent in Self do
   begin
-    if GetIdentifier(LIndex).IdentType = itInternal then
+    if LIdent.IdentType = itInternal then
     begin
-      J2C_StringAppendCSV(Result, CppEncodeVariable(Self[LIndex].Name));
+      J2C_StringAppendCSV(Result, CppEncodeVariable(LIdent.Name));
     end;
   end;
   if Result <> EmptyStr then
@@ -106,35 +121,31 @@ begin
   end;
 end;
 
-function CJes2CppVariables.CppClear: String;
+function CJes2CppVariables.EncodeClearCpp: String;
 var
-  LIndex: Integer;
-  LVariable: CJes2CppVariable;
+  LIdent: CJes2CppIdentifier;
 begin
   Result := EmptyStr;
-  for LIndex := IndexFirst(Self) to IndexLast(Self) do
+  for LIdent in Self do
   begin
-    LVariable := GetVariable(LIndex);
-    if LVariable.IdentType = itInternal then
+    if LIdent.IdentType = itInternal then
     begin
-      Result += CppEncodeVariable(LVariable.Name) + GsCppEqu + GsCppZero + GsCppLineEnding;
+      Result += CppEncodeVariable(LIdent.Name) + GsCppAssign + GsCppZero + GsCppLineEnding;
     end;
   end;
 end;
 
-function CJes2CppVariables.CppSetStringConstants: String;
+function CJes2CppVariables.EncodeStringLiteralsCpp: String;
 var
-  LIndex: Integer;
   LVariable: CJes2CppVariable;
 begin
   Result := EmptyStr;
-  for LIndex := IndexFirst(Self) to IndexLast(Self) do
+  for LVariable in Self do
   begin
-    LVariable := GetVariable(LIndex);
-    if (LVariable.IdentType = itInternal) and (LVariable.FConstantString <> EmptyStr) then
+    if (LVariable.IdentType = itInternal) and (LVariable.ConstantString <> EmptyStr) then
     begin
-      Result += CppEncodeVariable(LVariable.Name) + GsCppEqu + GsFnStr + CharOpeningParenthesis +
-        LVariable.FConstantString + CharClosingParenthesis + GsCppLineEnding;
+      Result += CppEncodeVariable(LVariable.Name) + GsCppAssign + GsFnStr + CharOpeningParenthesis +
+        LVariable.ConstantString + CharClosingParenthesis + GsCppLineEnding;
     end;
   end;
 end;

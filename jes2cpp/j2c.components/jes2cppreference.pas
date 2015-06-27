@@ -27,35 +27,56 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 unit Jes2CppReference;
 
 {$MODE DELPHI}
+{$MACRO ON}
 
 interface
 
 uses
-  Classes, Jes2CppComponent, Jes2CppConstants, SysUtils;
+  Classes, Jes2CppConstants, Soda, SysUtils;
 
 type
-  CJes2CppReference = class(CJes2CppComponent)
+
+  // TODO: Merge this into the main code.
+  TJes2CppFileMarker = object
+    FileName: TFileName;
+    CaretY: Integer;
+  end;
+
+  CJes2CppReferences = class;
+
+  CJes2CppReference = class
+    {$DEFINE DItemClass := CJes2CppReference}
+    {$DEFINE DItemSuper := CComponent}
+    {$DEFINE DItemOwner := CJes2CppReferences}
+    {$INCLUDE soda.inc}
   strict private
     FFilePartPath, FFilePartName: TFileName;
-    FFileLine: Integer;
+    FFileCaretY: Integer;
   strict private
     procedure SetFileName(const AFileName: TFileName);
     function GetFileName: TFileName;
   public
     function EncodeLineFilePath: String;
     function EncodeLineFile: String;
-    property FileName: TFileName read GetFileName write SetFileName;
+    property FileSource: TFileName read GetFileName write SetFileName;
     property FilePartName: TFileName read FFilePartName;
-    property FileLine: Integer read FFileLine write FFileLine;
+    property FileCaretY: Integer read FFileCaretY write FFileCaretY;
   end;
 
-  CJes2CppReferences = class(CJes2CppComponent)
+  CJes2CppReferences = class
+    {$DEFINE DItemClass := CJes2CppReferences}
+    {$DEFINE DItemSuper := CComponent}
+    {$DEFINE DItemItems := CJes2CppReference}
+    {$INCLUDE soda.inc}
   public
-    function AddReference(const AFileName: TFileName; const AFileLine: Integer): CJes2CppReference;
-    function GetReference(const AIndex: Integer): CJes2CppReference;
+    function CreateReference(const AFileSource: TFileName; const AFileCaretY: Integer): CJes2CppReference;
   end;
 
 implementation
+
+{$DEFINE DItemClass := CJes2CppReference} {$INCLUDE soda.inc}
+
+{$DEFINE DItemClass := CJes2CppReferences} {$INCLUDE soda.inc}
 
 procedure CJes2CppReference.SetFileName(const AFileName: TFileName);
 begin
@@ -70,25 +91,20 @@ end;
 
 function CJes2CppReference.EncodeLineFilePath: String;
 begin
-  Result := Format('%s=%s %s=%s %s=%s', [GsLine, QuotedStr(IntToStr(FFileLine)), GsFile, QuotedStr(FFilePartName),
+  Result := Format('%s=%s %s=%s %s=%s', [GsLine, QuotedStr(IntToStr(FFileCaretY)), GsFile, QuotedStr(FFilePartName),
     GsPath, QuotedStr(FFilePartPath)]);
 end;
 
 function CJes2CppReference.EncodeLineFile: String;
 begin
-  Result := Format('%s=%s %s=%s', [GsLine, QuotedStr(IntToStr(FFileLine)), GsFile, QuotedStr(FFilePartName)]);
+  Result := Format('%s=%s %s=%s', [GsLine, QuotedStr(IntToStr(FFileCaretY)), GsFile, QuotedStr(FFilePartName)]);
 end;
 
-function CJes2CppReferences.AddReference(const AFileName: TFileName; const AFileLine: Integer): CJes2CppReference;
+function CJes2CppReferences.CreateReference(const AFileSource: TFileName; const AFileCaretY: Integer): CJes2CppReference;
 begin
-  Result := CJes2CppReference.Create(Self, EmptyStr);
-  Result.FileName := AFileName;
-  Result.FileLine := AFileLine;
-end;
-
-function CJes2CppReferences.GetReference(const AIndex: Integer): CJes2CppReference;
-begin
-  Result := Self[AIndex] as CJes2CppReference;
+  Result := CreateComponent;
+  Result.FileSource := AFileSource;
+  Result.FileCaretY := AFileCaretY;
 end;
 
 end.

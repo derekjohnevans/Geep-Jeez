@@ -60,7 +60,7 @@ const
 
 type
 
-  TJes2CppPlatform = object
+  NsPlatform = object
     type TProcLoadFromFile = procedure(const AFileName: TFileName);
     class function IsWindows9x: Boolean;
     class function GetSpecialDir(const AIndex: Integer): TFileName;
@@ -73,7 +73,7 @@ implementation
 {$IF DEFINED(WINDOWS)}
 uses MMSystem, Windows;
 
-class function TJes2CppPlatform.GetSpecialDir(const AIndex: Integer): TFileName;
+class function NsPlatform.GetSpecialDir(const AIndex: Integer): TFileName;
 begin
   Result := GetWindowsSpecialDir(AIndex);
 end;
@@ -85,7 +85,7 @@ end;
 
 var
   GPrevWndProc: WNDPROC;
-  GpLoader: TJes2CppPlatform.TProcLoadFromFile;
+  GpLoader: NsPlatform.TProcLoadFromFile;
 
 function J2C_WindowCallback(AHwnd: HWND; AMessage: UINT; AWParam: WParam; ALParam: LParam): LRESULT; stdcall;
 var
@@ -139,8 +139,7 @@ begin
   end;
 end;
 
-class procedure TJes2CppPlatform.SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String;
-  const ALoader: TProcLoadFromFile);
+class procedure NsPlatform.SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String; const ALoader: TProcLoadFromFile);
 begin
   if J2C_WindowSendParams(AMainWindow, AWindowCaption) then
   begin
@@ -152,13 +151,12 @@ begin
 end;
 
 {$ELSEIF DEFINED(LINUX)}
-class procedure TJes2CppPlatform.SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String;
-  const ALoader: TProcLoadFromFile);
+class procedure NsPlatform.SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String; const ALoader: TProcLoadFromFile);
 begin
   Application.MainForm.Caption := AWindowCaption;
 end;
 
-class function TJes2CppPlatform.GetSpecialDir(const AIndex: Integer): TFileName;
+class function NsPlatform.GetSpecialDir(const AIndex: Integer): TFileName;
 begin
   Result := EmptyStr;
   case AIndex of
@@ -179,7 +177,7 @@ end;
 {$ERROR}
 {$ENDIF}
 
-class procedure TJes2CppPlatform.ScrollingWinControlPrepare(const AScrollingWinControl: TScrollingWinControl);
+class procedure NsPlatform.ScrollingWinControlPrepare(const AScrollingWinControl: TScrollingWinControl);
 begin
 {$IFDEF WINDOWS}
   AScrollingWinControl.Font.Quality := fqProof;
@@ -188,7 +186,7 @@ begin
 {$ENDIF}
 end;
 
-class function TJes2CppPlatform.IsWindows9x: Boolean;
+class function NsPlatform.IsWindows9x: Boolean;
 begin
 {$IFDEF WINDOWS}
   Result := Win32Platform = 1;
