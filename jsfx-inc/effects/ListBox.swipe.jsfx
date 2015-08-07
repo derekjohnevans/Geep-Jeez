@@ -1,0 +1,29 @@
+// Author: Derek John Evans
+// License: LGPL - http://www.gnu.org/licenses/gpl.html
+
+desc: SWIPE ListBox Example
+
+EffectName: SWIPE ListBox Example
+VendorString: Geep
+VendorVersion: 1000
+UniqueId: 0
+InstallPath: C:\Program Files\VST\SWIPE\
+
+import swipe.jsfx-inc
+
+@init  
+
+ListBox.Strings.LoadFromFile("data/txt/Audio-EQ-Cookbook.jsfx-inc");
+  
+@gfx 700 500
+
+SWIPE(700, 200) ?
+(
+  Effect.TEffectBasic("SWIPE ListBox Example", 
+    "License LGPL / Copyright (C) 2015 Derek J. Evans", 
+    "ListBox");
+  gfx_setfont(0);
+  ListBox.TListBox_Draw(30, 75, gfx_w - 30, gfx_h - 60);
+  Effect.TEffect_Done();
+);
+

@@ -1,0 +1,47 @@
+/*
+** Name: System
+** Desc: This is part of a Pascal style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+@init
+
+// Converts a single char to a string of length 1.
+function ChrToStr(chr) global()
+(
+  str_setchar(str_setlen(#, 1), 0, chr);
+);
+
+function Copy(str, pos, len) global()
+(
+  strcpy_substr(#, str, pos, len);
+);
+
+function Pos(chr, str) global()
+local(pos, len)
+(
+  pos = 0; len = strlen(str);
+  while (pos < len && str_getchar(str, pos) != chr) (pos += 1);
+  pos < len ? pos : -1;
+);
+
+function RPos(chr, str) global()
+local(pos)
+(
+  pos = strlen(str) - 1;
+  while (pos >= 0 && str_getchar(str, pos) != chr) (pos -= 1);
+  pos;
+);
+
+function PosSet(set, str) global()
+local(pos, len)
+(
+  pos = 0; len = strlen(str);
+  while (pos < len && Pos(str_getchar(str, pos), set) < 0) (pos += 1);
+  pos < len ? pos : -1;
+);
+

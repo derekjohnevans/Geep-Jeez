@@ -32,7 +32,8 @@ interface
 
 uses
   Classes, Jes2CppConstants, Jes2CppIterate, Jes2CppParserFunctions, Jes2CppStrings,
-  Jes2CppTranslate, StrUtils, SysUtils;
+  Jes2CppTranslate, Math,
+  StrUtils, SysUtils;
 
 type
 
@@ -44,17 +45,19 @@ type
     procedure DoCreate; override;
     procedure DoDestroy; override;
   protected
-    procedure Print(const AFormat: String; const AArgs: array of const; const AIsRequired: Boolean = True); overload;
-    procedure Print(const ALine: String; const AIsRequired: Boolean = True; const AWrapText: Boolean = True); overload;
+    procedure Print(const AFormat: String; const AArgs: array of const;
+      const AIsRequired: Boolean = True); overload;
+    procedure Print(const ALine: String; const AIsRequired: Boolean = True;
+      const AWrapText: Boolean = True); overload;
     procedure PrintBlankLine;
     procedure PrintComment(const AComment: String);
+    procedure PrintCommentTitle(const ATitle: String);
     procedure PrintExternCFoot;
     procedure PrintExternCHead;
     procedure PrintMethodFoot;
     procedure PrintMethodHead(const AName: String);
     procedure PrintOriginalComments(const ADescription: String);
     procedure PrintRaw(const ALine: String; const AIsRequired: Boolean = True);
-    procedure PrintTitle(const ATitle: String);
   public
     property Output: TStringList read FOutput;
   end;
@@ -99,7 +102,8 @@ begin
   end;
 end;
 
-procedure CJes2CppPrinter.Print(const ALine: String; const AIsRequired: Boolean; const AWrapText: Boolean);
+procedure CJes2CppPrinter.Print(const ALine: String; const AIsRequired: Boolean;
+  const AWrapText: Boolean);
 var
   LIndex: Integer;
 begin
@@ -117,7 +121,8 @@ begin
   end;
 end;
 
-procedure CJes2CppPrinter.Print(const AFormat: String; const AArgs: array of const; const AIsRequired: Boolean);
+procedure CJes2CppPrinter.Print(const AFormat: String; const AArgs: array of const;
+  const AIsRequired: Boolean);
 begin
   Print(Format(AFormat, AArgs), AIsRequired);
 end;
@@ -133,11 +138,11 @@ begin
   end;
 end;
 
-procedure CJes2CppPrinter.PrintTitle(const ATitle: String);
+procedure CJes2CppPrinter.PrintCommentTitle(const ATitle: String);
 begin
-  PrintComment(J2C_StringLine(FColWidth - FIndent - 3));
+  PrintComment(GString.SplitterLine(FColWidth - FIndent - 3));
   PrintComment(ATitle);
-  PrintComment(J2C_StringLine(FColWidth - FIndent - 3));
+  PrintComment(GString.SplitterLine(FColWidth - FIndent - 3));
 end;
 
 procedure CJes2CppPrinter.PrintOriginalComments(const ADescription: String);
@@ -149,7 +154,7 @@ begin
   begin
     try
       Text := ADescription;
-      for LIndex := 0 to Count - 1 do
+      for LIndex := ZeroValue to Count - 1 do
       begin
         LString := Trim(Strings[LIndex]);
         if AnsiStartsStr('//', LString) then
@@ -180,7 +185,7 @@ end;
 
 procedure CJes2CppPrinter.PrintMethodHead(const AName: String);
 begin
-  PrintTitle('Override: ' + AName);
+  PrintCommentTitle('Override: ' + AName);
   Print(GsCppVoidSpace + GsCppFunct1, [AName]);
   Print(CharOpeningBrace);
   Print(GsTJes2Cpp + '::' + AName + '();');

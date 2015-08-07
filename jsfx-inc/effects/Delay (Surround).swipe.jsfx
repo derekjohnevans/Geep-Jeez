@@ -1,0 +1,88 @@
+// Author: Derek John Evans
+// License: LGPL - http://www.gnu.org/licenses/gpl.html
+
+desc: Geep Delay (Surround)
+
+EffectName: Geep Delay (Surround)
+VendorString: Geep
+VendorVersion: 1000
+UniqueId: 4562
+InstallPath: C:\Program Files\VST\SWIPE\
+
+import swipe.jsfx-inc
+
+// To enable graphics, ALL sliders must be hidden by prefixing the labels with a '-'.
+
+slider1:500<1,1000,1>-Length (ms)
+slider2:40<-100,100,1>-Delay (%)
+slider3:74<-180,180,1>-Delay Angle (deg)
+slider4:30<-100,100,1>-Feedback (%)
+slider5:-74<-180,180,1>-Feedback Angle (deg)
+
+slider60:-0.3<-1,1,0.01>-Dry <> Wet
+slider61:0<-24,3,0.5>-Output (dB)
+
+@sample
+
+SliderChanged() ? ( 
+
+  msize = floor(max(slider1, 1) * srate / 1000) * 2;
+  
+  delay = slider2 / 100;
+  angle = (45 - slider3) * $pi / 180;
+  delay0 = delay * sin(angle);
+  delay1 = delay * cos(angle);
+  
+  fback = min(max(slider4/ 100, -1), 1);
+  angle = (45 - slider5) * $pi / 180;
+  fback0 = fback * sin(angle);
+  fback1 = fback * cos(angle);
+  
+  lev = 2 ^ (slider61 / 6);
+  wet = (slider60 + 1) * 0.5 * lev;
+  dry = (1 - slider60) * 0.5 * lev;
+);
+
+(p1 -= 2) < 0 ? p1 += msize;
+
+p1[0] = spl0 * delay0 + (wet0 = p1[0]) * fback0;
+p1[1] = spl1 * delay1 + (wet1 = p1[1]) * fback1;
+
+spl0 = spl0 * dry + wet0 * wet;
+spl1 = spl1 * dry + wet1 * wet;
+
+@init
+
+// Register memory usage with system.
+
+heap.max(srate * 2);
+
+// Define SWIPE Interface.
+
+_1.TWidget(1, 1, 1000, "Length", "ms");
+_2.TWidget(2, -100, 100, "Delay", "%");
+_3.TWidget(3, -180,180, "Delay Angle", "deg");
+_4.TWidget(4, -100, 100, "Feedback", "%");
+_5.TWidget(5, -180, 180, "Feedback Angle", "deg");
+_6.TWidget(60, -1, 1, "Dry <> Wet", "");
+_7.TWidget(61, -24, 3, "Output", "dB");
+
+@gfx 450 300
+
+SWIPE(320, 300) ?
+(
+  _effect.TEffectBasic("Geep Delay (Surround)", "License LGPL / Copyright (C) 2015 Derek J. Evans", "Delay");
+  
+  y = 80; yy = 22; 
+  x1 = 20; x2 = gfx_w - x1;
+  
+  _1.TSliderHorz_Draw(x1, y, x2, y + 16); y += yy;
+  _2.TSliderHorz_Draw(x1, y, x2, y + 16); y += yy;
+  _3.TSliderHorz_Draw(x1, y, x2, y + 16); y += yy;
+  _4.TSliderHorz_Draw(x1, y, x2, y + 16); y += yy;
+  _5.TSliderHorz_Draw(x1, y, x2, y + 16); y += yy;
+  _6.TSliderHorz_Draw(x1, y, x2, y + 16); y += yy;
+  _7.TSliderHorz_Draw(x1, y, x2, y + 16); y += yy;
+  
+  _effect.TEffect_Done(); 
+);

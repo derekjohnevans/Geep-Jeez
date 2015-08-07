@@ -1,0 +1,334 @@
+desc:a handful of interpolation algorithms
+
+/*
+
+	Interpolation Algorithms Library
+		v 1.1
+
+
+ For fractional delays, interpolation, etc. The bundled plugin lets you hear the
+difference between them when applied to a Karplus-Strong "pluck".
+
+
+ These functions are standardized to assume that we are interpolating between
+x1 and x2, and mu is the decimal point in between. For example, using linear
+interpolation - if x1 = 1, x2 = 2, and mu = 0.5, then the interpolated value
+would be 1.5.
+
+
+xo .......... x1 ....[interpolating here]...... x2 .......... x3
+
+
+ Here are a list of the different functions as well as brief notes.
+
+
+	Non-Recursive
+
+
+  interpolate_linear(x1,x2,mu)
+
+
+ The "straight line" approximation. Most common, easiest to compute.
+
+
+  interpolate_cosine(x1,x2,mu)
+  interpolate_smooth(x1,x2,mu)
+
+
+ These use curves (cosine and polynomial, respectively) instead of straight
+lines. The endpoints are still discontinuous, but the curves add some
+nonlinearity and color. "Smooth" is a polynomial alternative to "Cosine".
+
+
+  interpolate_hermite(x0,x1,x2,x3,mu)
+
+
+ 4-point algorithm using Hermite spline. Computationally expensive, but I
+really like how it sounds.
+
+
+
+	IIR
+
+
+
+  interpolate_allpass_init(mu)
+  interpolate_allpass(in)
+
+
+ First order Thiran all-pass filter. When they talk about an allpass filter
+used in the delay line, this is the one they're talking about. The init
+function needs to be called first. This is a recursive algorithm.
+
+
+  interpolate_allpass2_init(mu)
+  interpolate_allpass2(in)
+
+
+ Second order Thiran all-pass filter. Also a recursive algorithm.
+*** Special note - this must have a delay greater than 1. ***
+If you check the example file I bundled with this library, I pull four consecutive
+values (x0 through x3) from the delay line and interpolate between x1 and x2. To
+make this function work correctly, simply interpolate from x0 and add one to your
+fractional delay value (mu).
+
+
+  interpolate_rbj_ap_init(mu)
+  interpolate_rbj_ap(in)
+
+
+ RBJ 2nd order all-pass IIR filter.
+
+
+
+	FIR
+
+
+
+  interpolate_fir_init(mu)
+  interpolate_fir(in)
+
+
+ 3-tap fractional delay filter. I don't have a proper name for it, so I'm
+just calling it a generic FIR filter. See below for the site that I got it
+from if you care.
+
+
+  interpolate_lagrange2_init(mu)
+  interpolate_lagrange2(in)
+
+
+ 2nd order FIR Lagrange interpolation.
+
+
+  interpolate_lagrange3_init(mu)
+  interpolate_lagrange3(in)
+
+
+ 3rd order FIR Lagrange interpolation. This is another funny one - the delay needs
+to be greater than 1. Again, as with the 2nd order Thiran all-pass, take one
+sample sooner and add one to the fractional delay value ("mu").
+
+
+
+ And that's that. There's more that I wanted to do, but either had trouble deriving them,
+finding code examples, or had problems implementing them. If I figure any others out,
+I'll be updating this file at the Reaper stash.
+
+ Any questions, comments, code corrections, or suggestions on how to implement other
+interpolation algorithms, reach me in the Reaper JS forum.
+
+
+	http://forum.cockos.com/forumdisplay.php?f=3
+
+
+	~ Sault
+	  2-16-14
+
+*/
+
+
+
+@init
+
+
+// from http://paulbourke.net/miscellaneous/interpolation/
+
+function interpolate_linear(x1,x2,mu)
+ instance(out)
+(
+  out = x1*(1-mu) + x2*mu;
+);
+
+
+function interpolate_cosine(x1,x2,mu)
+ instance(mu2,out)
+(
+  mu2 = (1 - cos(mu * $pi))/2;
+  out = x1*(1-mu2) + x2*mu2;
+);
+
+
+function interpolate_smooth(x1,x2,mu)
+ instance(out)
+(
+  mu = mu * mu * (3 - (2 * mu));
+  out = x1 + ((x2 - x1) * mu);
+);
+
+
+// from www.xoxos.net/sem/dsp2public.pdf
+// xoxos' formula has tension and bias set to 0
+
+function interpolate_hermite(x0,x1,x2,x3,mu)
+ instance(a,b,c,d,out)
+(
+  a = ((3 * (x1- x2)) - x0 + x3) * 0.5;
+  b = x2 + x2 + x0 - (5*x1 + x3) * 0.5;
+  c = (x2 - x0) * 0.5;
+  d = mu;
+  out = ((a*d+b)*d+c)*d+x1;
+);
+
+
+// Thiran first-order all-pass
+
+
+function interpolate_allpass_init(d)
+ instance(a,x1,y1)
+(
+  a = (1-d)/(1+d);
+  a = min(max(a,0),1);
+  x1 = y1 = 0;
+);
+
+
+function interpolate_allpass(in)
+ instance(out,x1,y1,a)
+(
+  out = a * in + x1 - a * y1;
+  x1 = in;
+  y1 = out;
+  out;
+);
+
+
+// Thiran second-order all-pass
+//
+// from "Alias-Free Virtual Analog Oscillators Using a Feedback Delay Loop" 
+// http://dafx09.como.polimi.it/proceedings/papers/paper_72.pdf
+
+
+function interpolate_allpass2_init(d)
+(
+  this.a1 = -(d-2)/(d+1);
+  this.a2 = ((d-1)*(d-2))/((d+1)*(d+2));
+  this.x1 = this.x2 = this.y1 = this.y2 = 0;
+);
+
+
+function interpolate_allpass2(in)
+ instance(out,y1,y2,x1,x2,a1,a2)
+(
+  out = a2*in + a1*x1 + x2;
+  out -= (a1*y1 + a2*y2);
+  y2 = y1;
+  y1 = out;
+  x2 = x1;
+  x1 = in;
+  out;
+);
+
+
+// from RBJ's Audio Cookbook
+
+
+function interpolate_rbj_ap_init(frac)
+ instance(w0, cosw0, sinw0, alpha, a1)
+(
+  w0 = 2 * $pi * frac/srate;
+  cosw0 = cos(w0);
+  sinw0 = sin(w0);
+  alpha = sinw0 / 2;	// setting Q to 1
+  this.b01 = 1 - alpha;
+  this.b11 = -2 *cosw0;
+  this.b21 = 1 + alpha;
+  this.a01 = 1 + alpha;
+  this.a11 = -2 * cosw0;
+  this.a21 = 1 - alpha;
+  this.b01 /= this.a01;
+  this.b11 /= this.a01;
+  this.b21 /= this.a01;
+  this.a11 /= this.a01;
+  this.a21 /= this.a01;
+  this.x11 = this.x21 = 0;
+  this.y11 = this.y21 = 0;
+  this.oin = this.in = 0;
+);
+
+
+function interpolate_rbj_ap(in)
+ instance(oin, out)
+(
+  oin = in;
+  out = this.b01 * in + this.b11 * this.x11 + this.b21 * this.x21;
+  out += -this.a11 * this.y11 - this.a21 * this.y21;
+  this.x21 = this.x11;
+  this.x11 = this.oin;
+  this.y21 = this.y11;
+  this.y11 = out;
+  out;
+);
+
+
+// from http://www.cs.nuim.ie/~matthewh/VST.html
+
+function interpolate_fir_init(frac)
+ instance(b0,b1,b2,t,d,g,a)
+(
+  d = frac;
+  t = (1-d)/(1+d);
+  g = 10^(-6/(srate*1)); // 1 = "tau"
+  b0 = 0.5 * g * t;
+  b1 = 0.5 * (t + 1);
+  b2 = 0.5 * g;
+  a = t;
+);
+
+
+function interpolate_fir(in)
+  instance(out,x1,x2)
+(
+  out = this.b0 * in + x1;
+  x1 = this.b1 * in + x2 - this.a * out;
+  x2 = this.b2 * in;
+  out;
+);
+
+
+// from http://www.acoustics.hut.fi/~vpv/publications/vesan_vaitos/ch3_pt2_lagrange.pdf
+
+// 2nd order Lagrange interpolation
+
+
+function interpolate_lagrange2_init(frac)
+ instance(h0,h1,h2)
+(
+  h0 = 0.5 * (frac-1) * (frac-2);
+  h1 = -frac * (frac-2);
+  h2 = 0.5 * frac * (frac-1);
+);
+
+
+function interpolate_lagrange2(in)
+ instance(out,x1,x2)
+(
+  out = this.h0 * in + this.h1 * x1 + this.h2 * x2;
+  x2 = x1;
+  x1 = in;
+  out;
+);
+
+
+// 3rd order Lagrange interpolation
+
+
+function interpolate_lagrange3_init(frac)
+ instance(h0,h1,h2,h3)
+(
+  h0 = (frac-1) * (frac-2) * (frac-3)/-6;
+  h1 = 0.5 * frac * (frac-2) * (frac-3);
+  h2 = -0.5 * frac * (frac-1) * (frac-3);
+  h3 = (frac * (frac-1) * (frac-2))/6;
+);
+
+
+function interpolate_lagrange3(in)
+ instance(out,x1,x2,x3)
+(
+  out = this.h0 * in + this.h1 * x1 + this.h2 * x2 + this.h3 * x3;
+  x3 = x2;
+  x2 = x1;
+  x1 = in;
+  out;
+);

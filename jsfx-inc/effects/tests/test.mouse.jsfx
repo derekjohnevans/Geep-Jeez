@@ -1,0 +1,15 @@
+
+import test.jsfx-inc
+
+@init
+
+clrscr();
+
+@gfx
+
+printf("mouse_x=%4d, mouse_y=%4d, mouse_cap=%4d\n", mouse_x, mouse_y, mouse_cap);
+
+strlen(stdout) > 4096 ? clrscr();
+
+Console.Draw();
+

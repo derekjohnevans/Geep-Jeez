@@ -1,0 +1,10 @@
+import test.jsfx-inc
+
+@init
+
+clrscr();
+
+printf("Hello World!");
+
+@sample
+

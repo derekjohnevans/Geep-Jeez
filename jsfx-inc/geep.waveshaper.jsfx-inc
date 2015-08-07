@@ -1,0 +1,29 @@
+
+import std.vector.jsfx-inc
+
+@init
+
+function WaveType1(spl, brown) global() local(gain)
+(
+  gain = spl * 10000; // 80db gain
+  spl = cos(spl) * (atan(sign(gain) * abs(gain) ^ brown));
+);
+
+function WaveShaper.Init(size, gain, brown) global() local(spl)
+(
+  this.resize(size);
+  spl = 0;
+  while (spl < this.size()) (
+    this[spl] = WaveType1(spl * gain / this.size(), brown);
+    spl += 1;
+  );
+);
+
+function WaveShaper.Sample(spl) global() local(abs, idx, int, fra)
+(
+  int = (abs = min(abs(spl), 1))|0;
+  fra = abs - int;
+  idx = abs * (this.size() - 1);  
+  (this[idx] * (1 - fra) + this[idx + 1] * fra) * sign(spl);
+);
+

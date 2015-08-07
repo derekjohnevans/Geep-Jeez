@@ -1,0 +1,203 @@
+/*
+	ToneStack.jsfx-inc
+
+	Copyright 2006
+		David Yeh <dtyeh@ccrma.stanford.edu> (implementation)
+
+	Copyright 2006-14
+		Tim Goetze <tim@quitte.de> (cosmetics)
+
+	Tone Stack emulation.
+
+*/
+/*
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 3
+	of the License, or (at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+	02111-1307, USA or point your web browser to http://www.gnu.org.
+*/
+
+import caps.TDFII.jsfx-inc
+
+@init
+
+function TSParameters(_R1, _R2, _R3, _R4, _C1, _C2, _C3) global()
+instance(R1, R2, R3, R4, C1, C2, C3)
+(
+  R1 = _R1; R2 = _R2; R3 = _R3; R4 = _R4;
+  C1 = _C1; C2 = _C2; C3 = _C3;
+);
+
+function ToneStack_setparams(p.R1, p.R2, p.R3, p.R4, p.C1, p.C2, p.C3) global()
+instance(filter)
+instance(c, b1t, b1m, b1l, b1d, b2t, b2m2, b2m, b2l, b2lm, b2d, b3lm, b3m2, b3m, b3t, b3tm, b3tl,
+  a0, a1d, a1m, a1l, a2m, a2lm, a2m2, a2l, a2d, a3lm, a3m2, a3m, a3l, a3d)
+local(R1, R2, R3, R4, C1, C2, C3)
+(
+  R1 = p.R1; R2 = p.R2; R3 = p.R3; R4 = p.R4;
+  C1 = p.C1; C2 = p.C2; C3 = p.C3;
+
+  b1t  = C1*R1;
+  b1m  = C3*R3;
+  b1l  = C1*R2 + C2*R2;
+  b1d  = C1*R3 + C2*R3;
+  b2t  = C1*C2*R1*R4 + C1*C3*R1*R4;
+  b2m2 = -(C1*C3*R3*R3 + C2*C3*R3*R3);
+  b2m  = C1*C3*R1*R3 + C1*C3*R3*R3 + C2*C3*R3*R3;
+  b2l  = C1*C2*R1*R2 + C1*C2*R2*R4 + C1*C3*R2*R4;
+  b2lm = C1*C3*R2*R3 + C2*C3*R2*R3;
+  b2d  = C1*C2*R1*R3 + C1*C2*R3*R4 + C1*C3*R3*R4;
+  b3lm = C1*C2*C3*R1*R2*R3 + C1*C2*C3*R2*R3*R4;
+  b3m2 = -(C1*C2*C3*R1*R3*R3 + C1*C2*C3*R3*R3*R4);
+  b3m  = C1*C2*C3*R1*R3*R3 + C1*C2*C3*R3*R3*R4;
+  b3t  = C1*C2*C3*R1*R3*R4;
+  b3tm = -b3t;
+  b3tl = C1*C2*C3*R1*R2*R4;
+  a0   = 1;
+  a1d  = C1*R1 + C1*R3 + C2*R3 + C2*R4 + C3*R4;
+  a1m  = C3*R3;
+  a1l  = C1*R2 + C2*R2;
+  a2m  = C1*C3*R1*R3 - C2*C3*R3*R4 + C1*C3*R3*R3 + C2*C3*R3*R3;
+  a2lm = C1*C3*R2*R3 + C2*C3*R2*R3;
+  a2m2 = -(C1*C3*R3*R3 + C2*C3*R3*R3);
+  a2l  = C1*C2*R2*R4 + C1*C2*R1*R2 + C1*C3*R2*R4 + C2*C3*R2*R4;
+  a2d  = C1*C2*R1*R4 + C1*C3*R1*R4 + C1*C2*R3*R4
+      + C1*C2*R1*R3 + C1*C3*R3*R4 + C2*C3*R3*R4;
+  a3lm = C1*C2*C3*R1*R2*R3 + C1*C2*C3*R2*R3*R4;
+  a3m2 = -(C1*C2*C3*R1*R3*R3 + C1*C2*C3*R3*R3*R4);
+  a3m  = C1*C2*C3*R3*R3*R4 + C1*C2*C3*R1*R3*R3 - C1*C2*C3*R1*R3*R4;
+  a3l  = C1*C2*C3*R1*R2*R4;
+  a3d  = C1*C2*C3*R1*R3*R4;
+
+  filter.TDFII_reset();
+);
+
+function ToneStack_setparams(m) global()
+instance(presets)
+(
+  m == 0 ? this.ToneStack_setparams(presets.0.R1, presets.0.R2, presets.0.R3, presets.0.R4, presets.0.C1, presets.0.C2, presets.0.C3) :
+  m == 1 ? this.ToneStack_setparams(presets.1.R1, presets.1.R2, presets.1.R3, presets.1.R4, presets.1.C1, presets.1.C2, presets.1.C3) :
+  m == 2 ? this.ToneStack_setparams(presets.2.R1, presets.2.R2, presets.2.R3, presets.2.R4, presets.2.C1, presets.2.C2, presets.2.C3) :
+  m == 3 ? this.ToneStack_setparams(presets.3.R1, presets.3.R2, presets.3.R3, presets.3.R4, presets.3.C1, presets.3.C2, presets.3.C3) :
+  m == 4 ? this.ToneStack_setparams(presets.4.R1, presets.4.R2, presets.4.R3, presets.4.R4, presets.4.C1, presets.4.C2, presets.4.C3) :
+  m == 5 ? this.ToneStack_setparams(presets.5.R1, presets.5.R2, presets.5.R3, presets.5.R4, presets.5.C1, presets.5.C2, presets.5.C3) :
+  m == 6 ? this.ToneStack_setparams(presets.6.R1, presets.6.R2, presets.6.R3, presets.6.R4, presets.6.C1, presets.6.C2, presets.6.C3) :
+  m == 7 ? this.ToneStack_setparams(presets.7.R1, presets.7.R2, presets.7.R3, presets.7.R4, presets.7.C1, presets.7.C2, presets.7.C3) :
+  m == 8 ? this.ToneStack_setparams(presets.8.R1, presets.8.R2, presets.8.R3, presets.8.R4, presets.8.C1, presets.8.C2, presets.8.C3) ;  
+);
+
+function ToneStack_setmodel(m) global()
+(
+  this.ToneStack_setparams(m);
+  this.filter.TDFII_reset();
+);
+
+function ToneStack_init(_fs) global()
+(
+  this.c = 2 * _fs;
+);
+
+function ToneStack_reset() global()
+(
+  this.filter.TDFII_reset();
+);
+
+/* actually do the DFII filtering, one sample at a time */
+function ToneStack_process(x) global()
+(
+  this.filter.TDFII_process(x);
+);
+
+function ToneStack() global()
+instance(Order, dcoef_a, dcoef_b)
+local(k, M, pF, nF)
+(
+  Order = 3;
+  this.filter.TDFII(Order);  
+  // digital coefficients
+  dcoef_a = malloc(Order + 1);
+  dcoef_b = malloc(Order + 1);
+
+  /* for convenience, */
+  k = 10 ^ 3;
+  M = 10 ^ 6;
+  nF = 10 ^ -9;
+  pF = 10 ^ -12;
+
+  /* parameter order is R1 - R4, C1 - C3 */
+  /* R1=treble R2=Bass R3=Mid, C1-3 related caps, R4 = parallel resistor */
+  /* { 250000, 1000000, 25000, 56000, 0.25e-9, 20e-9, 20e-9 }, DY */
+  this.presets.0.TSParameters(250*k, 1*M, 25*k, 56*k, 250*pF, 20*nF, 20*nF);       /* 59 Bassman 5F6-A */
+  this.presets.1.TSParameters(250*k, 250*k, 4.8*k, 100*k, 250*pF, 100*nF, 47*nF);  /* 64 Princeton AA1164 */
+  this.presets.2.TSParameters(250*k, 1*M, 25*k, 47*k, 600*pF, 20*nF, 20*nF);       /* Mesa Dual Rect. 'Orange' */
+  /* Vox -- R3 is fixed (circuit differs anyway) */
+  this.presets.3.TSParameters(1*M, 1*M, 20*k, 100*k, 50*pF, 22*nF, 22*nF);         /* 59/86 Vox AC-30 */
+  this.presets.4.TSParameters(220*k, 1*M, 22*k, 33*k, 470*pF, 22*nF, 22*nF);       /* 59/81 JCM-800 Lead 100 2203 */
+  this.presets.5.TSParameters(250*k, 250*k, 10*k, 100*k, 120*pF, 100*nF, 47*nF);   /* 69 Twin Reverb AA270 */
+  this.presets.6.TSParameters(500*k, 1*M, 25*k, 47*k, 150*pF, 22*nF, 22*nF);       /* Hughes & Kettner Tube 20 */
+  this.presets.7.TSParameters(250*k, 250*k, 10*k, 100*k, 150*pF, 82*nF, 47*nF);    /* Roland Jazz Chorus */
+  this.presets.8.TSParameters(250*k, 1*M, 50*k, 33*k, 100*pF, 22*nF, 22*nF);       /* Pignose G40V */
+		
+  this.ToneStack_setmodel(0);
+);
+
+/* extensively reworked TG 5/2011 */
+function ToneStack_updatecoefs(b, m, t) global()
+instance(filter, acoef, dcoef_a, dcoef_b)
+instance(c, b1t, b1m, b1l, b1d, b2t, b2m2, b2m, b2l, b2lm, b2d, b3lm, b3m2, b3m, b3t, b3tm, b3tl,
+  a0, a1d, a1m, a1l, a2m, a2lm, a2m2, a2l, a2d, a3lm, a3m2, a3m, a3l, a3d)
+local(i, c2, c3, a0i)
+(
+  m = (m - 1) * 3.5;
+  m = pow (10, m);
+
+  // analog coefficients
+  acoef.a1 = a1d + m*a1m + b*a1l;
+  acoef.a2 = m*a2m + b*m*a2lm + m*m*a2m2 + b*a2l + a2d;
+  acoef.a3 = b*m*a3lm + m*m*a3m2 + m*a3m + b*a3l + a3d;
+
+  c2 = c*c; c3 = c2*c;
+
+  acoef.a1 *= c; acoef.a2 *= c2; acoef.a3 *= c3;
+
+  dcoef_a[0] = -1 - acoef.a1 - acoef.a2 - acoef.a3; // sets scale
+  dcoef_a[1] = -3 - acoef.a1 + acoef.a2 + 3*acoef.a3;
+  dcoef_a[2] = -3 + acoef.a1 + acoef.a2 - 3*acoef.a3;
+  dcoef_a[3] = -1 + acoef.a1 - acoef.a2 + acoef.a3;
+
+  acoef.b1 = t*b1t + m*b1m + b*b1l + b1d;
+  acoef.b2 = t*b2t + m*m*b2m2 + m*b2m + b*b2l + b*m*b2lm + b2d;
+  acoef.b3 = b*m*b3lm + m*m*b3m2 + m*b3m + t*b3t + t*m*b3tm + t*b*b3tl;
+
+  acoef.b1 *= c; acoef.b2 *= c2; acoef.b3 *= c3;
+
+  dcoef_b[0] = - acoef.b1 - acoef.b2 - acoef.b3;
+  dcoef_b[1] = - acoef.b1 + acoef.b2 + 3*acoef.b3;
+  dcoef_b[2] = acoef.b1 + acoef.b2 - 3*acoef.b3;
+  dcoef_b[3] = acoef.b1 - acoef.b2 + acoef.b3;
+
+  a0i = 1. / dcoef_a[0];
+
+  i = 1;
+  while (i <= 3) (
+    filter.a[i] = dcoef_a[i] * a0i;
+    i += 1;
+  );
+
+  i = 0;
+  while (i <= 3) (
+    filter.b[i] = dcoef_b[i] * a0i;
+    i += 1;
+  );
+);
+

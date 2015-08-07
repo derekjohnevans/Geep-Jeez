@@ -1,0 +1,67 @@
+/*
+** Name: Controls
+** Desc: This is part of a Pascal style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import pas.types.jsfx-inc
+
+@init
+
+function Buttons.L.Down.Set(x) ( this = x; );
+function Buttons.L.Down.Get()  ( this; );
+function Buttons.L.Clicked.Set(x) ( this = x; );
+function Buttons.L.Clicked.Get()  ( this; );
+function Buttons.L.UnClicked.Set(x) ( this = x; );
+function Buttons.L.UnClicked.Get()  ( this; );
+
+function Buttons.R.Down.Set(x) ( this = x; );
+function Buttons.R.Down.Get()  ( this; );
+function Buttons.R.Clicked.Set(x) ( this = x; );
+function Buttons.R.Clicked.Get()  ( this; );
+function Buttons.R.UnClicked.Set(x) ( this = x; );
+function Buttons.R.UnClicked.Get()  ( this; );
+
+function Buttons.Set(x, y, cap) global() local(isdown)
+(
+  this = cap;
+  isdown = sign(this & 1);
+  this.Buttons.L.Clicked.Set( isdown && !this.Buttons.L.Down.Get() );
+  this.Buttons.L.UnClicked.Set( !isdown && this.Buttons.L.Down.Get() );
+  this.Buttons.L.Down.Set(isdown);
+  this.Buttons.L.Clicked.Get() ? ( this.Buttons.L.Clicked.Point.TPoint_Set(x, y) );
+      
+  isdown = sign(this & 2);
+  this.Buttons.R.Clicked.Set( isdown && !this.Buttons.R.Down.Get() );
+  this.Buttons.R.UnClicked.Set( !isdown && this.Buttons.R.Down.Get() );
+  this.Buttons.R.Down.Set(isdown);
+  this.Buttons.R.Clicked.Get() ? ( this.Buttons.R.Clicked.Point.TPoint_Set(x, y) );
+);
+
+// TMouse Object
+
+function Mouse.Set(x, y, cap) global()
+(
+  this.Point.TPoint_Set(x, y);
+  this.Buttons.Set(x, y, cap);    
+);
+
+function Mouse.Set() global(mouse_x, mouse_y, mouse_cap)
+(
+  this.Mouse.Set(mouse_x, mouse_y, mouse_cap);
+);
+
+function Mouse.SetCapture(x) global()
+(
+  this.Capture = x;
+);
+
+function Mouse.GetCapture() global()
+(
+  this.Capture;
+);
+

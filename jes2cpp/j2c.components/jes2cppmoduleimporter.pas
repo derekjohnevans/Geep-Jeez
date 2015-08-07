@@ -31,7 +31,8 @@ unit Jes2CppModuleImporter;
 interface
 
 uses
-  Classes, Jes2Cpp, Jes2CppConstants, Jes2CppEel, Jes2CppIdentString, Jes2CppStrings, Jes2CppUtils, Jes2CppVariable, StrUtils, SysUtils;
+  Classes, Jes2Cpp, Jes2CppConstants, Jes2CppEel, Jes2CppIdentString,
+  Jes2CppStrings, Jes2CppUtils, Jes2CppVariable, StrUtils, SysUtils;
 
 procedure J2C_ImportModule(const ADst: TStrings; const AFileName: TFileName);
 
@@ -64,42 +65,48 @@ begin
     begin
       Break;
     end;
-    Result := StuffString(Result, LPos, LEnd - LPos, LHead + Copy(Result, LPos, LEnd - LPos) + LFoot);
+    Result := StuffString(Result, LPos, LEnd - LPos, LHead +
+      Copy(Result, LPos, LEnd - LPos) + LFoot);
     LPos := LEnd + Length(LHead) + Length(LFoot);
   until False;
 end;
 
-procedure J2C_ImportSection(const ADst, ASrc: TStrings; const AFileName: TFileName; const ASectionName: String);
+procedure J2C_ImportSection(const ADst, ASrc: TStrings; const AFileName: TFileName;
+  const ASectionName: String);
 var
   LUnused: Integer;
   LSectionHeader, LInstances: String;
   LSection: TStringList;
   LVariable: CJes2CppVariable;
 begin
-  J2C_StringsAddCommentTitle(ADst, EelSectionName(ASectionName));
+  GStrings.AddCommentTitle(ADst, GEelSectionHeader.Make(ASectionName));
   LSection := TStringList.Create;
   try
-    J2C_ExtractSection(ASectionName, LSection, ASrc, EmptyStr, False, LSectionHeader);
-    LSection.Insert(0, EelSectionName(GsEelSectionInit));
+    GUtils.ExtractSection(ASectionName, LSection, ASrc, EmptyStr, False, LSectionHeader);
+    LSection.Insert(0, GEelSectionHeader.Make(GsEelSectionInit));
     with CJes2Cpp.Create(nil) do
     begin
       try
         TranspileScript(LSection, AFileName);
         LSection.Delete(0);
-        ADst.AddText(WrapText(GsEelFunction + CharSpace + J2C_IdentFixUp(ASectionName + CharUnderscore +
-          ChangeFileExt(ExtractFileName(AFileName), EmptyStr)) + CharOpeningParenthesis + CharClosingParenthesis, GiColWidth));
+        ADst.AddText(WrapText(GsEelFunction + CharSpace +
+          GIdentString.FixUp(ASectionName + CharUnderscore + ChangeFileExt(
+          ExtractFileName(AFileName), EmptyStr)) + CharOpeningParenthesis +
+          CharClosingParenthesis, GiColWidth));
         LInstances := EmptyStr;
         for LVariable in Variables do
         begin
           if not LVariable.IsSystem or ((LVariable.References.ComponentCount > 1) and
-            (J2C_IdentIsSlider(LVariable.Name, LUnused) or J2C_IdentIsSample(LVariable.Name, LUnused))) then
+            (GIdentString.IsSlider(LVariable.Name, LUnused) or
+            GIdentString.IsSample(LVariable.Name, LUnused))) then
           begin
-            J2C_StringAppendCSV(LInstances, J2C_IdentClean(LVariable.Name));
+            GString.AppendCSV(LInstances, GIdentString.Clean(LVariable.Name));
           end;
         end;
         if LInstances <> EmptyStr then
         begin
-          ADst.AddText(WrapText(GsEelInstance + CharOpeningParenthesis + LInstances + CharClosingParenthesis, GiColWidth));
+          ADst.AddText(WrapText(GsEelInstance + CharOpeningParenthesis +
+            LInstances + CharClosingParenthesis, GiColWidth));
         end;
         ADst.Add(CharOpeningParenthesis);
         ADst.AddText(AdjustArrays(LSection.Text));
@@ -118,10 +125,11 @@ procedure J2C_ImportModule(const ADst: TStrings; const AFileName: TFileName);
 var
   LScript: TStrings;
 begin
-  J2C_StringsAddCommentTitle(ADst, 'This file was auto generated from: ' + QuotedStr(ExtractFileName(AFileName)) +
-    LineEnding + 'Note: This feature is experimental and the results may need to be hand edited.' + LineEnding +
-    'Module importing only works for simple Jesusonic effects. ie: No functions allowed.');
-  ADst.Add(EelSectionName(GsEelSectionInit));
+  GStrings.AddCommentTitle(ADst, 'This file was auto generated from: ' +
+    QuotedStr(ExtractFileName(AFileName)) + LineEnding +
+    'Note: This feature is experimental and the results may need to be hand edited.' +
+    LineEnding + 'Module importing only works for simple Jesusonic effects. ie: No functions allowed.');
+  ADst.Add(GEelSectionHeader.Make(GsEelSectionInit));
   LScript := TStringList.Create;
   try
     LScript.LoadFromFile(AFileName);

@@ -1,0 +1,60 @@
+/*
+** Name: ctype.h
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+@init
+
+// Checks whether c is a white-space character.
+function isspace (c) global() ( c == 32 || (c >= 9 && c <= 13) );
+
+// Checks whether c is a blank character. A blank character is a space character used to separate words within a line of text.
+function isblank (c) global() ( c == 32 || c == 9);
+
+// Checks whether c is a control character.
+function iscntrl (c) global() ( (c > 0 && c < 32) || c == 127);
+
+// Checks whether c is a decimal digit character.
+function isdigit (c) global() ( c >= $'0' && c <= $'9' );
+
+// Checks whether c is a lowercase letter.
+function islower (c) global() ( c >= $'a' && c <= $'z' );
+
+// Checks if parameter c is an uppercase alphabetic letter.
+function isupper (c) global() ( c >= $'A' && c <= $'Z' );
+
+// Checks whether c is an alphabetic letter.
+function isalpha (c) global() ( isupper(c) || islower(c) );
+
+// Checks whether c is either a decimal digit or an uppercase or lowercase letter.
+function isalnum (c) global() ( isalpha(c) || isdigit(c) );
+
+// Checks whether c is a printable character.
+function isprint (c) global() ( c >= 32 && c != 127 );
+
+// Checks whether c is a character with graphical representation. (same as isprint except no space)
+function isgraph (c) global() ( c >  32 && c != 127 );
+
+// Checks whether c is a punctuation character.
+function ispunct (c) global() ( isgraph(c) && !isalpha(c) );
+
+// Checks whether c is a hexdecimal digit character.
+function isxdigit(c) global() ( isdigit(c) || (c >= $'a' && c <= $'f') || (c >= $'A' && c <= $'F'));
+
+/*
+Converts c to its lowercase equivalent if c is an uppercase letter and has a lowercase equivalent.
+If no such conversion is possible, the value returned is c unchanged.
+*/
+function tolower (c) global() ( isupper(c) ? c - $'A' + $'a' : c );
+
+/*
+Converts c to its uppercase equivalent if c is a lowercase letter and has an uppercase equivalent.
+If no such conversion is possible, the value returned is c unchanged.
+*/
+function toupper (c) global() ( islower(c) ? c - $'a' + $'A' : c );
+

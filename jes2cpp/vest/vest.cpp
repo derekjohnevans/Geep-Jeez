@@ -21,13 +21,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef VEST_VST
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS != 1
-#error Deprecated methods must be enabled.
+#if !defined(VSTGUI_ENABLE_DEPRECATED_METHODS) || VSTGUI_ENABLE_DEPRECATED_METHODS != 1
+#error Deprecated methods must be enabled. (#define VSTGUI_ENABLE_DEPRECATED_METHODS 1)
 #endif
 
-#ifndef VSTGUI_FLOAT_COORDINATES
-#error Float coordinates must be enabled.
+#if !defined(VSTGUI_FLOAT_COORDINATES)
+#error Float coordinates must be enabled. (#define VSTGUI_FLOAT_COORDINATES 1)
 #endif
+
+// Let VSTGUI define the Windows version.
+#undef _WIN32_WINNT
 
 #include "audioeffectx.h"
 #include "vstcontrols.h"
@@ -35,6 +38,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "aeffguieditor.h"
 
 #ifdef _WIN32
+#if !defined(GDIPLUS) || GDIPLUS != 1
+#error GdiPlus must be enabled. (#define GDIPLUS 1)
+#endif // GDIPLUS
 #include <gdiplus.h>
 #endif
 
@@ -47,10 +53,10 @@ class CVeST : public AudioEffectX
 {
   private:
 
-    std::vector<CFontDesc*> FFonts;
     HVEST_DATA FData;
     CDrawContext* FDrawContext;
     int FMidiIn, FMidiOut;
+    std::vector<CFontDesc*> FFonts;
     std::vector<VstMidiEvent> FMidiEvents;
 
   public:
@@ -744,7 +750,7 @@ extern "C" {
     return LVeST->setNumInputs(ACount), true;
 #endif // VEST_VST
 #ifdef VEST_LV1
-    return ((CVeST*)AVeST)->SetNumInputs ( ACount), true;
+    return ((CVeST*)AVeST)->SetNumInputs(ACount), true;
 #endif // VEST_LV1
   }
 
@@ -754,7 +760,7 @@ extern "C" {
     return LVeST->setNumOutputs(ACount), true;
 #endif // VEST_VST
 #ifdef VEST_LV1
-    return ((CVeST*)AVeST)->SetNumOutputs ( ACount), true;
+    return ((CVeST*)AVeST)->SetNumOutputs(ACount), true;
 #endif // VEST_LV1
   }
 
@@ -764,7 +770,7 @@ extern "C" {
     return LVeST->setUniqueID(AValue), true;
 #endif // VEST_VST
 #ifdef VEST_LV1
-    return ((CVeST*)AVeST)->SetUniqueID ( AValue), true;
+    return ((CVeST*)AVeST)->SetUniqueID(AValue), true;
 #endif // VEST_LV1
   }
 
@@ -1309,6 +1315,15 @@ extern "C" {
   bool VEST_WINAPI DllMain(VEST_HANDLE hInst, uint32_t dwReason, void* lpvReserved)
   {
     hInstance = hInst;
+    /* I think this is a bad idea.
+        char LFileName[MAX_PATH];
+        GetModuleFileNameA((HMODULE)hInstance, LFileName, MAX_PATH);
+        char* LEndOfPath = strrchr(LFileName, '\\');
+        if (LEndOfPath) {
+          LEndOfPath[1] = 0;
+        }
+        SetCurrentDirectoryA(LFileName);
+    */
     return true;
   }
 #endif

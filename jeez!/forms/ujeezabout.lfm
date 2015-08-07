@@ -1,0 +1,79 @@
+object JeezAbout: TJeezAbout
+  Left = 485
+  Height = 265
+  Top = 282
+  Width = 465
+  BorderStyle = bsDialog
+  BorderWidth = 6
+  ClientHeight = 265
+  ClientWidth = 465
+  OnCreate = FormCreate
+  OnShow = FormShow
+  Position = poScreenCenter
+  LCLVersion = '1.4.2.0'
+  object ButtonPanel: TButtonPanel
+    Left = 12
+    Height = 26
+    Top = 227
+    Width = 441
+    OKButton.Name = 'OKButton'
+    OKButton.DefaultCaption = True
+    HelpButton.Name = 'HelpButton'
+    HelpButton.Caption = '&Help (online) ...'
+    HelpButton.DefaultCaption = False
+    HelpButton.OnClick = HelpButtonClick
+    CloseButton.Name = 'CloseButton'
+    CloseButton.DefaultCaption = True
+    CancelButton.Name = 'CancelButton'
+    CancelButton.DefaultCaption = True
+    TabOrder = 0
+    DefaultButton = pbClose
+    ShowButtons = [pbClose, pbHelp]
+    ShowBevel = False
+  end
+  object PageControl: TPageControl
+    Left = 6
+    Height = 215
+    Top = 6
+    Width = 453
+    ActivePage = TabSheetInfomation
+    Align = alClient
+    Images = JeezData.ImageList16
+    TabIndex = 0
+    TabOrder = 1
+    object TabSheetInfomation: TTabSheet
+      Caption = 'Information'
+      ChildSizing.LeftRightSpacing = 4
+      ChildSizing.TopBottomSpacing = 4
+      ClientHeight = 188
+      ClientWidth = 445
+      ImageIndex = 12
+      object ListView: TListView
+        Left = 4
+        Height = 180
+        Top = 4
+        Width = 437
+        Align = alClient
+        Color = clWindow
+        Columns = <        
+          item
+            Caption = 'Name'
+            Width = 120
+          end        
+          item
+            Caption = 'Value'
+            Width = 200
+          end>
+        ColumnClick = False
+        GridLines = True
+        ReadOnly = True
+        RowSelect = True
+        ScrollBars = ssVertical
+        ShowColumnHeaders = False
+        SmallImages = JeezData.ImageList16
+        TabOrder = 0
+        ViewStyle = vsReport
+      end
+    end
+  end
+end

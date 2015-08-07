@@ -31,84 +31,89 @@ unit Jes2CppIdentString;
 interface
 
 uses
-  Jes2CppConstants, Jes2CppEel, Jes2CppParserSimple, Jes2CppToken, Math, StrUtils, SysUtils;
+  Jes2CppConstants, Jes2CppEel, Jes2CppParserSimple, Jes2CppToken, Jes2CppUtils,
+  Math, StrUtils, SysUtils;
 
 type
 
   TIdentString = type string;
 
-function J2C_IdentIsNameSpace(const AIdent: TIdentString): Boolean; overload;
-function J2C_IdentIsNameSpace(const AIdent, ANameSpace: TIdentString): Boolean; overload;
-
-function J2C_IdentIsNameSpaceThis(const AIdent: TIdentString): Boolean;
-
-function J2C_IdentIsStringNamed(const AIdent: TIdentString): Boolean;
-function J2C_IdentIsStringLiteral(const AIdent: TIdentString): Boolean;
-function J2C_IdentIsStringTemp(const AIdent: TIdentString): Boolean;
-
-function J2C_IdentIsSlider(AIdent: TIdentString; out AIndex: Integer): Boolean;
-function J2C_IdentIsSample(AIdent: TIdentString; out AIndex: Integer): Boolean;
-
-function J2C_IdentRemoveRef(const AIdent: TIdentString): TIdentString;
-function J2C_IdentFixUp(const AIdent: TFileName): TIdentString;
-function J2C_IdentClean(const AIdent: TIdentString): String;
-function J2C_IdentExtractRight(const AIdent: TIdentString): TIdentString;
-function J2C_IdentExtract(const AString: String; const APos: Integer; out AIdent: TIdentString; out AIsFunction: Boolean): Boolean;
+  GIdentString = object
+    class function Clean(const AIdent: TIdentString): String;
+    class function Extract(const AString: String; const APos: Integer;
+      out AIdent: TIdentString; out AIsFunction: Boolean): Boolean;
+    class function ExtractLastName(const AIdent: TIdentString): TIdentString;
+    class function ExtractNameSpace(const AIdent: TIdentString): TIdentString;
+    class function FixUp(const AIdent: TFileName): TIdentString;
+    class function IsIdent(const AIdent: TIdentString): Boolean;
+    class function IsNameSpace(const AIdent, ANameSpace: TIdentString): Boolean; overload;
+    class function IsNameSpace(const AIdent: TIdentString): Boolean; overload;
+    class function IsNameSpaceThis(const AIdent: TIdentString): Boolean;
+    class function IsRef(const AIdent: TIdentString): Boolean;
+    class function IsSample(AIdent: TIdentString; out AIndex: Integer): Boolean;
+    class function IsSlider(AIdent: TIdentString; out AIndex: Integer): Boolean;
+    class function IsStringLiteral(const AIdent: TIdentString): Boolean;
+    class function IsStringNamed(const AIdent: TIdentString): Boolean;
+    class function IsStringHash(const AIdent: TIdentString): Boolean;
+    class function RemoveRef(const AIdent: TIdentString): TIdentString;
+  end;
 
 implementation
 
-function J2C_IdentIsNameSpace(const AIdent: TIdentString): Boolean;
+class function GIdentString.IsNameSpace(const AIdent: TIdentString): Boolean;
 begin
   Result := (AIdent <> EmptyStr) and (AIdent[Length(AIdent)] = CharDot);
 end;
 
-function J2C_IdentIsNameSpace(const AIdent, ANameSpace: TIdentString): Boolean;
+class function GIdentString.IsNameSpace(const AIdent, ANameSpace: TIdentString): Boolean;
 begin
   // TODO: Remove this soon.
-  Assert(J2C_IdentIsNameSpace(AIdent) and J2C_IdentIsNameSpace(ANameSpace), AIdent + ' ' + ANameSpace);
-  Result := AnsiStartsText(ANameSpace, AIdent);
+  //Assert(IsNameSpace(AIdent), AIdent);
+  Result := IsNameSpace(ANameSpace) and AnsiStartsText(ANameSpace, AIdent);
 end;
 
-function J2C_IdentIsNameSpaceThis(const AIdent: TIdentString): Boolean;
+class function GIdentString.IsNameSpaceThis(const AIdent: TIdentString): Boolean;
 begin
-  Result := J2C_IdentIsNameSpace(AIdent, GsEelSpaceThis);
+  Result := IsNameSpace(AIdent, GsEelSpaceThis);
 end;
 
-function J2C_IdentIsStringLiteral(const AIdent: TIdentString): Boolean;
+class function GIdentString.IsStringLiteral(const AIdent: TIdentString): Boolean;
 begin
-  Result := J2C_IdentIsNameSpace(AIdent, GsEelSpaceStringLiteral);
+  Result := IsNameSpace(AIdent, GsEelSpaceStringLiteral);
 end;
 
-function J2C_IdentIsStringTemp(const AIdent: TIdentString): Boolean;
+class function GIdentString.IsStringHash(const AIdent: TIdentString): Boolean;
 begin
-  Result := J2C_IdentIsNameSpace(AIdent, GsEelSpaceStringTemp);
+  Result := IsNameSpace(AIdent, GsEelSpaceStringHash);
 end;
 
-function J2C_IdentIsRef(const AIdent: TIdentString): Boolean;
+class function GIdentString.IsRef(const AIdent: TIdentString): Boolean;
 begin
   Result := (AIdent <> EmptyStr) and (AIdent[Length(AIdent)] = CharAsterisk);
 end;
 
-function J2C_IdentIsStringNamed(const AIdent: TIdentString): Boolean;
+class function GIdentString.IsStringNamed(const AIdent: TIdentString): Boolean;
 begin
   Result := (AIdent <> EmptyStr) and (AIdent[1] = CharHash);
 end;
 
-function J2C_IdentIsSlider(AIdent: TIdentString; out AIndex: Integer): Boolean;
+class function GIdentString.IsSlider(AIdent: TIdentString; out AIndex: Integer): Boolean;
 begin
-  AIdent := J2C_IdentClean(AIdent);
-  Result := AnsiStartsText(GsEelPreVarSlider, AIdent) and TryStrToInt(Copy(AIdent, Length(GsEelPreVarSlider) + 1, MaxInt), AIndex) and
+  AIdent := Clean(AIdent);
+  Result := AnsiStartsText(GsEelPreVarSlider, AIdent) and
+    TryStrToInt(Copy(AIdent, Length(GsEelPreVarSlider) + 1, MaxInt), AIndex) and
     InRange(AIndex, Low(TEelSliderIndex), High(TEelSliderIndex));
 end;
 
-function J2C_IdentIsSample(AIdent: TIdentString; out AIndex: Integer): Boolean;
+class function GIdentString.IsSample(AIdent: TIdentString; out AIndex: Integer): Boolean;
 begin
-  AIdent := J2C_IdentClean(AIdent);
-  Result := AnsiStartsText(GsEelPreVarSpl, AIdent) and TryStrToInt(Copy(AIdent, Length(GsEelPreVarSpl) + 1, MaxInt), AIndex) and
+  AIdent := Clean(AIdent);
+  Result := AnsiStartsText(GsEelPreVarSpl, AIdent) and
+    TryStrToInt(Copy(AIdent, Length(GsEelPreVarSpl) + 1, MaxInt), AIndex) and
     InRange(AIndex, Low(TEelSampleIndex), High(TEelSampleIndex));
 end;
 
-function J2C_IsIdent(const AIdent: TIdentString): Boolean;
+class function GIdentString.IsIdent(const AIdent: TIdentString): Boolean;
 var
   LIndex: Integer;
 begin
@@ -125,19 +130,7 @@ begin
   end;
 end;
 
-function J2C_RPosSetEx(const ACharSet: TSysCharSet; const AString: TIdentString; const AIndex: Integer): Integer;
-begin
-  for Result := Min(AIndex, Length(AString)) downto 1 do
-  begin
-    if AString[Result] in ACharSet then
-    begin
-      Exit;
-    end;
-  end;
-  Result := 0;
-end;
-
-function J2C_IdentFixUp(const AIdent: TFileName): TIdentString;
+class function GIdentString.FixUp(const AIdent: TFileName): TIdentString;
 var
   LIndex: Integer;
 begin
@@ -160,7 +153,7 @@ begin
   end;
 end;
 
-function J2C_IdentClean(const AIdent: TIdentString): String;
+class function GIdentString.Clean(const AIdent: TIdentString): String;
 var
   LLength: Integer;
 begin
@@ -181,32 +174,39 @@ begin
   end;
 end;
 
-function J2C_IdentExtractRight(const AIdent: TIdentString): TIdentString;
+class function GIdentString.ExtractLastName(const AIdent: TIdentString): TIdentString;
 begin
   Result := Copy(AIdent, RPos(CharDot, AIdent) + 1, MaxInt);
 end;
 
-function J2C_IdentExtract(const AString: String; const APos: Integer; out AIdent: TIdentString; out AIsFunction: Boolean): Boolean;
+class function GIdentString.ExtractNameSpace(const AIdent: TIdentString): TIdentString;
+begin
+  Result := Copy(AIdent, 1, RPos(CharDot, AIdent));
+end;
+
+class function GIdentString.Extract(const AString: String; const APos: Integer;
+  out AIdent: TIdentString; out AIsFunction: Boolean): Boolean;
 var
   LPos, LEnd: Integer;
   LParser: TJes2CppParserSimple;
 begin
-  LPos := J2C_RPosSetEx(CharSetAll - CharSetIdentFull, AString, APos) + 1;
+  LPos := GUtils.RPosSetEx(CharSetAll - CharSetIdentFull, AString, APos) + 1;
   LEnd := PosSetEx(CharSetAll - CharSetIdentFull, AString, LPos);
   if LEnd = 0 then
   begin
     LEnd := Length(AString) + 1;
   end;
   AIdent := Trim(Copy(AString, LPos, LEnd - LPos));
-  Result := J2C_IsIdent(AIdent);
+  Result := IsIdent(AIdent);
   LParser.SetSource(AString, LEnd);
-  AIsFunction := Result and LParser.TryUntil([CharOpeningParenthesis]) and IsEmptyStr(LParser.AsString, CharSetWhite);
+  AIsFunction := Result and LParser.TryUntil([CharOpeningParenthesis]) and
+    IsEmptyStr(LParser.AsString, CharSetWhite);
 end;
 
-function J2C_IdentRemoveRef(const AIdent: TIdentString): TIdentString;
+class function GIdentString.RemoveRef(const AIdent: TIdentString): TIdentString;
 begin
   Result := AIdent;
-  if J2C_IdentIsRef(Result) then
+  if IsRef(Result) then
   begin
     Delete(Result, Length(Result), 1);
   end;

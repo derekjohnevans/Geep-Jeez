@@ -1,0 +1,22 @@
+@init
+
+function EffectFilterParametric(AFreq, AWidth, AGain) local(tmp, a, arc)
+(
+  AGain = 2 ^ (AGain / 6);
+  arc = AFreq * $pi / (srate * 0.5);
+  a = (sin(arc) * AWidth) * (AGain < 1 ? 1 : 0.25);
+  tmp = 1 / (1 + a);
+  this.c0 = tmp * a * (AGain - 1);
+  this.c1 = tmp * 2 * cos(arc);
+  this.c2 = tmp * (a - 1);
+);
+
+function EffectFilterParametric() local(tmp)
+(
+  tmp = this.c0 * (this - this.d2) + this.c1 * this.i1 + this.c2 * this.i2;
+  this.d2 = this.d1;
+  this.d1 = this;
+  this.i2 = this.i1;
+  this += (this.i1 = tmp);
+);
+

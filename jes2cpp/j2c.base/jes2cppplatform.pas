@@ -35,11 +35,6 @@ uses
 
 const
 
-  GiFormWidth = 800;
-  GiFormHeight = 600;
-
-const
-
   GsSystemExclamation = 'SYSTEMEXCLAMATION';
   GsSystemAsterix = 'SYSTEMASTERIX';
 
@@ -60,11 +55,21 @@ const
 
 type
 
-  NsPlatform = object
+  GPlatform = object
+  public
+  const
+    FormWidth = 740;
+    FormHeight = 500;
+    PageControlHeight = 55;
+  public
     type TProcLoadFromFile = procedure(const AFileName: TFileName);
+  public
+    class function IsWindows: Boolean;
     class function IsWindows9x: Boolean;
+    class function IsLinux: Boolean;
     class function GetSpecialDir(const AIndex: Integer): TFileName;
-    class procedure SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String; const ALoader: TProcLoadFromFile);
+    class procedure SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String;
+      const ALoader: TProcLoadFromFile);
     class procedure ScrollingWinControlPrepare(const AScrollingWinControl: TScrollingWinControl);
   end;
 
@@ -73,7 +78,7 @@ implementation
 {$IF DEFINED(WINDOWS)}
 uses MMSystem, Windows;
 
-class function NsPlatform.GetSpecialDir(const AIndex: Integer): TFileName;
+class function GPlatform.GetSpecialDir(const AIndex: Integer): TFileName;
 begin
   Result := GetWindowsSpecialDir(AIndex);
 end;
@@ -85,9 +90,10 @@ end;
 
 var
   GPrevWndProc: WNDPROC;
-  GpLoader: NsPlatform.TProcLoadFromFile;
+  GpLoader: GPlatform.TProcLoadFromFile;
 
-function J2C_WindowCallback(AHwnd: HWND; AMessage: UINT; AWParam: WParam; ALParam: LParam): LRESULT; stdcall;
+function J2C_WindowCallback(AHwnd: HWND; AMessage: UINT; AWParam: WParam;
+  ALParam: LParam): LRESULT; stdcall;
 var
   LCopyDataStruct: TCopyDataStruct;
   LFileName: TFileName;
@@ -113,7 +119,8 @@ begin
   end;
 end;
 
-function J2C_WindowSendMessage(const AWindow: HWND; const AWindowCaption, AMessage: String): Boolean;
+function J2C_WindowSendMessage(const AWindow: HWND;
+  const AWindowCaption, AMessage: String): Boolean;
 var
   LHandle: HWND;
   LCopyDataStruct: TCopyDataStruct;
@@ -139,7 +146,8 @@ begin
   end;
 end;
 
-class procedure NsPlatform.SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String; const ALoader: TProcLoadFromFile);
+class procedure GPlatform.SingleInstanceInit(const AMainWindow: HWND;
+  const AWindowCaption: String; const ALoader: TProcLoadFromFile);
 begin
   if J2C_WindowSendParams(AMainWindow, AWindowCaption) then
   begin
@@ -147,16 +155,18 @@ begin
   end;
   Application.MainForm.Caption := AWindowCaption;
   GpLoader := ALoader;
-  GPrevWndProc := {%H-}Windows.WNDPROC(SetWindowLongPtr(AMainWindow, GWL_WNDPROC, {%H-}PtrInt(@J2C_WindowCallback)));
+  GPrevWndProc := {%H-}Windows.WNDPROC(SetWindowLongPtr(AMainWindow, GWL_WNDPROC,
+    {%H-}PtrInt(@J2C_WindowCallback)));
 end;
 
 {$ELSEIF DEFINED(LINUX)}
-class procedure NsPlatform.SingleInstanceInit(const AMainWindow: HWND; const AWindowCaption: String; const ALoader: TProcLoadFromFile);
+class procedure GPlatform.SingleInstanceInit(const AMainWindow: HWND;
+  const AWindowCaption: String; const ALoader: TProcLoadFromFile);
 begin
   Application.MainForm.Caption := AWindowCaption;
 end;
 
-class function NsPlatform.GetSpecialDir(const AIndex: Integer): TFileName;
+class function GPlatform.GetSpecialDir(const AIndex: Integer): TFileName;
 begin
   Result := EmptyStr;
   case AIndex of
@@ -177,19 +187,39 @@ end;
 {$ERROR}
 {$ENDIF}
 
-class procedure NsPlatform.ScrollingWinControlPrepare(const AScrollingWinControl: TScrollingWinControl);
+class procedure GPlatform.ScrollingWinControlPrepare(
+  const AScrollingWinControl: TScrollingWinControl);
+begin
+  if IsWindows then
+  begin
+    AScrollingWinControl.Font.Quality := fqProof;
+    AScrollingWinControl.Font.Size := 10;
+    AScrollingWinControl.Font.Name := 'verdana';
+  end;
+end;
+
+class function GPlatform.IsWindows: Boolean;
 begin
 {$IFDEF WINDOWS}
-  AScrollingWinControl.Font.Quality := fqProof;
-  AScrollingWinControl.Font.Size := 10;
-  AScrollingWinControl.Font.Name := 'verdana';
+  Result := True;
+{$ELSE}
+  Result := False;
 {$ENDIF}
 end;
 
-class function NsPlatform.IsWindows9x: Boolean;
+class function GPlatform.IsWindows9x: Boolean;
 begin
 {$IFDEF WINDOWS}
   Result := Win32Platform = 1;
+{$ELSE}
+  Result := False;
+{$ENDIF}
+end;
+
+class function GPlatform.IsLinux: Boolean;
+begin
+{$IFDEF LINUX}
+  Result := True;
 {$ELSE}
   Result := False;
 {$ENDIF}

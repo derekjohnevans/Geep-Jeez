@@ -70,12 +70,13 @@ procedure CJes2CppSections.ImportFromScript(const AScript: TStrings; const AFile
 var
   LSectionHeader: String;
 begin
-  FAtInit += J2C_ExtractSection(GsEelSectionInit, AScript, AFileName, True, LSectionHeader);
-  FAtSlider += J2C_ExtractSection(GsEelSectionSlider, AScript, AFileName, True, LSectionHeader);
-  FAtBlock += J2C_ExtractSection(GsEelSectionBlock, AScript, AFileName, True, LSectionHeader);
-  FAtSerialize += J2C_ExtractSection(GsEelSectionSerialize, AScript, AFileName, True, LSectionHeader);
-  FAtSample += J2C_ExtractSection(GsEelSectionSample, AScript, AFileName, True, LSectionHeader);
-  FAtGfx += J2C_ExtractSection(GsEelSectionGfx, AScript, AFileName, True, LSectionHeader);
+  FAtInit += GUtils.ExtractSection(GsEelSectionInit, AScript, AFileName, True, LSectionHeader);
+  FAtSlider += GUtils.ExtractSection(GsEelSectionSlider, AScript, AFileName, True, LSectionHeader);
+  FAtBlock += GUtils.ExtractSection(GsEelSectionBlock, AScript, AFileName, True, LSectionHeader);
+  FAtSerialize += GUtils.ExtractSection(GsEelSectionSerialize, AScript, AFileName,
+    True, LSectionHeader);
+  FAtSample += GUtils.ExtractSection(GsEelSectionSample, AScript, AFileName, True, LSectionHeader);
+  FAtGfx += GUtils.ExtractSection(GsEelSectionGfx, AScript, AFileName, True, LSectionHeader);
   FGfxWidth := StrToIntDef(ExtractDelimited(2, LSectionHeader, StdWordDelims), FGfxWidth);
   FGfxHeight := StrToIntDef(ExtractDelimited(3, LSectionHeader, StdWordDelims), FGfxHeight);
   if (FGfxWidth <= 0) or (FGfxHeight <= 0) then

@@ -1,0 +1,15 @@
+
+@init
+
+// Value should be 0.0001 - 2.0
+function Saturation.Set(value) global()
+(
+  this = value;
+  this.makeup = 1 / atan(value);
+);
+
+function Saturation.Sample(spl) global()
+(
+  atan(spl * this) * this.makeup;
+);
+

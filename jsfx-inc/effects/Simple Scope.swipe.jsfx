@@ -1,0 +1,31 @@
+// Author: Derek John Evans
+// License: LGPL - http://www.gnu.org/licenses/gpl.html
+
+desc: Geep Simple Scope
+
+EffectName: Geep Simple Scope
+VendorString: Geep
+VendorVersion: 1000
+UniqueId: 0
+InstallPath: C:\Program Files\VST\SWIPE\
+
+import swipe.jsfx-inc
+
+@init
+
+Buffer.TScope(srate * 2);  
+  
+@sample
+
+Buffer.TScope_Stream((spl0 + spl1) * 0.5);
+
+@gfx 500 300
+
+SWIPE(150, 150) ?
+(
+  jes2cpp.gfx_rate = 30;
+  Effect.TEffectBasic("Geep Simple Scope", "License LGPL / Copyright (C) 2015 Derek J. Evans", "Scope");
+  Buffer.TScope_Draw(30, 75, gfx_w - 30, gfx_h - 60);
+  Effect.TEffect_Done();
+);
+

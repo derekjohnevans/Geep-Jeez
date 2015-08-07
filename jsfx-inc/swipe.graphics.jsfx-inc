@@ -1,0 +1,690 @@
+/*
+** Name: graphics.jsfx-inc
+** Desc: Graphics functions for the SWIPE library.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+*/
+
+import swipe.math.jsfx-inc
+
+import pas.graphics.jsfx-inc
+
+@init
+
+M_INV255        = 1 / 255;
+
+function GfxSetColorTint(r, g, b)
+(
+  M_TINT_R = r;
+  M_TINT_G = g;
+  M_TINT_B = b;
+  M_TINT_R255 = M_TINT_R * M_INV255;
+  M_TINT_G255 = M_TINT_G * M_INV255;
+  M_TINT_B255 = M_TINT_B * M_INV255;
+);
+
+GfxSetColorTint(1, 1, 1);
+
+// Graphics Functions
+// ------------------
+
+// Move graphics point to given x, y.
+function GfxMoveTo(x, y)
+global(gfx_x, gfx_y)
+(
+  gfx_x = x; 
+  gfx_y = y;
+);
+
+// Set the graphics color to the given r, g, b, a.
+function GfxSetColor(r, g, b, a)
+global(gfx_r, gfx_g, gfx_b, gfx_a)
+(
+  gfx_r = r;
+  gfx_g = g; 
+  gfx_b = b; 
+  gfx_a = a;
+);
+
+// Set the graphics color to the given r, g, b. a defaults to 1.
+function GfxSetColor(r, g, b)
+global(gfx_r, gfx_g, gfx_b, gfx_a)
+(
+  gfx_r = r; 
+  gfx_g = g; 
+  gfx_b = b; 
+  gfx_a = 1;
+);
+
+function GfxSetColor(color)
+global(gfx_r, gfx_g, gfx_b)
+global(M_INV255)
+global(M_TINT_R255, M_TINT_G255, M_TINT_B255)
+(
+  color < 0 ? (
+    gfx_r = ((-color >>  0) & 0xFF) * M_TINT_R255;
+    gfx_g = ((-color >>  8) & 0xFF) * M_TINT_G255;
+    gfx_b = ((-color >> 16) & 0xFF) * M_TINT_B255;
+  ) : (
+    gfx_r = ((+color >>  0) & 0xFF) * M_INV255;
+    gfx_g = ((+color >>  8) & 0xFF) * M_INV255;
+    gfx_b = ((+color >> 16) & 0xFF) * M_INV255;
+  );
+);
+
+// GfxDrawStr
+function GfxDrawStr(x1, y1, x2, y2, tx)
+global(gfx_x, gfx_y)
+local(w, h)
+(
+  gfx_measurestr(tx, w, h);
+  gfx_x = (x1 + x2 - w) * 0.5;
+  gfx_y = (y1 + y2 - h) * 0.5;
+  gfx_drawstr(tx);
+);
+
+// GfxDrawStr
+function GfxDrawStr(x1, y1, x2, y2, str, ax, ay)
+global(gfx_x, gfx_y)
+local(w, h)
+(
+  gfx_measurestr(str, w, h);
+  gfx_x = ax < 0 ? x1 : ax > 0 ? x2 - w : (x1 + x2 - w) * 0.5;
+  gfx_y = ay < 0 ? y1 : ay > 0 ? y2 - h : (y1 + y2 - h) * 0.5;
+  gfx_drawstr(str);
+);
+
+// GfxDrawCircle
+function GfxDrawCircle(x1, y1, x2, y2, fill) local(w, h) global()
+(
+  x2 -= 1; y2 -= 1;
+  w = x2 - x1; h = y2 - y1;
+  gfx_circle((x1 + x2) * 0.5, (y1 + y2) * 0.5, min(w, h) * 0.5, fill);
+);
+
+// GfxDrawRoundRect
+function GfxDrawRoundRect(x1, y1, x2, y2, radius) global()
+(  
+  (x1 < x2) && (y1 < y2) ?
+  (
+    gfx_roundrect(x1, y1, x2 - x1 - 1, y2 - y1 - 1, radius);
+  );
+);
+
+// GfxFillRoundRect
+function GfxFillRoundRect(x1, y1, x2, y2, ra)
+global(gfx_x, gfx_y)
+(
+  (x1 < x2) && (y1 < y2) ?
+  (
+    ra = min(min((x2 - x1) * 0.5, (y2 - y1) * 0.5), ra) - 1;
+    gfx_x = x1; gfx_y = y1 + ra; gfx_rectto(x2, y2 - ra);
+    gfx_x = x1 + ra; gfx_y = y1; gfx_rectto(x2 - ra, y1 + ra);
+    gfx_x = x1 + ra; gfx_y = y2 - ra; gfx_rectto(x2 - ra, y2);
+    x2 -= 1; y2 -= 1;
+    gfx_circle(x1 + ra, y1 + ra, ra, 1);
+    gfx_circle(x2 - ra, y1 + ra, ra, 1);
+    gfx_circle(x2 - ra, y2 - ra, ra, 1);
+    gfx_circle(x1 + ra, y2 - ra, ra, 1);
+  );
+);
+
+// GfxGradRoundRect
+function GfxGradRoundRect(x1, y1, x2, y2, radius, rr, gg, bb, aa) 
+global(gfx_x, gfx_y, gfx_r, gfx_g, gfx_b, gfx_a) 
+local(i, xx)
+(
+  radius = min(min(radius, (x2 - x1) * 0.5), (y2 - y1) * 0.5);
+  x1 += radius; 
+  x2 -= radius;
+  y2 -= radius;
+  i = radius;
+  gfx_y = y1;
+  loop(radius,
+    xx = sqrt(radius * radius - i * i);
+    gfx_x = x1 - xx; gfx_lineto(x2 + xx, gfx_y);    
+    gfx_r += rr; gfx_g += gg; gfx_b += bb; gfx_a += aa;
+    i -= 1; gfx_y += 1; 
+  );
+  while (gfx_y < y2)
+  (
+    gfx_x = x1 - radius; gfx_lineto(x2 + radius, gfx_y);
+    gfx_r += rr; gfx_g += gg; gfx_b += bb; gfx_a += aa;
+    gfx_y += 1;
+  );
+  i = 0;
+  loop(radius,
+    xx = sqrt(radius * radius - i * i);
+    gfx_x = x1 - xx; gfx_lineto(x2 + xx, gfx_y);    
+    gfx_r += rr; gfx_g += gg; gfx_b += bb; gfx_a += aa;
+    i += 1; gfx_y += 1;
+  ); 
+);
+
+// GfxFillRect
+function GfxFillRect(x1, y1, x2, y2) global()
+(  
+  gfx_rect(x1, y1, x2 - x1, y2 - y1);
+);
+
+// GfxDrawRect
+function GfxDrawRect(x1, y1, x2, y2)
+global(gfx_x, gfx_y)
+(
+  (x1 < x2) && (y1 < y2) ? 
+  (
+    x2 -= 1; y2 -= 1;  
+    gfx_x = x1; gfx_y = y1;
+    gfx_lineto(x2, y1); gfx_lineto(x2, y2);
+    gfx_lineto(x1, y2); gfx_lineto(x1, y1);
+  );
+);
+
+function GfxDrawFrame3D(x1, y1, x2, y2, c1, c2)
+global(gfx_r, gfx_g, gfx_b, gfx_a, gfx_x, gfx_y)
+local()
+(
+  x2 -= 1; y2 -= 1;
+  gfx_x = x2; gfx_y = y2;
+  GfxSetColor(c2);
+  gfx_lineto(x1, y2); GfxSetColor(c1); gfx_lineto(x1, y1);
+  gfx_lineto(x2, y1); GfxSetColor(c2); gfx_lineto(x2, y2);
+);
+
+// GfxDrawRect3D
+function GfxDrawRect3D(x1, y1, x2, y2, on) 
+global(clBtnShadow, clBtnHighlight)
+(
+  on ? (
+    GfxDrawFrame3D(x1, y1, x2, y2, clBtnShadow, clBtnHighlight);
+  ) : (
+    GfxDrawFrame3D(x1, y1, x2, y2, clBtnHighlight, clBtnShadow);
+  );
+);
+
+// GfxDrawBevel
+function GfxDrawBevel(x1, y1, x2, y2, on) global()
+(
+  GfxDrawRect3D(x1, y1, x2, y2, on);
+  GfxDrawRect3D(x1 + 1, y1 + 1, x2 - 1, y2 - 1, !on);
+);
+
+// GfxFillBevel
+function GfxFillBevel(x1, y1, x2, y2, on) global()
+(
+  GfxFillRect(x1, y1, x2, y2);
+  GfxDrawBevel(x1, y1, x2, y2, on);
+);
+
+function GfxGradRectVert(x1, y1, x2, y2, c1, c2) 
+global(gfx_r, gfx_g, gfx_b) 
+local(w, h, r, g, b)
+(
+  w = x2 - x1; h = y2 - y1;
+  GfxSetColor(c2);
+  r = gfx_r; g = gfx_g; b = gfx_b;
+  GfxSetColor(c1);
+  r = (r - gfx_r) / h;
+  g = (g - gfx_g) / h;
+  b = (b - gfx_b) / h;
+  gfx_gradrect(x1, y1, w, h, gfx_r, gfx_g, gfx_b, 1, 0, 0, 0, 0, r, g, b, 0);
+);
+
+function GfxGradRectHorz(x1, y1, x2, y2, c1, c2) 
+global(gfx_r, gfx_g, gfx_b) 
+local(w, h, r, g, b)
+(
+  w = x2 - x1; h = y2 - y1;
+  GfxSetColor(c2);
+  r = gfx_r; g = gfx_g; b = gfx_b;
+  GfxSetColor(c1);
+  r = (r - gfx_r) / w;
+  g = (g - gfx_g) / w;
+  b = (b - gfx_b) / w;  
+  gfx_gradrect(x1, y1, w, h, gfx_r, gfx_g, gfx_b, 1, r, g, b, 0, 0, 0, 0, 0);
+);    
+
+// GfxFillRect3D
+function GfxFillRect3D(x1, y1, x2, y2, on) global()
+(
+  GfxFillRect(x1, y1, x2, y2);
+  GfxDrawRect3D(x1, y1, x2, y2, on);
+);
+
+// GfxFillRoundRect3D
+function GfxFillRoundRect3D(x1, y1, x2, y2, ra, xx, yy, r, g, b) global()
+(
+  GfxSetColor(r * 0.7, g * 0.7, b * 0.7, 1);
+  GfxFillRoundRect(x1 + xx, y1 + yy, x2 + xx, y2 + yy, ra);
+  GfxSetColor(r, g, b, 1);
+  GfxFillRoundRect(x1, y1, x2, y2, ra);
+);
+
+
+// GfxDrawRulerVert
+function GfxDrawRulerVert(x1, y1, x2, y2) 
+global(gfx_x, gfx_y)
+global(clBtnFace, clBtnShadow)
+local(yy, y, sz, i)
+(
+  GfxSetColor(clBtnShadow);
+  GfxFillRect(x1, y1, x2, y2);
+  GfxDrawRect3D(x1, y1, x2, y2, 1);
+  GfxSetColor(clBtnFace);
+
+  yy = (y2 - y1) / 32;
+  x2 -= 1;
+  i = 0;
+  y = (y1 + y2) * 0.5;
+  while (y > y1) (
+    sz = (i & 3) ? 4 : 3;
+    gfx_x = x1 + sz; gfx_y = y; gfx_lineto(x2 - sz, y);
+    y -= yy;
+    i += 1;
+  );
+  y = (y1 + y2) * 0.5;
+  while (y < y2) (
+    sz = (i & 3) ? 4 : 3;
+    gfx_x = x1 + sz; gfx_y = y; gfx_lineto(x2 - sz, y);
+    y += yy;
+    i += 1;
+  );
+);
+
+// GfxDrawShadow
+function GfxDrawShadowHard(x1, y1, x2, y2, sz)
+global(gfx_a)
+(
+  GfxSetColor(0x000000); 
+  gfx_a = 0.2;
+  GfxFillRect(x2, y1 + sz, x2 + sz, y2 + sz);
+  GfxFillRect(x1 + sz, y2, x2, y2 + sz);
+  gfx_a = 1;
+);
+
+function GfxDrawShadowSoft(x1, y1, x2, y2, sz)
+global(gfx_a)
+(
+  GfxSetColor(0x000000); 
+  gfx_a = sz / 200;
+  while (sz > 0) (
+    GfxFillRect(x2, y1 + sz, x2 + sz, y2 + sz);
+    GfxFillRect(x1 + sz, y2, x2, y2 + sz);
+    sz -= 1;
+  );
+  gfx_a = 1;
+);
+
+// GfxDrawPanel
+function GfxDrawPanel(x1, y1, x2, y2)
+global(gfx_x, gfx_y)
+global(clForm)
+(
+  GfxSetColor(clForm);
+  GfxFillRect(x1, y1, x2, y2);
+  GfxDrawRect3D(x1, y1, x2, y2, 0);
+);
+
+// GfxDrawPanel3D
+function GfxDrawPanel3D(x1, y1, x2, y2, sz) global()
+(
+  GfxDrawPanel(x1, y1, x2, y2);
+  GfxDrawShadowSoft(x1 + sz, y1 + sz, x2, y2, sz);
+);
+
+// GfxDrawStatusBar
+function GfxDrawStatusBar(x1, y1, x2, y2, tx, ax) 
+global(gfx_r, gfx_g, gfx_b)
+global(SWIPE.Font.StatusBar)
+(
+  GfxDrawPanel(x1, y1, x2, y2);
+  gfx_r = gfx_g = gfx_b = 0;
+  gfx_setfont(SWIPE.Font.StatusBar);
+  GfxDrawStr(x1 + 8, y1, x2 - 8, y2, tx, ax, 0);
+);
+
+// GfxDrawStr3D
+function GfxDrawStr3D(x, y, tx)
+global(gfx_x, gfx_y)
+global()
+(
+  GfxSetColor(0);
+  gfx_x = x + 2; gfx_y = y + 1;
+  gfx_drawstr(tx);
+  GfxSetColor(0xFFFFFF);
+  gfx_x = x; gfx_y = y;
+  gfx_drawstr(tx);
+);
+
+// GfxDrawLabel3D
+function GfxDrawLabel3D(x1, y1, x2, y2, tx) global() local(w, h)
+(
+  gfx_measurestr(tx, w, h);
+  x1 = (x1 + x2 - w) * 0.5;
+  y1 = (y1 + y2 - h) * 0.5;
+  GfxDrawStr3D(x1, y1, tx);
+);
+
+// GfxDrawLabel3D
+function GfxDrawLabel3D(x1, y1, x2, y2, tx, x, y) global() local(w, h)
+(
+  gfx_measurestr(tx, w, h);
+  x = x < 0 ? x1 : x > 0 ? x2 - w : (x1 + x2 - w) * 0.5;
+  y = y < 0 ? y1 : y > 0 ? y2 - h : (y1 + y2 - h) * 0.5;
+  GfxDrawStr3D(x, y, tx);
+);
+
+// GfxDrawSolidBox
+function GfxDrawSolidBox(x1, y1, x2, y2)
+global()
+(
+  GfxSetColor(0xFFFFFF);
+  GfxFillRect(x1, y1, x2, y2);
+  GfxSetColor(0x000000);
+  GfxDrawRect(x1, y1, x2, y2);
+  GfxDrawRect(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+);
+
+// GfxDrawTick
+function GfxDrawTick(x1, y1, x2, y2)
+global(gfx_x, gfx_y)
+(
+  x2 -= 1; y2 -= 1;
+  gfx_x = x1; gfx_y = y2 - 2;
+  gfx_lineto(x1 + 2, y2);
+  gfx_lineto(x2, y1);
+);
+
+// GfxDrawCheck
+function GfxDrawCheck(x1, y1, x2, y2)
+global(gfx_x, gfx_y)
+(
+  x2 -= 1; y2 -= 1;
+  gfx_x = x1; gfx_y = y1; gfx_lineto(x2, y2);
+  gfx_x = x1; gfx_y = y2; gfx_lineto(x2, y1);
+);
+
+// GfxDrawCheckBox
+function GfxDrawCheckBox(x1, y1, x2, y2, on) global()
+(
+  GfxDrawSolidBox(x1, y1, x2, y2);
+  on ? GfxDrawCheck(x1 + 4, y1 + 4, x2 - 4, y2 - 4);
+);
+
+// GfxDrawTickBox
+function GfxDrawTickBox(x1, y1, x2, y2, on) global()
+(
+  GfxDrawSolidBox(x1, y1, x2, y2);
+  on ? GfxDrawTick(x1 + 4, y1 + 4, x2 - 4, y2 - 4);
+);
+
+// GfxDrawDotBox
+function GfxDrawDotBox(x1, y1, x2, y2, on) global()
+(
+  GfxDrawSolidBox(x1, y1, x2, y2);
+  on ? GfxFillRect(x1 + 4, y1 + 4, x2 - 4, y2 - 4);
+);
+
+// GfxDrawGroupBox
+function GfxDrawGroupBox(x1, y1, x2, y2, tx)
+global(clForm, clFormText, SWIPE.Font*)
+local(w, h)
+(
+  GfxDrawBevel(x1, y1 + 10, x2, y2, 1);
+  gfx_setfont(SWIPE.Font.2);
+  gfx_measurestr(tx, w, h);
+  x1 += 10; x2 = x1 + w;
+  y2 = y1 + 21;
+  GfxSetColor(clForm);
+  GfxFillRect(x1 - 4, y1, x2 + 4, y2);
+  GfxSetColor(clFormText);
+  GfxDrawStr(x1, y1, x2, y2, tx, -1, 0);
+);
+
+// GfxDrawButtonV0
+function GfxDrawButtonV0(x1, y1, x2, y2, str, on)
+global(clBtnFace, clBtnShadow, clBtnText, clBtnHighlight)
+(
+  on ? GfxSetColor(clBtnShadow) : GfxSetColor(clBtnFace);
+  GfxFillRect3D(x1, y1, x2, y2, on);
+  on ? GfxSetColor(clBtnHighlight) : GfxSetColor(clBtnText);
+  GfxDrawStr(x1, y1, x2, y2, str);
+);
+
+// GfxDrawButtonV1
+function GfxDrawButtonV1(x1, y1, x2, y2, str, on) global()
+(
+  GfxDrawRect3D(x1, y1, x2, y2, 1);
+  x1 += 1; y1 += 1;
+  x2 -= 1; y2 -= 1;
+  GfxDrawButtonV0(x1, y1, x2, y2, str, on);
+);
+
+function GfxDrawButtonV2(x1, y1, x2, y2, str, on, radius)
+global(clBtnFace, clBtnShadow, clBtnText)
+(
+  GfxSetColor(clBtnFace);
+  GfxFillRoundRect(x1, y1, x2, y2, radius);  
+  GfxSetColor(clBtnShadow);
+  GfxDrawRoundRect(x1, y1, x2, y2, radius);
+  GfxSetColor(clBtnText);  
+  GfxDrawStr(x1, y1, x2, y2, str);  
+);
+
+function GfxDrawButtonV2(x1, y1, x2, y2, text) global()
+(
+  GfxDrawButtonV2(x1, y1, x2, y2, text, 0, 8);
+);
+
+function GfxDrawButton(x1, y1, x2, y2, str, on) global()
+(
+  GfxDrawButtonV0(x1, y1, x2, y2, str, on);
+);
+
+function GfxDrawGripHorz(x1, y1, x2, y2) 
+global(gfx_a, gfx_x, gfx_y)
+global(clBtnHighlight, clBtnShadow)
+(
+  GfxSetColor(0x000000);
+  gfx_a = 0.1;
+  gfx_x = x1 - 1; gfx_y = y1 - 1;
+  gfx_rectto(x2 + 1, y2 + 1);
+  gfx_a = 1;
+  GfxDrawFrame3D(x1, y1, x2, y2, clBtnHighlight, clBtnShadow);
+  GfxGradRectHorz(x1 + 1, y1 + 1, x2 - 1, y2 - 1, clBtnHighlight, clBtnShadow);
+);  
+
+function GfxDrawGripVert(x1, y1, x2, y2) 
+global(gfx_a, gfx_x, gfx_y)
+global(clBtnHighlight, clBtnShadow)
+(
+  GfxSetColor(0x000000);
+  gfx_a = 0.1;
+  gfx_x = x1 - 1; gfx_y = y1 - 1;
+  gfx_rectto(x2 + 1, y2 + 1);
+  gfx_a = 1;
+  GfxDrawFrame3D(x1, y1, x2, y2, clBtnHighlight, clBtnShadow);
+  GfxGradRectVert(x1 + 1, y1 + 1, x2 - 1, y2 - 1, clBtnHighlight, clBtnShadow);
+);  
+
+// GfxDrawGrip
+function GfxDrawGrip(x1, y1, x2, y2, lr) global()
+(
+  lr ? GfxDrawGripHorz(x1, y1, x2, y2) : GfxDrawGripVert(x1, y1, x2, y2);
+);
+
+// GfxDrawGrip
+function GfxDrawGrip(nx, ny, w, h, x1, y1, x2, y2, lr) global()
+(
+  x1 += ((x2 - x1) - w) * nx;
+  y1 += ((y2 - y1) - h) * (1 - ny); // Invert Y
+  GfxDrawGrip(x1, y1, x1 + w, y1 + h, lr);
+);
+
+// GfxDrawGripCircle
+function GfxDrawGripCircle(x, y, w, h, x1, y1, x2, y2) global()
+(
+  x1 += ((x2 - x1) - w) * x;
+  y1 += ((y2 - y1) - h) * y;
+  GfxDrawCircle(x1, y1, x1 + w, y1 + h, 1);
+);
+
+// GfxDrawGripRoundRect
+function GfxDrawGripRoundRect(x, y, w, h, x1, y1, x2, y2, radius, value) 
+global(SWIPE.Font*)
+(
+  x1 += ((x2 - x1) - w) * x;
+  y1 += ((y2 - y1) - h) * y;
+  gfx_setfont(SWIPE.Font.4);
+  GfxDrawButtonV2(x1, y1, x1 + w, y1 + h, sprintf(#, "%.2f", value));
+);
+
+// GfxDrawSlider
+function GfxDrawSlider(x1, y1, x2, y2, on)
+global(clBtnShadow, clBtnHighlight)
+(
+  on ?
+    GfxGradRectVert(x1 + 1, y1 + 1, x2 - 1, y2 - 1,  0x003300, 0x008800) :
+    GfxGradRectVert(x1 + 1, y1 + 1, x2 - 1, y2 - 1, clBtnShadow, clBtnHighlight);  
+  GfxDrawFrame3D(x1, y1, x2, y2, clBtnShadow, clBtnHighlight);
+);
+
+// GfxDrawWindowTitle
+function GfxDrawWindowTitle(x1, y1, x2, y2, tx, ax)
+global(gfx_a)
+global(SWIPE.Font*)
+(
+  // Orange Style
+  //GfxGradRectVert(x1, y1, x2, (y1 + y2) * 0.5, 1.0, 0.6, 0.0, 0.6, 0.2, 0.4);
+  //GfxGradRectVert(x1, (y1 + y2) * 0.5, x2, y2, 0.3, 0.3, 0.3, 0.1, 0.1, 0.1);
+  // Gray Style
+  //GfxGradRectVert(x1, y1, x2, (y1 + y2) * 0.5, 0.8, 0.8, 0.8, 0.4, 0.4, 0.4);
+  //GfxGradRectVert(x1, (y1 + y2) * 0.5, x2, y2, 0.3, 0.3, 0.3, 0.1, 0.1, 0.1);
+  // Blue Style
+  //GfxGradRectVert(x1, y1, x2, (y1 + y2) * 0.5, 0.7, 0.7, 1.0, 0.3, 0.3, 0.8);
+  //GfxGradRectVert(x1, (y1 + y2) * 0.5, x2, y2, 0.4, 0.4, 0.7, 0.1, 0.1, 0.5);
+  GfxSetColor(0x000000);
+  gfx_a = 0.3;
+  GfxFillRect(x1, y1, x2, y2);
+  gfx_a = 1.0;
+  gfx_setfont(SWIPE.Font.Window.Title);
+  GfxDrawLabel3D(x1 + 6, y1, x2 - 6, y2, tx, ax, 0); 
+);
+
+// GfxDrawWindowTitle
+function GfxDrawWindowTitle(x1, y1, x2, y2, tx) global()
+(
+  GfxDrawWindowTitle(x1, y1, x2, y2, tx, -1);
+);
+
+// GfxDrawTab
+function GfxDrawTab(x1, y1, x2, y2, tx, on)
+global(gfx_x, gfx_y)
+global(clForm, clFormFrame, clFormHighlight, clBtnFace, clBtnText, clHotLight, SWIPE.Font*)
+(
+  on ? (
+    GfxSetColor(clForm);
+  ) : (
+    GfxSetColor(clBtnFace);
+    y1 += 2;
+  );
+  GfxFillRect(x1, y1, x2, y2 + 1);
+  on ? (
+    GfxSetColor(clFormHighlight);
+    GfxFillRect(x1, y1, x2, y1 + 4);
+  );
+  GfxSetColor(clFormFrame);  
+  gfx_x = x1; gfx_y = y2;
+  gfx_lineto(x1, y1);
+  gfx_lineto(x2, y1);
+  gfx_lineto(x2, y2);
+  on ? (
+    GfxSetColor(clHotLight);
+  ) : (
+    gfx_lineto(x1, y2);
+    GfxSetColor(clBtnText);
+  );
+  gfx_setfont(SWIPE.Font.TabSheet);
+  GfxDrawStr(x1, y1, x2, y2, tx);
+);
+
+// GfxDrawNameString
+function GfxDrawNameString(x1, y1, x2, y2, name, value)
+global(clBtnFace, clBtnText, clFormText, SWIPE.Font*)
+(
+  gfx_setfont(SWIPE.Font.Default);
+  GfxSetColor(clBtnFace); 
+  GfxFillRect3D(x1 + 94, y1, x2, y2, 1);
+  GfxSetColor(clFormText); 
+  GfxDrawStr(x1, y1, x1 + 85, y2, name, 1, 0);
+  GfxSetColor(clBtnText); 
+  GfxDrawStr(x1 + 98, y1, x2, y2, value, -1, 0);
+);
+
+// GfxDrawNameNumber
+function GfxDrawNameNumber(x1, y1, x2, y2, name, value) global()
+(
+  GfxDrawNameString(x1, y1, x2, y2, name, sprintf(#, "%.2f", value));
+);
+
+// Draws an image frame centered in the given rect. The frame is
+// a normalized value. ie: 0..1
+function GfxDrawImageFrame(AImage, AFrame, x1, y1, x2, y2)
+global() local(w, h)
+(
+  gfx_getimgdim(AImage, w, h);
+  w > h ? (
+    gfx_blit(AImage, 1, 0, 
+      ((AFrame * (w / h - 1))|0) * h, 0, h, h,
+      (x1 + x2 - h) * 0.5, (y1 + y2 - h) * 0.5, h, h);
+  ) : (
+    gfx_blit(AImage, 1, 0, 
+      0, ((AFrame * (h / w - 1))|0) * w, w, w,
+      (x1 + x2 - w) * 0.5, (y1 + y2 - w) * 0.5, w, w);
+  );
+);
+
+// GfxDrawLevelBarsHorz
+function GfxDrawLevelBarsHorz(x1, y1, x2, y2, level)
+global(gfx_r, gfx_g, gfx_b, gfx_a)
+(
+  level = sin(level * 3);
+  gfx_r = gfx_g = gfx_b = 0;  
+  gfx_a = 1;
+  x2 = 6 / (x2 - x1);  
+  while (level > 0)
+  (
+    gfx_r += 0.2; gfx_g += 0.1;
+    GfxFillRect(x1, y1, x1 + 4, y2);
+    x1 += 6;
+    level -= x2;
+  );
+);
+
+// GfxDrawLevelHorz
+function GfxDrawLevelHorz(x1, y1, x2, y2, x, y)
+local(cy)
+(
+  GfxSetColor(0);
+  GfxFillRect(x1, y1, x2, y2);
+  GfxDrawRect3D(x1, y1, x2, y2, 1);
+  x1 += 2; y1 += 2;
+  x2 -= 2; y2 -= 2;
+  cy = (y1 + y2) * 0.5;
+  GfxDrawLevelBarsHorz(x1, y1, x2, cy, x);
+  GfxDrawLevelBarsHorz(x1, cy, x2, y2, y);
+);
+
+function GfxDrawWave(x1, y1, x2, y2, wave, length, gain) global(gfx_x, gfx_y) local(x, y, w, h)
+(
+  w = x2 - x1; h = y2 - y1;
+  x = x1; y = (y1 + y2) * 0.5;
+  gfx_x = x1; gfx_y = y;
+  gain *= w * 0.5;
+  while (x < x2) (
+    gfx_lineto(x, y + wave[(x - x1) / w * length] * gain);
+    x += 1;
+  );
+);
+

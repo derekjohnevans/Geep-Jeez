@@ -1,0 +1,9 @@
+
+@init
+
+function Screen.Set() global(gfx_w, gfx_h)
+(
+  this.Width = gfx_w;
+  this.Height = gfx_h;
+);
+

@@ -1,0 +1,56 @@
+/*
+** Name: image.jsfx-inc
+** Desc: Image functions for the SWIPE library.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+*/
+
+import std.cnew.jsfx-inc
+import swipe.system.jsfx-inc
+
+import pas.sysutils.jsfx-inc
+
+@init
+
+// Initialize this object to an image. Allocates a image slot for this object.
+function TImage() global() local(return)
+(
+  (return = this.TObject()) ? this = ialloc();
+  return;
+);
+
+function TImage_Clear() global()
+(
+  this.TImage();
+  gfx_setimgdim(this, 0, 0);
+  this.Width.Set(0);
+  this.Height.Set(0);
+);
+
+// Loads an image into this objects image slot given a filename. Returns image handle or -1 on error.
+function TImage_LoadFromFile(AFileName) global()
+local(return, LWidth, LHeight)
+(
+  this.TImage_Clear();
+  FileExists(AFileName) ? (
+    (return = gfx_loadimg(this, AFileName) >= 0) ? (
+      gfx_getimgdim(this, LWidth, LHeight);
+      this.Width.Set(LWidth);
+      this.Height.Set(LHeight);
+    );
+  ) : (
+    return = -1;
+  );
+  return;
+);
+
+// Draws this image object to the given x, y location.
+function TImage_Draw(x, y) global() local(w, h)
+(
+  this.TImage();
+  // TODO: Should we be using the objects width/height values here?
+  gfx_getimgdim(this, w, h);
+  gfx_blit(this, 1, 0, 0, 0, w, h, x, y, w, h);
+);
+

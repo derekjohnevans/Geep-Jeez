@@ -32,7 +32,8 @@ unit Jes2CppIdentifier;
 interface
 
 uses
-  Classes, Jes2CppFileNames, Jes2CppIdentString, Jes2CppReference, Jes2CppTranslate, Soda, SysUtils;
+  Classes, Jes2CppFileNames, Jes2CppIdentString, Jes2CppReference, Jes2CppTranslate,
+  Soda, SysUtils;
 
 type
 
@@ -57,6 +58,7 @@ type
   public
     function IsSystem: Boolean;
     function IsIdent(const AIdent: TIdentString): Boolean;
+    function IsDefinedInFileSource(const AFileSource: TFileName): Boolean;
   public
     property References: CJes2CppReferences read FReferences;
     property IdentType: TJes2CppIdentifierType read FIdentType write FIdentType;
@@ -92,13 +94,18 @@ end;
 
 function CJes2CppIdentifier.IsSystem: Boolean;
 begin
-  Result := (IdentType = itExternal) or (References.HasComponents and SameText(References[0].FilePartName,
-    GsFilePartJes2Cpp + GsFileExtJsFxInc));
+  Result := (IdentType = itExternal) or (References.HasComponents and
+    SameText(References[0].FileNameOnly, GsFilePartJes2Cpp + GsFileExtJsFxInc));
 end;
 
 function CJes2CppIdentifier.IsIdent(const AIdent: TIdentString): Boolean;
 begin
   Result := SameText(Name, AIdent);
+end;
+
+function CJes2CppIdentifier.IsDefinedInFileSource(const AFileSource: TFileName): Boolean;
+begin
+  Result := (References.HasComponents and SameFileName(References[0].FileSource, AFileSource));
 end;
 
 end.

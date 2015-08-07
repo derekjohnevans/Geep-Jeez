@@ -30,7 +30,7 @@ unit Jes2CppEel;
 
 interface
 
-uses Classes, FileUtil, Jes2CppConstants, StrUtils, SysUtils;
+uses Classes, FileUtil, Jes2CppConstants, Jes2CppFileNames, Math, StrUtils, SysUtils;
 
 const
 
@@ -56,7 +56,7 @@ const
   GsEelSpaceJes2Cpp = 'jes2cpp' + CharDot;
   GsEelSpaceThis = GsEelThis + CharDot;
   GsEelSpaceStringLiteral = GsEelSpaceJes2Cpp + 'String' + CharDot + 'Literal' + CharDot;
-  GsEelSpaceStringTemp = GsEelSpaceJes2Cpp + 'String' + CharDot + 'Temp' + CharDot;
+  GsEelSpaceStringHash = GsEelSpaceJes2Cpp + 'String' + CharDot + 'Hash' + CharDot;
 
 const
 
@@ -81,12 +81,14 @@ const
 
 var
 
-  GaEelKeywords: array[0..9] of String = (GsEelLoop, GsEelWhile, GsEelFunction, GsEelLocal, GsEelStatic,
-    GsEelInstance, GsEelGlobal, GsEelGlobals, GsEelThis, GsEelExtern);
-  GaEelSpecial: array[0..19] of String = (GsEelFalse, GsEelTrue, GsEffectName, GsVendorString, GsVendorVersion,
-    GsUniqueId, GsInstallPath, GsEelReturn, GsEelDescDesc, GsEelDescImport, GsEelDescOptions, GsEelSectionInit,
-    GsEelSectionBlock, GsEelSectionSample, GsEelSectionSlider, GsEelSectionSerialize, GsEelSectionGfx,
-    GsEelDescInPin, GsEelDescOutPin, GsEelDescFileName);
+  GaEelKeywords: array[0..9] of String = (GsEelLoop, GsEelWhile, GsEelFunction,
+    GsEelLocal, GsEelStatic, GsEelInstance, GsEelGlobal, GsEelGlobals, GsEelThis, GsEelExtern);
+  GaEelKeywordsExtra: array[0..19] of
+  String = (GsEelFalse, GsEelTrue, GsEffectName, GsVendorString, GsVendorVersion,
+    GsUniqueId, GsInstallPath, GsEelReturn, GsEelDescDesc, GsEelDescImport,
+    GsEelDescOptions, GsEelSectionInit, GsEelSectionBlock, GsEelSectionSample,
+    GsEelSectionSlider, GsEelSectionSerialize, GsEelSectionGfx, GsEelDescInPin,
+    GsEelDescOutPin, GsEelDescFileName);
 
 
 const
@@ -132,9 +134,10 @@ const
   GsFnNot = 'NOT';
   GsFnShl = 'SHL';
   GsFnShr = 'SHR';
-  GsFnStr = 'STR';
   GsFnVal = 'VAL';
   GsFnXor = 'XOR';
+  GsFnPow = 'pow';
+  GsFnFmod = 'fmod';
 
 const
 
@@ -161,6 +164,7 @@ const
   GsOpOrIf = '||';
   GsOpOrSet = '|=';
   GsOpPow = '^';
+  GsOpPowSet = '^=';
   GsOpSet = '=';
   GsOpShl = '<<';
   GsOpShr = '>>';
@@ -175,60 +179,127 @@ type
   TEelSampleIndex = 0..63;
 
 var
-  GaEelFunctionsMidi: array[0..2] of String = ('midisend', 'midirecv', 'midisyx');
+  GaEelFunctionsMidi: array[0..3] of String = ('midisend', 'midisend_buf', 'midirecv', 'midisyx');
 
-function EelSectionName(const AName: String): String;
+type
 
-function EelFileNameResolve(const AFileName, ABaseFileName: TFileName): TFileName;
+  GEelSectionHeader = object
+    class function Make(const AName: String): String;
+    class function IsMaybeSection(const ASection: String): Boolean;
+    class function IsSectionName(const ASection, AName: String): Boolean;
+    class function ExtractName(const ASection: String): String;
+  end;
 
-function EelDescHigh(const AScript: TStrings): Integer;
+  GEel = object
+  strict private
+    class function ImportExists(var AFileName: TFileName; const AFilePath: TFileName): Boolean;
+    class function ImportLocateInPath(var AFileName: TFileName;
+      const AFilePath: TFileName): Boolean;
+  public
+    class function ImportResolve(var AFileName: TFileName; const AParent: TFileName): Boolean;
+    class function DescHigh(const AScript: TStrings): Integer;
+    class function IsImport(const AString: String; out AFileName: TFileName): Boolean;
+    class function ToFloat(const AValue: String): Extended;
+    class function ToFloatDef(const AValue: String; const ADefault: Extended): Extended;
+    class function ToString(const AValue: Extended): String;
+  end;
 
-function EelIsImport(const AString: String; out AFileName: TFileName): Boolean;
-function EelIsSection(const AString: String): Boolean; overload;
-function EelIsSection(const AString, AName: String): Boolean; overload;
-
-function EelStrToFloat(const AValue: String): Extended;
-function EelStrToFloatDef(const AValue: String; const ADefault: Extended): Extended;
-function EelFloatToStr(const AValue: Extended): String;
 
 implementation
 
 uses Jes2CppStrings;
 
-function EelSectionName(const AName: String): String;
+class function GEelSectionHeader.Make(const AName: String): String;
 begin
   Result := CharAtSymbol + AName;
 end;
 
-function EelFileNameResolve(const AFileName, ABaseFileName: TFileName): TFileName;
+class function GEelSectionHeader.IsMaybeSection(const ASection: String): Boolean;
 begin
-  Result := AFileName;
-  if not FilenameIsAbsolute(Result) then
+  Result := (Length(ASection) > 1) and (ASection[1] = CharAtSymbol);
+end;
+
+class function GEelSectionHeader.ExtractName(const ASection: String): String;
+begin
+  Assert(IsMaybeSection(ASection));
+  Result := Copy(ASection, 2, ((Pos(CharSpace, ASection) - 1) and MaxInt) - 1);
+end;
+
+class function GEelSectionHeader.IsSectionName(const ASection, AName: String): Boolean;
+begin
+  Result := IsMaybeSection(ASection) and (ExtractName(ASection) = AName);
+end;
+
+class function GEel.ImportExists(var AFileName: TFileName; const AFilePath: TFileName): Boolean;
+var
+  LAbsolutePath: TFileName;
+begin
+  if FilenameIsAbsolute(AFileName) then
   begin
-    // TODO: Were else should we look for import files?
-    Result := CreateAbsolutePath(Result, ExtractFilePath(ABaseFileName));
+    Result := FileExists(AFileName);
+  end else begin
+    LAbsolutePath := CreateAbsolutePath(AFileName, AFilePath);
+    Result := FileExists(LAbsolutePath);
+    if Result then
+    begin
+      AFileName := LAbsolutePath;
+    end;
   end;
 end;
 
-function EelIsImport(const AString: String; out AFileName: TFileName): Boolean;
+class function GEel.ImportLocateInPath(var AFileName: TFileName;
+  const AFilePath: TFileName): Boolean;
+var
+  LSearchRec: TSearchRec;
+begin
+  Result := ImportExists(AFileName, AFilePath);
+  if not Result then
+  begin
+    if FindFirst(AFilePath + AllFilesMask, faDirectory, LSearchRec) = 0 then
+    begin
+      try
+        repeat
+          if (LSearchRec.Attr and faDirectory) <> 0 then
+          begin
+            if (LSearchRec.Name <> '.') and (LSearchRec.Name <> '..') then
+            begin
+              if ImportLocateInPath(AFileName, AFilePath + LSearchRec.Name +
+                DirectorySeparator) then
+              begin
+                Exit(True);
+              end;
+            end;
+          end;
+        until FindNext(LSearchRec) <> 0;
+      finally
+        FindClose(LSearchRec);
+      end;
+    end;
+  end;
+end;
+
+class function GEel.ImportResolve(var AFileName: TFileName; const AParent: TFileName): Boolean;
+begin
+  Result := ImportExists(AFileName, ExtractFilePath(AParent)) or
+    ImportLocateInPath(AFileName, GFilePath.ReaperEffects) or
+    ImportLocateInPath(AFileName, GFilePath.SdkJsFxInc);
+end;
+
+class function GEel.IsImport(const AString: String; out AFileName: TFileName): Boolean;
 var
   LName: String;
 begin
-  Result := J2C_StringSplit(AString, [CharSpace], LName, AFileName) and SameText(LName, GsEelDescImport);
+  Result := GString.Split(AString, [CharSpace], LName, AFileName) and
+    SameText(LName, GsEelDescImport);
 end;
 
-function EelIsSection(const AString: String): Boolean;
-begin
-  Result := AnsiStartsStr(CharAtSymbol, AString);
-end;
-
-function EelDescHigh(const AScript: TStrings): Integer;
+class function GEel.DescHigh(const AScript: TStrings): Integer;
 var
   LIndex: Integer;
 begin
   for LIndex := 0 to AScript.Count - 1 do
   begin
-    if EelIsSection(AScript[LIndex]) then
+    if GEelSectionHeader.IsMaybeSection(AScript[LIndex]) then
     begin
       Exit(LIndex - 1);
     end;
@@ -236,27 +307,26 @@ begin
   Result := AScript.Count - 1;
 end;
 
-function EelIsSection(const AString, AName: String): Boolean;
-begin
-  Result := SameText(Copy(AString, 1, (Pos(CharSpace, AString) - 1) and MaxInt), EelSectionName(AName));
-end;
-
 var
   GEelFormatSettings: TFormatSettings;
 
-function EelStrToFloat(const AValue: String): Extended;
+class function GEel.ToFloat(const AValue: String): Extended;
 begin
-  Result := StrToFloat(AValue, GEelFormatSettings);
+  Result := SysUtils.StrToFloat(AValue, GEelFormatSettings);
 end;
 
-function EelStrToFloatDef(const AValue: String; const ADefault: Extended): Extended;
+class function GEel.ToFloatDef(const AValue: String; const ADefault: Extended): Extended;
 begin
-  Result := StrToFloatDef(AValue, ADefault, GEelFormatSettings);
+  Result := SysUtils.StrToFloatDef(AValue, ADefault, GEelFormatSettings);
 end;
 
-function EelFloatToStr(const AValue: Extended): String;
+class function GEel.ToString(const AValue: Extended): String;
 begin
-  Result := FloatToStr(AValue, GEelFormatSettings);
+  Result := SysUtils.FloatToStr(AValue);
+  if PosSet(['.', 'E'], Result) = ZeroValue then
+  begin
+    Result += '.0';
+  end;
 end;
 
 initialization

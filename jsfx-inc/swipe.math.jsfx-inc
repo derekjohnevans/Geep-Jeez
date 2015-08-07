@@ -1,0 +1,46 @@
+/*
+** Name: math.jsfx-inc
+** Desc: Math functions for the SWIPE library.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+*/
+
+@init
+
+// Math Constants
+
+M_PI = $pi;
+M_2PI = 2 * M_PI;
+M_DENORM = 10^-30;
+M_AMPDB = 8.65617025;
+M_MS2SPL = srate / 1000;
+M_DEG2RAD = 180 / M_PI;
+M_RAD2DEG = M_PI / 180;
+
+// Conversion Functions
+
+// Converts milliseconds to sample count, based on the current sample rate.
+function ms2spl(x) global(M_MS2SPL)
+(
+  (x * M_MS2SPL)|0;
+);
+
+// Converts a freq hz to radian delta per sample rate.
+function hz2rad(x) global(srate, M_2PI)
+(
+  M_2PI * x / srate;
+);
+
+// Converts a dB value to a PCM value.
+function db2pcm(x) global()
+(
+  2 ^ (x / 6);
+);
+
+// Converts a PCM value to a dB value.
+function pcm2db(x) global(M_AMPDB)
+(
+  log(x) * M_AMPDB;
+);
+

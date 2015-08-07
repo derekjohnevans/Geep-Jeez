@@ -32,7 +32,8 @@ unit Jes2CppParameter;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppParserSimple, Jes2CppTranslate, Math, Soda, StrUtils, SysUtils, Types;
+  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppParserSimple, Jes2CppTranslate,
+  Math, Soda, StrUtils, SysUtils, Types;
 
 type
 
@@ -74,27 +75,28 @@ implementation
 
 const
 
-  CharSetSliderTypes = ['<', CharComma, CharColon, CharEqualSign];
+  CharSetSliderTypes = [CharLessThan, CharComma, CharColon, CharEqualSign];
 
 var
 
-  GDataTypes: array[0..5] of String = ('%', 's', 'ms', 'hz', 'db', 'deg');
-
+  GLabels: array[0..9] of String = ('%', 'bar', 'beat', 'db', 'deg', 'hz', 'khz', 's', 'sr', 'ms');
 
 type
-  TEaterEx = object(TJes2CppParserSimple)
-    procedure ParseUntilDef(out AResult: Extended; const ACharSet: TSysCharSet; const ADefault: Extended);
+
+  TJes2CppParserSimple2 = object(TJes2CppParserSimple)
+    procedure ParseUntilDef(out AResult: Extended; const ACharSet: TSysCharSet;
+      const ADefault: Extended);
   end;
 
-
-procedure TEaterEx.ParseUntilDef(out AResult: Extended; const ACharSet: TSysCharSet; const ADefault: Extended);
+procedure TJes2CppParserSimple2.ParseUntilDef(out AResult: Extended;
+  const ACharSet: TSysCharSet; const ADefault: Extended);
 begin
   GetUntil(ACharSet);
   if FToken = EmptyStr then
   begin
     AResult := ADefault;
   end else begin
-    AResult := EelStrToFloat(FToken);
+    AResult := GEel.ToFloat(FToken);
   end;
 end;
 
@@ -117,9 +119,13 @@ begin
   FOptions[High(FOptions)] := AOption;
 end;
 
+var
+  // TODO: This must be global, otherwise, we get memory leakage. Unsure why. It seems to happen
+  // with inherited objects with strings.
+  GParserSimple: TJes2CppParserSimple2;
+
 procedure CJes2CppParameter.DecodeEel(const ASlider: Integer; const ASource: String);
 var
-  LEater: TEaterEx;
   LPos: Integer;
   LDataType: String;
 begin
@@ -134,74 +140,76 @@ begin
   FDataType := EmptyStr;
   SetLength(FOptions, 0);
 
-  LEater.SetSource(ASource);
+  GParserSimple.SetSource(ASource);
 
   if not InRange(FSlider, Low(TEelSliderIndex), High(TEelSliderIndex)) then
   begin
     raise Exception.Create('Index out of range.');
   end;
-  LEater.GetUntil(CharSetSliderTypes);
-  if LEater.Terminator = CharEqualSign then
+  GParserSimple.GetUntil(CharSetSliderTypes);
+  if GParserSimple.Terminator = CharEqualSign then
   begin
-    FVariable := LEater.AsName + CharDot;
-    LEater.GetUntil(CharSetSliderTypes);
+    FVariable := GParserSimple.AsName + CharDot;
+    GParserSimple.GetUntil(CharSetSliderTypes);
   end;
-  case LEater.Terminator of
+  case GParserSimple.Terminator of
     CharComma: begin
-      FDefValue := EelStrToFloat(LEater.AsString);
-      LEater.GetUntil([CharNull]);
-      FLabel := LEater.AsName;
+      FDefValue := GEel.ToFloat(GParserSimple.AsString);
+      GParserSimple.GetUntil([CharNull]);
+      FLabel := GParserSimple.AsName;
     end;
     CharColon: begin
-      FFilePath := LEater.AsFileName;
-      LEater.GetUntil([CharColon]);
-      FFileName := LEater.AsFileName;
-      LEater.GetUntil([CharNull]);
-      FLabel := LEater.AsName;
+      FFilePath := GParserSimple.AsFileName;
+      GParserSimple.GetUntil([CharColon]);
+      FFileName := GParserSimple.AsFileName;
+      GParserSimple.GetUntil([CharNull]);
+      FLabel := GParserSimple.AsName;
       FIsFileSelection := True;
-      FFilePath := SetDirSeparators(ExcludeLeadingPathDelimiter(IncludeTrailingPathDelimiter(FFilePath)));
+      FFilePath := SetDirSeparators(ExcludeLeadingPathDelimiter(
+        IncludeTrailingPathDelimiter(FFilePath)));
     end;
-    '<': begin
-      if LEater.AsString = EmptyStr then
+    CharLessThan: begin
+      if GParserSimple.AsString = EmptyStr then
       begin
-        FDefValue := M_ZERO;
+        FDefValue := ZeroValue;
       end else begin
-        FDefValue := EelStrToFloat(LEater.AsString);
+        FDefValue := GEel.ToFloat(GParserSimple.AsString);
       end;
-      LEater.ParseUntilDef(FMinValue, [CharComma, '>'], 0);
-      if LEater.Terminator = CharComma then
+      GParserSimple.ParseUntilDef(FMinValue, [CharComma, CharGreaterThan], 0);
+      if GParserSimple.Terminator = CharComma then
       begin
-        LEater.ParseUntilDef(FMaxValue, [CharComma, '>'], 0);
-        if LEater.Terminator = CharComma then
+        GParserSimple.ParseUntilDef(FMaxValue, [CharComma, CharGreaterThan], 0);
+        if GParserSimple.Terminator = CharComma then
         begin
-          LEater.ParseUntilDef(FStepValue, [CharComma, '>', CharOpeningBrace], GfEelEpsilon);
-          if LEater.Terminator in [CharComma, CharOpeningBrace] then
+          GParserSimple.ParseUntilDef(FStepValue, [CharComma, CharGreaterThan, CharOpeningBrace],
+            GfEelEpsilon);
+          if GParserSimple.Terminator in [CharComma, CharOpeningBrace] then
           begin
-            if LEater.Terminator <> CharOpeningBrace then
+            if GParserSimple.Terminator <> CharOpeningBrace then
             begin
-              LEater.GetUntil([CharOpeningBrace]);
-              ExpectEmptyStr(LEater.AsString);
+              GParserSimple.GetUntil([CharOpeningBrace]);
+              ExpectEmptyStr(GParserSimple.AsString);
             end;
             repeat
-              LEater.GetUntil([CharComma, CharClosingBrace]);
-              if LEater.Terminator in [CharComma, CharClosingBrace] then
+              GParserSimple.GetUntil([CharComma, CharClosingBrace]);
+              if GParserSimple.Terminator in [CharComma, CharClosingBrace] then
               begin
-                AddOption(LEater.AsString('Option'));
+                AddOption(GParserSimple.AsString('Option'));
               end;
-            until not (LEater.Terminator in [CharComma]);
-            LEater.GetUntil(['>']);
-            ExpectEmptyStr(LEater.AsString);
+            until not (GParserSimple.Terminator in [CharComma]);
+            GParserSimple.GetUntil([CharGreaterThan]);
+            ExpectEmptyStr(GParserSimple.AsString);
             FMinValue := 0;
             FMaxValue := Length(FOptions) - 1;
             FStepValue := 1;
           end;
         end;
       end;
-      LEater.GetUntil([CharNull]);
-      FLabel := LEater.AsName;
+      GParserSimple.GetUntil([CharNull]);
+      FLabel := GParserSimple.AsName;
     end;
   end;
-  for LDataType in GDataTypes do
+  for LDataType in GLabels do
   begin
     LPos := Pos(CharOpeningParenthesis + LDataType + CharClosingParenthesis, LowerCase(FLabel));
     if LPos > 0 then
@@ -228,14 +236,17 @@ begin
   begin
     LString := Copy(LString, 2, MaxInt);
   end;
-  Result := Format('AddParam(%d, %s, %s, %s, %s, %s, %s, %s, %s, %s);', [FSlider, IfThen(FVariable <>
-    EmptyStr, CharAmpersand + CppEncodeVariable(FVariable), GsCppNullPtr), CppEncodeFloat(FDefValue),
-    CppEncodeFloat(FMinValue), CppEncodeFloat(FMaxValue), CppEncodeFloat(FStepValue), CppEncodeString(FFilePath),
-    CppEncodeString(FFileName), CppEncodeString(FDataType), CppEncodeString(LString)]) + LineEnding;
+  Result := Format('AddParam(%d, %s, %s, %s, %s, %s, %s, %s, %s, %s);',
+    [FSlider, IfThen(FVariable <> EmptyStr, CharAmpersand + GCpp.Encode.NameVariable(FVariable),
+    GsCppNullPtr), GCpp.Encode.Float(FDefValue), GCpp.Encode.Float(FMinValue),
+    GCpp.Encode.Float(FMaxValue), GCpp.Encode.Float(FStepValue),
+    GCpp.Encode.QuotedString(FFilePath), GCpp.Encode.QuotedString(FFileName),
+    GCpp.Encode.QuotedString(FDataType), GCpp.Encode.QuotedString(LString)]) + LineEnding;
 
   for LString in FOptions do
   begin
-    Result += Format('FParameters[FParameters.size() - 1].AddOption(%s);', [CppEncodeString(LString)]) + LineEnding;
+    Result += Format('FParameters[FParameters.size() - 1].AddOption(%s);',
+      [GCpp.Encode.QuotedString(LString)]) + LineEnding;
   end;
 end;
 

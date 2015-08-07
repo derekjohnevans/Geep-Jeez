@@ -1,0 +1,69 @@
+/*
+ * This file is part of Axonlib.
+ *
+ * Axonlib is free software: you can redistribute it and/or modify
+ * it under the terms of the Axonlib License, either version 1.0
+ * of the License, or (at your option) any later version.
+ *
+ * Axonlib is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE_AX for more details.
+ *
+ * You should have received a copy of the Axonlib License
+ * If not, see <http://axonlib.googlecode.com/>.
+ */
+
+@init
+
+// constants
+// -----------------------------------------------------------------------------
+//DENORM      = 1.4012984e-45;
+LOG2DB      = 8.65617024533;
+DB2LOG      = 0.11552453009;
+E           = 2.71828182845;
+LOG2E       = 1.44269504088;
+LOG10E      = 0.43429448190;
+LN2         = 0.69314718055;
+LN10        = 2.30258509299;
+PI          = 3.14159265358;
+PI2         = 6.28318530717;
+PI4         = 12.5663706143;
+PI_2        = 1.57079632679;
+PI_4        = 0.78539816339;
+D1_PI       = 0.31830988618;
+D2_PI       = 0.63661977236;
+SQRT2       = 1.41421356237;
+SQRT1_2     = 0.70710678118;
+//EPSILON     = 1.19209290e-7;
+inv360      = 0.00277777778;
+inv16       = 0.06250000000;
+inv127      = 0.00787401575;
+inv256      = 0.00390625000;
+
+// limits
+// -----------------------------------------------------------------------------
+AX_CHAR_BIT       = 8;
+AX_CHAR_MAX       = 127;
+AX_SHRT_MAX       = 32767;
+AX_WCHAR_MAX      = 65535;
+AX_INT_MAX        = 2147483647;
+AX_UINT_MAX       = 8589934591;
+AX_LONG_LONG_MAX  = 9223372036854775807;
+AX_ULONG_LONG_MAX = 18446744073709551615;
+
+/*
+AX_FLT_MAX        = 3.40282347e+38;
+AX_FLT_MIN        = 1.17549435e-38;
+AX_FLT_EPSILON    = 1.19209290e-7;
+AX_FLT_DENORM     = 1.40129846e-45;
+AX_DBL_MAX        = 1.7976931348623157e+308;
+AX_DBL_MIN        = 2.2250738585072014e-308;
+AX_DBL_EPSILON    = 2.2204460492503131e-16;
+AX_DBL_DENORM     = 4.9406564584124654e-324;
+AX_LDBL_MAX       = 1.18973149535723176502e+4932;
+AX_LDBL_MIN       = 3.36210314311209350626e-4932;
+AX_LDBL_EPSILON   = 1.08420217248550443401e-19;
+AX_LDBL_DENORM    = 3.64519953188247460253e-4951;
+*/
+

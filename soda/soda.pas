@@ -33,10 +33,13 @@ type
     procedure DoCreate; virtual;
     procedure DoDestroy; virtual;
   public
-    function FindComponent(const AName: TComponentName; const ACaseSensitive: Boolean = False): CComponent;
-    function FindComponentMaskDest(const AName: TComponentName; const ACaseSensitive: Boolean = False): CComponent;
+    function FindComponent(const AName: TComponentName;
+      const ACaseSensitive: Boolean = False): CComponent;
+    function FindComponentMaskDest(const AName: TComponentName;
+      const ACaseSensitive: Boolean = False): CComponent;
     function ComponentExists(const AName: TComponentName): Boolean;
-    function ComponentExistsMaskDest(const AName: TComponentName; const ACaseSensitive: Boolean = False): Boolean;
+    function ComponentExistsMaskDest(const AName: TComponentName;
+      const ACaseSensitive: Boolean = False): Boolean;
     function HasComponents: Boolean;
     function IsEmpty: Boolean;
   public
@@ -106,7 +109,8 @@ begin
   Result := inherited Components[AIndex] as CComponent;
 end;
 
-function CComponent.FindComponent(const AName: TComponentName; const ACaseSensitive: Boolean): CComponent;
+function CComponent.FindComponent(const AName: TComponentName;
+  const ACaseSensitive: Boolean): CComponent;
 var
   LIndex: Integer;
 begin
@@ -133,7 +137,8 @@ begin
   Result := nil;
 end;
 
-function CComponent.FindComponentMaskDest(const AName: TComponentName; const ACaseSensitive: Boolean): CComponent;
+function CComponent.FindComponentMaskDest(const AName: TComponentName;
+  const ACaseSensitive: Boolean): CComponent;
 var
   LIndex: Integer;
 begin
@@ -153,7 +158,8 @@ begin
   Result := Assigned(FindComponent(AName));
 end;
 
-function CComponent.ComponentExistsMaskDest(const AName: TComponentName; const ACaseSensitive: Boolean): Boolean;
+function CComponent.ComponentExistsMaskDest(const AName: TComponentName;
+  const ACaseSensitive: Boolean): Boolean;
 begin
   Result := Assigned(FindComponentMaskDest(AName, ACaseSensitive));
 end;

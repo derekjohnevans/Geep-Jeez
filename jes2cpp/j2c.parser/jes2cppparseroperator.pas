@@ -69,7 +69,8 @@ const
   begin
     LogExpectNotEmptyStr(ALeft, LMessage);
     Inc(FParameterAssignmentCount);
-    Result := Format(GsCppOperator, [ALeft, PullToken, Format(GsCppFunct2, [GsFnVal, LUpLevel(True)])]);
+    Result := Format(GsCppOperator, [ALeft, PullToken, Format(GsCppFunct2,
+      [GsFnVal, LUpLevel(True)])]);
   end;
 
   function LFunctionSet(const ALeft, AName: String): String;
@@ -83,24 +84,25 @@ const
   function LFunctionOpSet(const ALeft, AName: String): String;
   begin
     LogExpectNotEmptyStr(ALeft, LMessage);
-    Result := Format(GsCppOperator, [ALeft, CharEqualSign, Format(GsCppFunct2, [GsFnVal, LFunctionSet(ALeft, AName)])]);
+    Result := Format(GsCppOperator, [ALeft, CharEqualSign, Format(GsCppFunct2,
+      [GsFnVal, LFunctionSet(ALeft, AName)])]);
   end;
 
 begin
   Result := ParseElement(False);
   case CurrentToken of
     GsOpSet: begin
-      if CppIsHashString(Result) then
+      if GCpp.IsHashString(Result) then
       begin
-        Result := LFunctionSet(Result, CppEncodeFunction(GsEelFnStrCpy));
+        Result := LFunctionSet(Result, GCpp.Encode.NameFunction(GsEelFnStrCpy, 0));
       end else begin
         Result := LOperator(Result);
       end;
     end;
     GsOpAddSet: begin
-      if CppIsHashString(Result) then
+      if GCpp.IsHashString(Result) then
       begin
-        Result := LFunctionSet(Result, CppEncodeFunction(GsEelFnStrCat));
+        Result := LFunctionSet(Result, GCpp.Encode.NameFunction(GsEelFnStrCat, 0));
       end else begin
         Result := LOperator(Result);
       end;
@@ -115,10 +117,13 @@ begin
       Result := LFunctionOpSet(Result, GsFnAor);
     end;
     GsOpModSet: begin
-      Result := LFunctionOpSet(Result, GsCppFmod);
+      Result := LFunctionOpSet(Result, GsFnFmod);
     end;
     GsOpXorSet: begin
       Result := LFunctionOpSet(Result, GsFnXor);
+    end;
+    GsOpPowSet: begin
+      Result := LFunctionOpSet(Result, GsFnPow);
     end;
   end;
   LogIfExpectNotEmptyStr(AIsExpected, Result, LMessage);
@@ -146,7 +151,7 @@ begin
   repeat
     case CurrentToken of
       GsOpPow: begin
-        Result := LFunction(Result, GsCppPow);
+        Result := LFunction(Result, GsFnPow);
       end else begin
         Break;
       end;
@@ -220,7 +225,7 @@ begin
         Result := LOperator(Result);
       end;
       GsOpMod: begin
-        Result := LFunction(Result, GsCppFmod);
+        Result := LFunction(Result, GsFnFmod);
       end else begin
         Break;
       end;

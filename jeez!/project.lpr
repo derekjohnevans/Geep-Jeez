@@ -41,12 +41,14 @@ uses {$IFDEF UNIX} {$IFDEF UseCThreads}
   Jes2CppReference,
   Jes2CppSections,
   Jes2CppStrings,
+  Jes2CppTextFileCache,
   Jes2CppToken,
   jes2cpptranslate,
   Jes2CppUtils,
   Jes2CppVariable,
   lazcontrols,
   soda,
+  UJeezAbout,
   UJeezBuild,
   ujeezdata,
   UJeezEditor,
@@ -67,7 +69,8 @@ begin
   Application.CreateForm(TJeezProperties, JeezProperties);
   Application.CreateForm(TJeezBuild, JeezBuild);
   Application.CreateForm(TJeezData, JeezData);
-  Application.CreateForm(TJeezMessages, JeezMessages);
+  Application.CreateForm(TJeezConsole, JeezConsole);
   Application.CreateForm(TJeezSplash, JeezSplash);
+  Application.CreateForm(TJeezAbout, JeezAbout);
   Application.Run;
 end.

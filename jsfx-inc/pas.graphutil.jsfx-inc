@@ -1,0 +1,9 @@
+
+@init
+
+function ExtractRGB(RGB, R*, G*, B*) global()
+(
+  R = RGB & 0xFF;
+  G = (RGB >> 8) & 0xFF;
+  B = (RGB >> 16) & 0xFF;
+);

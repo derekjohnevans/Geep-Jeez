@@ -1,4 +1,4 @@
-object JeezMessages: TJeezMessages
+object JeezConsole: TJeezConsole
   Left = 502
   Height = 240
   Top = 280
@@ -8,34 +8,33 @@ object JeezMessages: TJeezMessages
   Caption = 'Messages'
   ClientHeight = 240
   ClientWidth = 320
+  Color = clNone
+  OnCreate = FormCreate
   OnShow = FormShow
   LCLVersion = '1.4.0.4'
-  object ToolBarMessageLog: TToolBar
+  object ToolBar: TToolBar
     Left = 296
     Height = 240
     Top = 0
     Width = 24
     Align = alRight
     AutoSize = True
-    Caption = 'ToolBarMessageLog'
-    Color = clNone
+    Caption = 'ToolBar'
     EdgeBorders = []
     Images = JeezData.ImageList16
-    ParentColor = False
     TabOrder = 0
-    Transparent = True
     object ButtonShowMessages: TToolButton
       Left = 1
       Top = 0
       Caption = 'ButtonShowMessages'
-      ImageIndex = 31
+      ImageIndex = 49
       OnClick = ButtonShowMessagesClick
     end
     object ButtonHideMessages: TToolButton
       Left = 1
       Top = 22
       Caption = 'ButtonHideMessages'
-      ImageIndex = 32
+      ImageIndex = 50
       OnClick = ButtonHideMessagesClick
     end
   end

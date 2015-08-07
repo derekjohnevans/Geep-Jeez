@@ -12,13 +12,13 @@ object JeezBuild: TJeezBuild
   OnPaint = FormPaint
   Position = poScreenCenter
   LCLVersion = '1.4.0.4'
-  object ButtonAbort: TBitBtn
-    Left = 304
+  object ButtonAbortBuild: TBitBtn
+    Left = 288
     Height = 25
     Top = 32
-    Width = 80
+    Width = 96
     Cancel = True
-    Caption = 'Abort'
+    Caption = 'Abort Build'
     Glyph.Data = {
       36040000424D3604000000000000360000002800000010000000100000000100
       2000000000000004000064000000640000000000000000000000000000000000
@@ -56,7 +56,7 @@ object JeezBuild: TJeezBuild
       59D5BF8E4F00C08F4F00D4A36800C08F5000C2915200FFFFFF00
     }
     ModalResult = 3
-    OnClick = ButtonAbortClick
+    OnClick = ButtonAbortBuildClick
     TabOrder = 0
   end
   object ProgressBar: TProgressBar

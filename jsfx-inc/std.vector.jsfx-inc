@@ -1,0 +1,58 @@
+/*
+** Name: vector
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import std.array.jsfx-inc
+
+@init
+
+function vector(size) global()
+(  
+  this.resize(size);
+);
+
+// Allocate this 2D vector given a width (w) and height (h). (untested)
+// NOTE: Dont use this. It is going to be rewritten.
+function vector2(w, h) global() local(y)
+(
+  this.vector(w * h + h);
+  y = 0;
+  while (y < h) (
+    this[y] = w * y + h;
+    y += 1;
+  );
+);
+
+// Adds a new element at the end of the vector, after its current last element.
+function push_back(val) global()
+(
+  this.resize(this.size() + 1);
+  this[this.size() - 1] = val;
+);
+
+// Removes the last element in the vector, effectively reducing the container size by one.
+function pop_back() global() local(val)
+(  
+  val = this[this.size() - 1];
+  this.resize(this.size() - 1);
+  val;
+);
+
+// Removes a value from this array given its index position.
+function erase(i) global()
+(
+  i >= 0 && i < this.size() ? (
+    while (i < this.size() - 1) (
+      this[i] = this[i + 1];
+      i += 1;
+    );
+    this.resize(this.size() - 1);
+  );
+);
+

@@ -1,0 +1,90 @@
+
+@init
+
+// Point Object
+
+// Initializes this 2D point.
+function TPoint_Set(x, y) global()
+(
+  this.x = x;
+  this.y = y;
+);
+
+// Initializes this 3D point.
+function TPoint_Set(x, y, z) global()
+(
+  this.x = x;
+  this.y = y;
+  this.z = z;
+);
+
+// Returns TRUE if this 2D point is inside given rectange.
+function TPoint_Inside(x1, y1, x2, y2) global()
+(
+  this.x >= x1 && this.x < x2 &&
+  this.y >= y1 && this.y < y2;
+);
+
+// Returns TRUE if this 3D point is inside given rectange.
+function TPoint_Inside(x1, y1, z1, x2, y2, z2) global()
+(
+  this.x >= x1 && this.x < x2 &&
+  this.y >= y1 && this.y < y2 &&
+  this.z >= z1 && this.z < z2;
+);
+
+// Rect Object
+
+// Initializes this 2D rectangle.
+function TRect_SetRect(x1, y1, x2, y2) global()
+(
+  this.x1 = x1; this.y1 = y1;
+  this.x2 = x2; this.y2 = y2;
+);
+
+// Initializes this 3D rectangle.
+function TRect_SetRect(x1, y1, z1, x2, y2, z2) global()
+(
+  this.x1 = x1; this.y1 = y1; this.z1 = z1;
+  this.x2 = x2; this.y2 = y2; this.z2 = z2;
+);
+
+// Returns the width of this rectange.
+function TRect_GetWidth() global()
+(
+  this.x2 - this.x1;
+);
+
+// Returns the height of this rectangle.
+function TRect_GetHeight() global()
+(
+  this.y2 - this.y1;
+);
+
+// Returns the depth of this rectangle.
+function TRect_GetDepth() global()
+(
+  this.z2 - this.z1;
+);
+
+// Offsets (moves) this rectangle by given x & y.
+function TRect_Offset(x, y) global()
+(
+  this.x1 += x; this.y1 += y;
+  this.x2 += x; this.y2 += y;
+);
+
+// Inflates this rectangle by given x & y.
+function TRect_Inflate(x, y) global()
+(
+  this.x1 -= x; this.y1 -= y;
+  this.x2 += x; this.y2 += y;
+);
+
+// Returns TRUE if x & y are inside this rectangle.
+function TRect_Contains(x, y) global()
+(
+  x >= this.x1 && x < this.x2 &&
+  y >= this.y1 && y < this.y2;
+);
+

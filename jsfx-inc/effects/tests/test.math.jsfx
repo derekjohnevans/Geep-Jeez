@@ -1,0 +1,40 @@
+
+import test.jsfx-inc
+
+@init
+
+function Test(name, value, result)
+(
+  printf("%-6s(%8.2f) = %8.2f\n", name, value, result);
+);
+
+clrscr();
+H1("Test Math Functions");
+
+H2("General Function Tests");
+Test("floor", +1.3, floor(+1.3));
+Test("floor", -1.3, floor(-1.3));
+Test("round", +1.5, round(+1.5));
+Test("round", +1.4, round(+1.4));
+Test("round", -1.4, round(-1.4));
+Test("round", -1.5, round(-1.5));
+Test("trunc", -1.5, trunc(-1.5));
+Test("trunc", +1.5, trunc(+1.5));
+Test("log2" , 1024, log2(1024));
+Test("cbrt" , 27, cbrt(27));
+
+H2("http://www.cplusplus.com/reference/cmath/round/");
+
+string5 = "%8s%8s%8s%8s%8s\n";
+float5 = "%8.1f%8.1f%8.1f%8.1f%8.1f\n";
+
+printf(string5, "value", "round", "floor", "ceil", "trunc");
+printf(string5, "-----", "-----", "-----", "----", "-----");
+printf(float5, 2.3,round( 2.3),floor( 2.3),ceil( 2.3),trunc( 2.3));
+printf(float5, 3.8,round( 3.8),floor( 3.8),ceil( 3.8),trunc( 3.8));
+printf(float5, 5.5,round( 5.5),floor( 5.5),ceil( 5.5),trunc( 5.5));
+printf(float5,-2.3,round(-2.3),floor(-2.3),ceil(-2.3),trunc(-2.3));
+printf(float5,-3.8,round(-3.8),floor(-3.8),ceil(-3.8),trunc(-3.8));
+printf(float5,-5.5,round(-5.5),floor(-5.5),ceil(-5.5),trunc(-5.5));
+
+

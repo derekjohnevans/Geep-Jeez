@@ -1,0 +1,29 @@
+import loser.jsfx-inc
+
+@init
+
+function LOSER.3BandEq.Init(l, f1, m, f2, h) global(cAmpDB, srate)
+instance(lVol, mVol, hVol, xLP, xHP, a0LP, a0HP, b1LP, b1HP)
+(
+  lVol = exp(l/cAmpDB);
+  mVol = exp(m/cAmpDB);
+  hVol = exp(h/cAmpDB);
+  
+  xLP = exp(-2.0 * $pi * min(min(f1, srate), f2) / srate);
+  a0LP = 1.0 - xLP;
+  b1LP = -xLP;
+  
+  xHP = exp(-2.0 * $pi * max(min(f2, srate), f1) / srate);
+  a0HP = 1.0 - xHP;
+  b1HP = -xHP;  
+);
+
+function LOSER.3BandEq.Sample(spl) global(cDenorm)
+instance(sl0, a0LP, a0HP, b1LP, b1HP, sh0, lVol, mVol, hVol)
+instance(tmplLP, tmplHP)
+(
+  sl0 = tmplLP = a0LP * spl - b1LP * tmplLP + cDenorm;
+  sh0 = spl - (tmplHP = a0HP * spl - b1HP * tmplHP + cDenorm);
+  spl = (sl0 * lVol + (spl - sl0 - sh0) * mVol + sh0 * hVol);
+);
+

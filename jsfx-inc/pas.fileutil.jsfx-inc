@@ -1,0 +1,38 @@
+/*
+** Name: FileUtil
+** Desc: This is part of a Pascal style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import pas.sysutils.jsfx-inc
+
+@init
+
+function ExtractFileExt(filename) global()
+local(pos)
+(
+  (pos = RPos('.', filename)) < 0 ? "" : strcpy_substr(#, filename, pos);
+);
+
+function ExtractFileName(filename) global()
+local(pos)
+(
+  (pos = LastDelimiter("\\/", filename)) < 0 ? "" : strcpy_substr(#, filename, pos + 1);
+);
+
+function ExtractFileDir(filename) global()
+local(pos)
+(
+  (pos = LastDelimiter("\\/", filename)) < 0 ? "" : strcpy_substr(#, filename, 0, pos);
+);
+
+function ExtractFilePath(filename) global()
+local(pos)
+(
+  (pos = LastDelimiter("\\/", filename)) < 0 ? "" : strcpy_substr(#, filename, 0, pos + 1);
+);
+

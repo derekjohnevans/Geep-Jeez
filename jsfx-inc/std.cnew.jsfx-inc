@@ -1,0 +1,73 @@
+/*
+** Name: new.h
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import std.cstring.jsfx-inc
+
+@init
+
+function _def(type, size) global()
+(
+  str_setlen(type, 0);
+  str_setlen(type, size);
+);
+
+function _new(type) global() local(handle)
+(
+  handle = strlen(type) - 1;
+  while (handle > 0 && str_getchar(type, handle) != $' ') ( handle -= 1; );
+  str_setchar(type, handle, $'.');
+  handle;
+);
+
+function _delete(type, handle) global()
+(
+  str_setchar(type, handle, $' ');  
+  0;
+);
+
+function _count(type) global()
+(
+  strccnt(type, $'.');
+);
+
+_def(#string_t, 1024);
+_def(#image_t, 128);
+_def(#font_t, 17);
+
+function salloc() global(#string_t) local()
+(
+  strcpy(_new(#string_t), "");
+);
+
+function sfree(handle) global(#string_t)
+(
+  _delete(#string_t, handle);
+);
+
+function scount() global(#string_t)
+(
+  _count(#string_t);
+);
+
+function ialloc() global(#image_t)
+(
+  _new(#image_t)
+);
+
+function ifree(handle) global(#image_t)
+(
+  _delete(#image_t, handle);
+);
+
+function icount() global(#image_t)
+(
+  _count(#image_t);
+);
+

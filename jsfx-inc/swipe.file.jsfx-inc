@@ -1,0 +1,30 @@
+/*
+** Name: file.jsfx-inc
+** Desc: A basic file object for the SWIPE library.
+** Note: Im not sure this is a good way todo files, since files are
+**       normally opened/closed quickly, therefore they dont require objects.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+*/
+
+import swipe.system.jsfx-inc
+
+@init
+
+function TFile_Close() global()
+(
+  this.IsOpen.Get() ?
+  (
+    file_close(this);
+    this.IsOpen.Set(0);
+  );
+);
+
+function TFile_Open(AFileName) global()
+(
+  this.TFile_Close();
+  this = file_open(AFileName);
+  this.IsOpen.Set(this >= 0);
+);
+

@@ -1,0 +1,52 @@
+/*
+  ToneStack.jsfx-inc
+
+  Copyright 2006-7
+    David Yeh <dtyeh@ccrma.stanford.edu>
+
+    2007-2013
+      Tim Goetze <tim@quitte.de> (cosmetics)
+
+  Tone Stack emulation.
+*
+*/
+/*
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  as published by the Free Software Foundation; either version 3
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+  02111-1307, USA or point your web browser to http://www.gnu.org.
+*/
+
+desc: ToneStack - Classic amplifier tone stack emulation
+
+import caps.ToneStack.jsfx-inc
+
+slider1:0<0,8,1{basswoman,stanford,wookie,DC 30,juice 800,twin,AK 20,nihon ace,porky}>Model
+slider2:0.5<0,1>Bass
+slider3:0.5<0,1>Mid
+slider4:0.5<0,1>Treble
+
+@init
+
+ts.ToneStack();
+ts.ToneStack_init(srate);
+
+@slider
+
+ts.ToneStack_setmodel(slider1);
+ts.ToneStack_updatecoefs(slider2, slider3, slider4);
+
+@sample
+
+spl0 = spl1 = ts.ToneStack_process(spl0);
+

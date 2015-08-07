@@ -32,7 +32,8 @@ unit Jes2CppLoop;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppFunction, Jes2CppIdentifier, Jes2CppTranslate, Soda, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppFunction, Jes2CppIdentifier,
+  Jes2CppTranslate, Soda, SysUtils;
 
 type
 
@@ -42,19 +43,21 @@ type
 
   CJes2CppLoop = class(CJes2CppIdentifier)
   strict private
-    FFunction: CJes2CppFunction;
+    FParentFunction: CJes2CppFunction;
   public
     FCondition, FBlock, FPreCondition: String;
     FType: TJes2CppLoopType;
   strict private
-    function CppParameters(const AIsDefine: Boolean): String;
-    function CppDefineHead: String;
+    function CppFunctionParameters(const AIsDefine: Boolean): String;
+    function CppFunctionHead: String;
   public
-    constructor Create(const AOwner: CJes2CppLoops; const AType: TJes2CppLoopType; const AFunction: CJes2CppFunction);
+    constructor Create(const AOwner: CJes2CppLoops; const AType: TJes2CppLoopType;
+      const AParentFunction: CJes2CppFunction);
       virtual; reintroduce;
   public
-    function EncodeDefineCpp: String;
-    function EncodeCallCpp: String;
+    function CppFunction: String;
+    function CppFunctionProto: String;
+    function CppFunctionMacro: String;
   end;
 
   CJes2CppLoops = class
@@ -69,53 +72,62 @@ implementation
 {$DEFINE DItemClass := CJes2CppLoops}
 {$INCLUDE soda.inc}
 
-constructor CJes2CppLoop.Create(const AOwner: CJes2CppLoops; const AType: TJes2CppLoopType; const AFunction: CJes2CppFunction);
+constructor CJes2CppLoop.Create(const AOwner: CJes2CppLoops; const AType: TJes2CppLoopType;
+  const AParentFunction: CJes2CppFunction);
 begin
   inherited CreateNamed(AOwner, GsDoLoop + IntToStr(AOwner.ComponentCount));
   FType := AType;
-  FFunction := AFunction;
+  FParentFunction := AParentFunction;
 end;
 
-function CJes2CppLoop.CppParameters(const AIsDefine: Boolean): String;
+function CJes2CppLoop.CppFunctionParameters(const AIsDefine: Boolean): String;
 begin
   Result := EmptyStr;
-  if Assigned(FFunction) then
+  if Assigned(FParentFunction) then
   begin
-    FFunction.Params.AppendParams(Result, AIsDefine, False);
-    FFunction.Locals.AppendParams(Result, AIsDefine, False);
-    FFunction.InstancesAll.AppendParams(Result, AIsDefine, True);
+    FParentFunction.Params.AppendParams(Result, AIsDefine, False);
+    FParentFunction.Locals.AppendParams(Result, AIsDefine, False);
+    FParentFunction.InstancesAll.AppendParams(Result, AIsDefine, True);
   end;
 end;
 
-function CJes2CppLoop.EncodeCallCpp: String;
+function CJes2CppLoop.CppFunctionProto: String;
 begin
-  Result := Format(GsCppFunct2, [Name, CppParameters(False)]);
+  Result := Format(GsCppFunct2, [Name, CppFunctionParameters(False)]);
 end;
 
-function CJes2CppLoop.CppDefineHead: String;
+function CJes2CppLoop.CppFunctionMacro: String;
 begin
-  Result := GsCppJes2CppInlineSpace + GsCppEelF + CharSpace + Name + '(' + CppParameters(True) + ')' + LineEnding;
+  Result := CharDollar + UpperCase(Name) + CharDollar;
 end;
 
-function CJes2CppLoop.EncodeDefineCpp: String;
+function CJes2CppLoop.CppFunctionHead: String;
 begin
-  Result := CppDefineHead + '{' + LineEnding;
+  Result := GsCppJes2CppInlineSpace + GsCppEelF + CharSpace + Name + '(' +
+    CppFunctionParameters(True) + ')' + LineEnding;
+end;
+
+function CJes2CppLoop.CppFunction: String;
+begin
+  Result := CppFunctionHead + '{' + LineEnding;
   Result += 'int LMax = 1000000;' + LineEnding;
   case FType of
     ltLoop: begin
-      Result += 'for (int LIdx = (int)(' + FCondition + '); (--LIdx >= 0) && (LMax-- > 0);)' + LineEnding;
+      Result += 'for (int LIdx = (int)(' + FCondition + '); (--LIdx >= 0) && (LMax-- > 0);)' +
+        LineEnding;
       Result += '{' + LineEnding + FBlock + '}' + LineEnding;
     end;
     ltDoWhile: begin
-      Result += 'do {' + LineEnding + FBlock + '} while (' + GsFnIf + '(' + FCondition + ') && (LMax-- > 0));' + LineEnding;
+      Result += 'do {' + LineEnding + FBlock + '} while (' + GsFnIf + '(' +
+        FCondition + ') && (LMax-- > 0));' + LineEnding;
     end;
     ltWhile: begin
-      Result += FPreCondition + 'while (' + GsFnIf + '(' + FCondition + ') && (LMax-- > 0)) {' + LineEnding +
-        FBlock + FPreCondition + '}' + LineEnding;
+      Result += FPreCondition + 'while (' + GsFnIf + '(' + FCondition +
+        ') && (LMax-- > 0)) {' + LineEnding + FBlock + FPreCondition + '}' + LineEnding;
 
     end;
   end;
-  Result += 'return ' + CppEncodeFloat(1) + ';' + LineEnding + '}' + LineEnding;
+  Result += 'return ' + GCpp.Encode.Float(1) + ';' + LineEnding + '}' + LineEnding;
 end;
 
 end.

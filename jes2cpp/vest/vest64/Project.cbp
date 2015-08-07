@@ -22,6 +22,7 @@
 					<Add option="-fno-exceptions" />
 					<Add option="-DWIN32=1" />
 					<Add option="-DVEST_VST" />
+					<Add option="-DGDIPLUS=1" />
 					<Add option="-DVSTGUI_ENABLE_DEPRECATED_METHODS=1" />
 					<Add option="-DVSTGUI_FLOAT_COORDINATES" />
 					<Add directory="../VST3 SDK" />

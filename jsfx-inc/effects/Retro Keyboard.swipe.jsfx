@@ -1,0 +1,75 @@
+desc: Simple Retro Keyboard
+
+EffectName: Geep Retro Keyboard
+VendorString: Geep
+VendorVersion: 1000
+UniqueId: 0
+InstallPath: C:\Program Files\VST\SWIPE\
+
+// SWIPE interface has not been added yet.
+// import swipe.jsfx-inc
+
+slider1:8<1,16,1>Voices
+slider4:42<0,48,0.5>Attack
+slider5:16<0,48,0.5>Release
+
+slider8:1<0,1,0.01>Base Sine Level:
+slider9:0<0,4,0.01>Phase Offset:
+
+slider10:1<0,1,0.01>Sine Wave Level
+slider11:0<0,4,0.01>Phase Offset:
+
+slider12:0.35<0,1,0.01>Square Wave Level
+slider13:0<0,4,0.01>Phase Offset:
+
+slider14:0.5<0,1,0.01>Saw Wave Level
+
+slider60:0<-12,12,0.5>Output (dB)
+
+@init
+pi2 = $pi * 2;
+fn = 4;
+
+@slider
+
+(i = floor(slider1)) != voices ?
+(
+  voices = i;
+  vid = 0;  
+);
+
+attack = (2 ^ (slider4 / 6)) / srate;
+release = 1 - ((2 ^ (slider5 / 6)) / srate);
+output = 2 ^ (slider60 / 6);
+
+@sample
+
+function wave(x) 
+(
+  (sin(x + slider9) * slider8) *
+  (sin(x + slider11) * slider10 + (1 - slider10)) *
+  (sign(sin(x + slider13)) * slider12 + (1 - slider12)) *
+  ((x / pi2) * slider14 + (1 - slider14));
+);
+
+while(midirecv(offs, msg1, msg23))
+(
+  (msg1 & $xf0) == $x90 ? (
+    vid[0] = vid[3] = 0;
+    vid[1] = (msg23 >> 8) / 256;
+    vid[2] = (2 ^ ((msg23 & $x7F) / 12)) * $pi / 1790; // Tuned by a bad ear. :-)
+    (vid -= fn) < 0 ? vid += voices * fn;
+  );
+  midisend(offs, msg1, msg23);
+);
+
+out = 0;
+i = voices * fn;
+while((i -= fn) >= 0)
+(
+  i[0] += (((i[1] *= release) - i[0]) * attack);
+  out += i[0] * wave(i[3]);
+  (i[3] += i[2]) > pi2 ? i[3] -= pi2;
+);
+
+spl0 = spl1 = out * output;

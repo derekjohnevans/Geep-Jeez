@@ -31,8 +31,9 @@ unit Jes2CppParserFunctions;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppFunction, Jes2CppFunctionIdentifiers, Jes2CppIdentifier, Jes2CppIdentString,
-  Jes2CppParserLoops, Jes2CppStrings, Jes2CppTranslate, StrUtils, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppFunction, Jes2CppFunctionIdentifiers,
+  Jes2CppIdentifier, Jes2CppIdentString,
+  Jes2CppParserLoops, Jes2CppStrings, Jes2CppTranslate, Math, StrUtils, SysUtils;
 
 type
 
@@ -44,7 +45,8 @@ type
     function ParseFunctionCallExpressions: TArrayOfString;
   strict private
     procedure ParseFunctionDefine;
-    procedure ParseVariableDefines(const AIdentifiers: CJes2CppFunctionIdentifiers; const ACanHaveRef: Boolean);
+    procedure ParseVariableDefines(const AIdentifiers: CJes2CppFunctionIdentifiers;
+      const ACanHaveRef: Boolean);
   protected
     function ParseElement(const AIsExpected: Boolean): String; override;
     function ParseExpression(const AIsExpected: Boolean): String; override;
@@ -55,7 +57,8 @@ type
 
 implementation
 
-procedure CJes2CppParserFunctions.ParseVariableDefines(const AIdentifiers: CJes2CppFunctionIdentifiers; const ACanHaveRef: Boolean);
+procedure CJes2CppParserFunctions.ParseVariableDefines(
+  const AIdentifiers: CJes2CppFunctionIdentifiers; const ACanHaveRef: Boolean);
 var
   LIdent: TIdentString;
   LDataType: String;
@@ -67,8 +70,9 @@ begin
   begin
     if LIsParams then
     begin
-      LDataType := ParseExtension;
+      LDataType := ParseCppExtension;
     end else begin
+      // TODO: Should we be setting a default value here?
       LDataType := EmptyStr;
     end;
     if LIsParams and IsToken(GsEelVariadic) then
@@ -84,12 +88,18 @@ begin
     begin
       LIdent += PullToken;
     end;
-    LogAssert(not AnsiMatchText(J2C_IdentClean(LIdent), GaEelKeywords), SMsgKeywordsCantBeUsedAsIdentNames);
-    LogAssert(not FCurrentFunction.Globals.ComponentExists(LIdent), Format(SMsgAlreadyDefinedAsGlobal1, [J2C_IdentClean(LIdent)]));
-    LogAssert(not FCurrentFunction.Instances.ExistsIdent(LIdent, Self), Format(SMsgAlreadyDefinedAsInstance1, [J2C_IdentClean(LIdent)]));
-    LogAssert(not FCurrentFunction.Locals.ExistsIdent(LIdent, Self), Format(SMsgAlreadyDefinedAsLocal1, [J2C_IdentClean(LIdent)]));
-    LogAssert(not FCurrentFunction.Params.ExistsIdent(LIdent, Self), Format(SMsgAlreadyDefinedAsParameter1, [J2C_IdentClean(LIdent)]));
-    LogAssert(not FCurrentFunction.Statics.ExistsIdent(LIdent, Self), Format(SMsgAlreadyDefinedAsStatic1, [J2C_IdentClean(LIdent)]));
+    LogAssert(not AnsiMatchText(GIdentString.Clean(LIdent), GaEelKeywords),
+      SMsgKeywordsCantBeUsedAsIdentNames);
+    LogAssert(not FCurrentFunction.Globals.ComponentExists(LIdent),
+      Format(SMsgAlreadyDefinedAsGlobal1, [GIdentString.Clean(LIdent)]));
+    LogAssert(not FCurrentFunction.Instances.ExistsIdent(LIdent, Self),
+      Format(SMsgAlreadyDefinedAsInstance1, [GIdentString.Clean(LIdent)]));
+    LogAssert(not FCurrentFunction.Locals.ExistsIdent(LIdent, Self),
+      Format(SMsgAlreadyDefinedAsLocal1, [GIdentString.Clean(LIdent)]));
+    LogAssert(not FCurrentFunction.Params.ExistsIdent(LIdent, Self),
+      Format(SMsgAlreadyDefinedAsParameter1, [GIdentString.Clean(LIdent)]));
+    LogAssert(not FCurrentFunction.Statics.ExistsIdent(LIdent, Self),
+      Format(SMsgAlreadyDefinedAsStatic1, [GIdentString.Clean(LIdent)]));
 
     AIdentifiers.CreateComponent(LIdent).DataType := LDataType;
 
@@ -103,19 +113,21 @@ end;
 
 procedure CJes2CppParserFunctions.ParseFunctionDefine;
 var
-  LDataType: String;
+  LDataType, LComment: String;
 begin
   ExpectToken(GsEelFunction);
   LogAssert(not Assigned(FCurrentFunction), SMsgFunctionDefinedInsideFunction);
-  LDataType := ParseExtension;
-  FCurrentFunction := Functions.CreateComponent(PullIdentFunctionCall);
-  FCurrentFunction.Comment := CurrentComment;
-  FCurrentFunction.References.CreateReference(FileSource, FileCaretY);
-  FCurrentFunction.ForceGlobals := FForceGlobals;
-  FCurrentFunction.DataType := LDataType;
+  LComment := CurrentComment;
+  LDataType := ParseCppExtension;
+  FCurrentFunction := Functions.CreateComponent(PullIdentFunction);
   try
+    FCurrentFunction.Comment := LComment;
+    FCurrentFunction.References.CreateReference(FileSource, FileCaretY);
+    FCurrentFunction.ForceGlobals := FForceGlobals;
+    FCurrentFunction.DataType := LDataType;
     ParseVariableDefines(FCurrentFunction.Params, True);
-    LogAssert(Functions.FindFunction(FCurrentFunction.Name, FCurrentFunction.Params.ComponentCount) = FCurrentFunction,
+    LogAssert(Functions.FindFunction(FCurrentFunction.Name,
+      FCurrentFunction.Params.ComponentCount) = FCurrentFunction,
       Format(SMsgFunctionasDuplicateOverloads1, [FCurrentFunction.Name]));
     repeat
       if IsTokenThenPull(GsEelLocal) then
@@ -127,7 +139,6 @@ begin
       end else if IsTokenThenPull(GsEelInstance) then
       begin
         ParseVariableDefines(FCurrentFunction.Instances, False);
-        FCurrentFunction.InstancesAll.CopyFrom(FCurrentFunction.Instances);
       end else if IsTokenThenPull(GsEelGlobal) or IsTokenThenPull(GsEelGlobals) then
       begin
         ParseVariableDefines(FCurrentFunction.Globals, True);
@@ -136,6 +147,7 @@ begin
         Break;
       end;
     until False;
+    FCurrentFunction.InstancesAll.CopyFrom(FCurrentFunction.Instances);
     if IsTokenThenPull(GsEelExtern) then
     begin
       FCurrentFunction.IdentType := itExternal;
@@ -168,17 +180,17 @@ end;
 
 function CJes2CppParserFunctions.ParseFunctionCallExpressions: TArrayOfString;
 begin
-  SetLength(Result.Items, M_ZERO);
-  FParameterAssignmentCount := M_ZERO;
+  SetLength(Result.Items, ZeroValue);
+  FParameterAssignmentCount := ZeroValue;
   while not IsToken(CharClosingParenthesis) do
   begin
-    if Result.Count > M_ZERO then
+    if Result.Count > ZeroValue then
     begin
       ExpectToken(CharComma);
     end;
     Result.Append(ParseExpression(True));
   end;
-  if (Result.Count > 1) and (FParameterAssignmentCount > M_ZERO) then
+  if (Result.Count > 1) and (FParameterAssignmentCount > ZeroValue) then
   begin
     LogException(SMsgAssignmentsInFunctionCall);
   end;
@@ -187,80 +199,101 @@ end;
 function CJes2CppParserFunctions.ParseFunctionCall: String;
 var
   LIndex: Integer;
-  LIdent, LFunctName, LNameSpace: TIdentString;
+  LIdent, LFunctName, LNameSpace, LThisSpace: TIdentString;
   LExpression: String;
   LExpressions: TArrayOfString;
   LFunction: CJes2CppFunction;
   LComponent: TComponent;
 begin
-  if IsToken(GsEelWhile) then
+  LIdent := PullIdentFunction;
+  ExpectToken(CharOpeningParenthesis);
+  // Check to see if function name is defined as an instance. In which case, treat the function
+  // call as this.ident
+  if Assigned(FCurrentFunction) and FCurrentFunction.Instances.IsNameSpaceMatch(
+    LIdent + CharDot) then
   begin
-    Result := ParseWhile;
-  end else if IsToken(GsEelLoop) then
-  begin
-    Result := ParseLoop;
-  end else begin
-    LIdent := PullIdentFunctionCall;
-    ExpectToken(CharOpeningParenthesis);
-    if Assigned(FCurrentFunction) and FCurrentFunction.Instances.IsNameSpaceMatch(LIdent + CharDot) then
-    begin
-      LIdent := GsEelSpaceThis + LIdent;
-    end;
-    if AnsiMatchText(LIdent, GaEelFunctionsMidi) and not IsJes2CppInc then
-    begin
-      Description.FIsSynth := True;
-    end;
-    LExpressions := ParseFunctionCallExpressions;
-    LFunction := Functions.FindOverload(LIdent, LNameSpace, LFunctName, LExpressions.Count);
-    LogAssert(Assigned(LFunction), Format(SMsgUnableToFindFunction1, [LIdent]));
-    LogWarningCaseCheck(LFunctName, LFunction.Name);
-    if not SameText(LNameSpace, LFunction.DefaultNameSpace) and not J2C_IdentIsNameSpaceThis(LNameSpace) and
-      Assigned(FCurrentFunction) and FCurrentFunction.HasGlobals and not FCurrentFunction.Globals.ComponentExistsMaskDest(
-      LIdent, WarningsAsErrors) then
-    begin
-      LogException(Format(SMsgNamespaceNotAccessible1, [J2C_IdentClean(LNameSpace)]));
-    end;
-    LFunction.References.CreateReference(FileSource, FileCaretY);
-    if LFunction.IdentType = itInternal then
-    begin
-      if Assigned(FCurrentFunction) and J2C_IdentIsNameSpaceThis(LNameSpace) then
-      begin
-        for LComponent in LFunction.InstancesAll do
-        begin
-          FCurrentFunction.AppendInstance(Copy(LNameSpace, Length(GsEelSpaceThis) + 1, MaxInt) + LComponent.Name, Self);
-        end;
-      end else begin
-        for LComponent in LFunction.InstancesAll do
-        begin
-          FindOrCreateVariable(LNameSpace + LComponent.Name, FileSource, FileCaretY, CurrentComment, False);
-        end;
-      end;
-    end;
-    Result := EmptyStr;
-    for LExpression in LExpressions.Items do
-    begin
-      J2C_StringAppendCSV(Result, LExpression);
-    end;
-    for LComponent in LFunction.InstancesAll do
-    begin
-      if LComponent.Name = EmptyStr then
-      begin
-        if J2C_IdentIsSample(LNameSpace, LIndex) then
-        begin
-          J2C_StringAppendCSV(Result, Format(GsCppSamples1, [LIndex]));
-        end else if J2C_IdentIsSlider(LNameSpace, LIndex) then
-        begin
-          J2C_StringAppendCSV(Result, Format(GsCppSliders1, [LIndex]));
-        end else begin
-          J2C_StringAppendCSV(Result, CppEncodeVariable(LNameSpace));
-        end;
-      end else begin
-        J2C_StringAppendCSV(Result, CppEncodeVariable(LNameSpace + LComponent.Name));
-      end;
-    end;
-    Result := CppEncodeFunction(LFunctName) + CharOpeningParenthesis + Result + CharClosingParenthesis;
-    ExpectToken(CharClosingParenthesis);
+    LIdent := GsEelSpaceThis + LIdent;
   end;
+  // Check to see if function is a midi function. In which case, we indicate that the plugin requires
+  // synth support.
+  if AnsiMatchText(LIdent, GaEelFunctionsMidi) and not IsJes2CppInc then
+  begin
+    Description.FIsSynth := True;
+  end;
+  // Parse the function call expressions.
+  LExpressions := ParseFunctionCallExpressions;
+  // We can now search for the function overload. We require the number of expressions before we can
+  // find the actual function called.
+  LFunction := Functions.FindOverload(LIdent, LNameSpace, LFunctName, LExpressions.Count);
+  // Assert that we found a function overload.
+  LogAssert(Assigned(LFunction), Format(SMsgUnableToFindFunction1, [LIdent]));
+  // Warn if the found function name is not the same case.
+  LogWarningCaseCheck(LFunctName, LFunction.Name);
+  // Handle global filtering. Im unsure how I ever wrote this line of code.
+  if not SameText(LNameSpace, LFunction.DefaultNameSpace) and not
+    GIdentString.IsNameSpaceThis(LNameSpace) and Assigned(FCurrentFunction) and
+    FCurrentFunction.HasGlobals and not FCurrentFunction.Globals.ComponentExistsMaskDest(
+    LIdent, WarningsAsErrors) then
+  begin
+    LogException(Format(SMsgNamespaceNotAccessible1, [GIdentString.Clean(LNameSpace)]));
+  end;
+  // Create a new source file reference for the function.
+  LFunction.References.CreateReference(FileSource, FileCaretY);
+  if LFunction.IdentType = itInternal then
+  begin
+    if Assigned(FCurrentFunction) and GIdentString.IsNameSpaceThis(LNameSpace) then
+    begin
+      LThisSpace := Copy(LNameSpace, Length(GsEelSpaceThis) + 1, MaxInt);
+      // The following handles a strange quirk in Jesusonic, which is difficult to explain.
+      if GIdentString.IsNameSpace(LThisSpace, FCurrentFunction.GetNameSpace) then
+      begin
+        //LogHint('Expermental namespace case 1');
+        LThisSpace := Copy(LThisSpace, Length(FCurrentFunction.GetNameSpace) + 1, MaxInt);
+        LNameSpace := GsEelSpaceThis + LThisSpace;
+      end else if GIdentString.IsNameSpace(FCurrentFunction.GetNameSpace, LThisSpace) then
+      begin
+        LogHint('Expermental namespace case 2');
+        Beep;
+        LThisSpace := EmptyStr;
+        LNameSpace := GsEelSpaceThis;
+      end;
+      // Add the instances of the called function to the caller function.
+      for LComponent in LFunction.InstancesAll do
+      begin
+        FCurrentFunction.AppendInstance(LThisSpace + LComponent.Name, Self);
+      end;
+    end else begin
+      for LComponent in LFunction.InstancesAll do
+      begin
+        FindOrCreateVariable(LNameSpace + LComponent.Name, FileSource, FileCaretY,
+          CurrentComment, False);
+      end;
+    end;
+  end;
+  Result := EmptyStr;
+  for LExpression in LExpressions.Items do
+  begin
+    GString.AppendCSV(Result, LExpression);
+  end;
+  for LComponent in LFunction.InstancesAll do
+  begin
+    if LComponent.Name = EmptyStr then
+    begin
+      if GIdentString.IsSample(LNameSpace, LIndex) then
+      begin
+        GString.AppendCSV(Result, Format(GsCppSamples1, [LIndex]));
+      end else if GIdentString.IsSlider(LNameSpace, LIndex) then
+      begin
+        GString.AppendCSV(Result, Format(GsCppSliders1, [LIndex]));
+      end else begin
+        GString.AppendCSV(Result, GCpp.Encode.NameVariable(LNameSpace));
+      end;
+    end else begin
+      GString.AppendCSV(Result, GCpp.Encode.NameVariable(LNameSpace + LComponent.Name));
+    end;
+  end;
+  Result := LFunction.CppFunctionName + CharOpeningParenthesis + Result + CharClosingParenthesis;
+  ExpectToken(CharClosingParenthesis);
 end;
 
 function CJes2CppParserFunctions.ParseElement(const AIsExpected: Boolean): String;
@@ -271,7 +304,7 @@ begin
   begin
     if IsStringHead then
     begin
-      Result := ParseRawString;
+      Result := ParseCppString;
     end else begin
       Result := Format(GsCppFunct2, [GsFnNot, ParseElement(True)]);
     end;
@@ -285,13 +318,21 @@ begin
       Result := ParseLiteralNumber;
     end else if IsToken(CharHash) then
     begin
-      Result := ParseHashSpecial;
+      Result := ParseHashVariable;
     end else if IsVariable then
     begin
       Result := ParseVariable;
     end else if IsFunctionCall then
     begin
-      Result := ParseFunctionCall;
+      if IsToken(GsEelWhile) then
+      begin
+        Result := ParseWhile;
+      end else if IsToken(GsEelLoop) then
+      begin
+        Result := ParseLoop;
+      end else begin
+        Result := ParseFunctionCall;
+      end;
     end else if IsStringHead then
     begin
       Result := ParseLiteralString;
@@ -313,8 +354,9 @@ begin
   Result := ParseOperator(False);
   if IsTokenThenPull(CharQuestionMark) then
   begin
-    Result := CharOpeningParenthesis + Format(GsCppFunct2, [GsFnIf, Result]) + CharSpace + CharQuestionMark +
-      CharSpace + ParseExpression(True) + CharSpace + CharColon + CharSpace;
+    Result := CharOpeningParenthesis + Format(GsCppFunct2, [GsFnIf, Result]) +
+      CharSpace + CharQuestionMark + CharSpace + ParseExpression(True) +
+      CharSpace + CharColon + CharSpace;
     if IsTokenThenPull(CharColon) then
     begin
       Result += ParseExpression(True);

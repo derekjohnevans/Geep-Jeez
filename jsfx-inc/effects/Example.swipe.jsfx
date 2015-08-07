@@ -1,0 +1,139 @@
+// Author: Derek John Evans
+// License: LGPL - http://www.gnu.org/licenses/gpl.html
+
+desc: SWIPE GUI Example/Test
+
+EffectName: SWIPE Example
+VendorString: Geep
+VendorVersion: 1000
+UniqueId: 0
+InstallPath: C:\Program Files\VST\SWIPE\
+
+import swipe.jsfx-inc
+
+@init
+
+Knob.1.TWidget(0, -24, 3, "Knob1", "dB");
+Knob.2.TWidget(0, 0, 100, "Knob2", "%");
+Knob.3.TWidget(0, 1, 1000, "Knob3", "ms");
+Knob.4.TWidget(0, 1, 1000, "Knob4", "ms");
+Knob.5.TWidget(0, 1, 1000, "Knob5", "ms");
+Knob.6.TWidget(0, 1, 1000, "Knob6", "ms");
+Knob.7.TWidget(0, 1, 1000, "Knob7", "ms");
+Knob.8.TWidget(0, 1, 1000, "Knob8", "ms");
+Knob.9.TWidget(0, -100, 100, "Knob9", "%");
+Knob.10.TWidget(0, -100, 100, "Knob10", "%");
+Knob.11.TWidget(0, -100, 100, "Knob11", "%");
+Knob.12.TWidget(0, -100, 100, "Knob12", "%");
+
+ScrollBar.0.TWidget(1, 0, 1000, "Slider #1", "ms");
+ScrollBar.1.TLimits(0, 100);
+ScrollBar.2.TLimits(0, 100);
+ScrollBar.3.TLimits(-100, 100);
+ScrollBar.4.TLimits(-100, 100);
+ScrollBar.5.TLimits(-100, 100);
+ScrollBar.6.TLimits(-100, 100);    
+ScrollBar.7.TLimits(-100, 100);  
+ScrollBar.8.TLimits(-100, 100); 
+
+Button2.TWidget(0, 0, 1, "Speed", "");
+
+ListBox.Strings.LoadFromFile("data/txt/readme.jsfx-inc");
+DropDown.Menu.Strings.SetCommaText("Apple,Orange,Pear,Grape");
+ComboBox.1.Menu.Strings.SetCommaText("(Select),Stereo,Mono,M/S,None");
+ComboBox.2.Menu.Strings.SetCommaText("(Select),0dB,3dB,6dB,9dB,12dB");
+ComboBox.3.Menu.Strings.SetCommaText("(Select),Left,Middle,Right");
+
+@gfx 800 450
+
+SWIPE(700, 400) ?
+(
+  Effect.TEffect("SWIPE Example", "License LGPL / Copyright (C) 2015 Derek J. Evans");
+ 
+  PageControl.TPageControl_Draw(20, 40, gfx_w - 20, gfx_h - 40);
+  PageControl.TPageControl_DrawTab(0, "Sliders");
+  PageControl.TPageControl_DrawTab(1, "Tiggers");
+  PageControl.TPageControl_DrawTab(2, "Menus");  
+  PageControl.TPageControl_DrawTab(3, "Knobs");  
+
+  page = PageControl.TWidget_GetValue();
+  
+  page == 0 ? (
+    x = 40;
+    y = 70; yy = 26; h = 20;
+
+    ScrollBar.0.TSliderHorz_Draw(x, y, gfx_w - x, y + h); y += yy;
+    ScrollBar.1.TScrollBarHorz_Draw1(x, y, gfx_w - x, y + h); y += yy;
+    ScrollBar.2.TScrollBarHorz_Draw2(x, y, gfx_w - x, y + h); y += yy;
+    ScrollBar.8.TScrollBarHorz_Draw3(x, y, gfx_w - x, y + h); y += yy;
+    
+    xx = 30; w = 18;
+    ScrollBar.3.TScrollBarVert_Draw1(x, y, x + w, gfx_h - 60); x += xx;
+    ScrollBar.4.TScrollBarVert_Draw2(x, y, x + w, gfx_h - 60); x += xx;
+    ScrollBar.5.TScrollBarVert_Draw3(x, y, x + w, gfx_h - 60); x += xx;    
+    ScrollBar.6.TScrollBarVert_Draw4(x, y, x + w, gfx_h - 60); x += xx;    
+    ScrollBar.7.TScrollBarVert_Draw5(x, y, x + w, gfx_h - 60); x += xx;   
+
+    gfx_setfont(1);
+    
+    ListBox.TListBox_Draw(x, y, gfx_w - 40, gfx_h - 60);
+  ) :
+  page == 1 ? (
+    x = 50; y = 100; xx = 80; yy = 20;
+    Button1.TButton_Draw(x, y, x + xx, y + yy, "Default"); y += yy + 3;
+    Button2.TSpeedButton_Draw(x, y, x + xx, y + yy); y += yy + 3;
+    Button3.TToggleButton_Draw1(x, y, x + xx, y + yy, "Toggle"); y += yy + 3;
+    x = 200; xx = 15; y = 120; yy = 15;
+    GfxDrawGroupBox(x - 20, y - 30, x + 200, y + 70, "Example CheckBox's");
+    CheckBox.1.TCheckBox_Draw1(x, y, x + xx, y + yy, "CheckBox"); y += yy + 3;
+    CheckBox.2.TCheckBox_Draw2(x, y, x + xx, y + yy, "TickBox"); y += yy + 3;
+    CheckBox.3.TCheckBox_Draw3(x, y, x + xx, y + yy, "DotBox"); y += yy + 3;
+  ) :
+  page == 2 ? ( 
+    x = 180; xx = 200; y = 150;
+    // NOTE: These must be draw in reverse so the popup is always on top.
+    ComboBox.1.TComboBox_Draw(x, y, x + xx, y + 20, "Stereo"); y -= 28;     
+    ComboBox.2.TComboBox_Draw(x, y, x + xx, y + 20, "Reduction"); y -= 28;
+    ComboBox.3.TComboBox_Draw(x, y, x + xx, y + 20, "Channel"); y -= 28;    
+    DropDown.TButtonMenu_Draw(30, 80, 100, 100, "Fruits");     
+  );
+  page == 3 ? (
+    x = 30; xx = 90; 
+    y = 80; yy = 120;
+    
+    // SWIPE no longer loads a bunch of knobs, so you must load them yourself. Its easy.
+
+    knobs.TObject() ? (
+      knobs.0.TImage_LoadFromFile("data/anomaly/led.png");
+      knobs.1.TImage_LoadFromFile("data/anomaly/knob1.png");
+      knobs.2.TImage_LoadFromFile("data/anomaly/knob2.png");
+      knobs.3.TImage_LoadFromFile("data/anomaly/knob3.png");
+      knobs.4.TImage_LoadFromFile("data/axonlib/knob1.png");
+      knobs.5.TImage_LoadFromFile("data/axonlib/knob2.png");
+      knobs.6.TImage_LoadFromFile("data/knobRot/knob1.png");
+      knobs.7.TImage_LoadFromFile("data/knobRot/blackgear.png");
+      knobs.8.TImage_LoadFromFile("data/knobRot/blueplastic.png");
+      knobs.9.TImage_LoadFromFile("data/knobRot/circle1.png");
+      knobs.10.TImage_LoadFromFile("data/knobRot/circle2.png");
+      knobs.11.TImage_LoadFromFile("data/knobRot/circle3.png");
+      knobs.12.TImage_LoadFromFile("data/misc/knob.png");         
+    );
+
+    Knob.1.TKnob_Draw(x, y, x + xx, y + yy, knobs.1); x += xx;
+    Knob.2.TKnob_Draw(x, y, x + xx, y + yy, knobs.2); x += xx;
+    Knob.3.TKnob_Draw(x, y, x + xx, y + yy, knobs.3); x += xx;
+    Knob.4.TKnob_Draw(x, y, x + xx, y + yy, knobs.4); x += xx;
+    Knob.5.TKnob_Draw(x, y, x + xx, y + yy, knobs.5); x += xx;    
+    Knob.6.TKnob_Draw(x, y, x + xx, y + yy, knobs.6); x += xx;
+    x = 30; xx = 90; y += yy + 30;      
+    Knob.7.TKnob_Draw(x, y, x + xx, y + yy, knobs.7); x += xx;         
+    Knob.8.TKnob_Draw(x, y, x + xx, y + yy, knobs.8); x += xx;      
+    Knob.9.TKnob_Draw(x, y, x + xx, y + yy, knobs.9); x += xx;
+    Knob.10.TKnob_Draw(x, y, x + xx, y + yy, knobs.10); x += xx;
+    Knob.11.TKnob_Draw(x, y, x + xx, y + yy, knobs.11); x += xx;        
+    Knob.12.TKnob_Draw(x, y, x + xx, y + yy, knobs.12); x += xx;    
+  );
+  Effect.TEffect_Done();
+);
+
+

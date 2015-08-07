@@ -1,0 +1,42 @@
+
+@init
+
+/**
+    This class contains some helpful static methods for dealing with decibel values.
+*/
+
+defaultMinusInfinitydB = -100;
+
+/** Converts a dBFS value to its equivalent gain level.
+
+    A gain of 1.0 = 0 dB, and lower gains map onto negative decibel values. Any
+    decibel value lower than minusInfinityDb will return a gain of 0.
+*/
+function Decibels.decibelsToGain(decibels, minusInfinityDb) global()
+(
+  decibels > minusInfinityDb ? 10 ^ (decibels * 0.05) : 0; // 0.05 = 1/20
+);
+
+function Decibels.decibelsToGain(decibels) global(defaultMinusInfinitydB)
+(
+  this.Decibels.decibelsToGain(decibels, defaultMinusInfinitydB);
+);
+
+/** Converts a gain level into a dBFS value.
+
+    A gain of 1.0 = 0 dB, and lower gains map onto negative decibel values.
+    If the gain is 0 (or negative), then the method will return the value
+    provided as minusInfinityDb.
+*/
+function Decibels.gainToDecibels(gain, minusInfinityDb) global()
+(
+  gain > 0 ? max(minusInfinityDb, log10(gain) * 20) : minusInfinityDb;
+);
+
+function Decibels.gainToDecibels(gain) global(defaultMinusInfinitydB)
+(
+  this.Decibels.gainToDecibels(gain, defaultMinusInfinitydB);
+);
+
+
+

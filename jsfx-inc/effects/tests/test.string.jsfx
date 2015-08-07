@@ -1,0 +1,27 @@
+import test.jsfx-inc
+
+@init
+
+clrscr();
+
+H1("C++ Strings in Jesusonic");
+
+puts("Note: This code is still experimental.\n");
+
+function PrintString(_str) global() instance(str)
+(
+  str = _str; // Need to copy param to a instance.
+  printf("\"%s\" Length: %d\n", str, str.length());
+);
+
+a.string("This is a C++ style string.");
+b.string("String B");
+b = sfree(b);
+c.string("String C");
+b.string("String B");
+
+PrintString(a);
+PrintString(a.upper());
+PrintString(a.lower());
+
+

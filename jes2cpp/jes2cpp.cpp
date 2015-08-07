@@ -21,7 +21,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 std::string FileNameResolve(const std::string& AFileName)
 {
-  return GetCurrentModulePath() + ExcludeLeadingPathDelimiter(AFileName);
+  return ProgramDirectory() + ExcludeLeadingPathDelimiter(AFileName);
 }
 
 // Scans a file path and return a vector of filenames. Excludes any filename starting with '.'
@@ -63,7 +63,7 @@ void GetFileNames(std::string APath, std::vector<std::string>& AFileNames)
 // Define some common Delphi/FreePascal style helper functions.
 // Note: Some of these will be removed if found to be not used.
 
-std::string GetCurrentModulePath()
+std::string ProgramDirectory()
 {
   return ExtractFilePath(GetModuleName((VEST_HANDLE) hInstance));
 }
@@ -148,7 +148,8 @@ std::string GetModuleName(VEST_HANDLE AModule)
 }
 #endif
 
-// This is only used for debugging.
+// This is only used for debugging. If your VST effect beeps, then
+// check the log.
 void GeepError(const std::string& AString)
 {
   FILE* LFile = fopen("\\geep.log.txt", "a");
@@ -160,25 +161,6 @@ void GeepError(const std::string& AString)
 #endif
   }
 }
-
-// These are from a failed attempt to code serialization. The are here for reference
-// for when I make my next attempt :-)
-/*
-void CJes2CppStream::SaveToChunk(HVEST AVeST)
-{
-  VeST_SetChunk(AVeST, &FBuffer[0], FBuffer.size() * sizeof(float), false);
-}
-
-void CJes2CppStream::LoadFromChunk(HVEST AVeST)
-{
-  PVOID LData;
-  FBuffer.resize(VeST_GetChunk(AVeST, &LData, false) / sizeof(float));
-  for (int LIndex = 0; LIndex < (int)FBuffer.size(); LIndex++)
-  {
-    FBuffer[LIndex] = ((float*)LData)[LIndex];
-  }
-}
-*/
 
 /*
 ** NOTE: Some of the following functions are based on caller functions from Cockos WDL.

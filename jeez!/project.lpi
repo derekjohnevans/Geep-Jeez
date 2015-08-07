@@ -18,15 +18,16 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="1"/>
-      <BuildNr Value="112"/>
-      <StringTable Comments="Jesusonic Editor + Jes2Cpp Transpiler" CompanyName="Geep Software" FileDescription="The Easy Way to Create Audio Plugins" InternalName="Geep Jeez!" LegalCopyright="Copyright (C) 2015 Derek John Evans" LegalTrademarks="Copyright (C) 2015 Derek John Evans" OriginalFilename="Jeez!.exe" ProductName="Geep Jeez!" ProductVersion="v2.1"/>
+      <MinorVersionNr Value="5"/>
+      <BuildNr Value="147"/>
+      <StringTable Comments="Jesusonic Editor + Jes2Cpp Transpiler" CompanyName="Geep Software" FileDescription="The Easy Way to Create Audio Plugins" InternalName="Geep Jeez!" LegalCopyright="Copyright (C) 2015 Derek John Evans" LegalTrademarks="Copyright (C) 2015 Derek John Evans" OriginalFilename="Jeez!.exe" ProductName="Geep Jeez!" ProductVersion="v2.5"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
+      <DestinationDirectory Value="C:\Documents and Settings\Admin\Desktop\New Folder"/>
     </PublishOptions>
     <RunParams>
       <local>
@@ -47,7 +48,7 @@
         <PackageName Value="LCL"/>
       </Item4>
     </RequiredPackages>
-    <Units Count="51">
+    <Units Count="53">
       <Unit0>
         <Filename Value="project.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -71,14 +72,17 @@
       <Unit3>
         <Filename Value="utils\jeezutils.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="JeezUtils"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppconstants.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppConstants"/>
       </Unit4>
       <Unit5>
         <Filename Value="..\jes2cpp\j2c.base\jes2cpputils.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppUtils"/>
       </Unit5>
       <Unit6>
         <Filename Value="..\jes2cpp\jes2cpp.pas"/>
@@ -103,6 +107,7 @@
       <Unit10>
         <Filename Value="..\jes2cpp\j2c.components\jes2cpploop.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppLoop"/>
       </Unit10>
       <Unit11>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppidentifier.pas"/>
@@ -115,6 +120,7 @@
         <ComponentName Value="JeezBuild"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <UnitName Value="UJeezBuild"/>
       </Unit12>
       <Unit13>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppreference.pas"/>
@@ -134,10 +140,12 @@
       <Unit16>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppplatform.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppPlatform"/>
       </Unit16>
       <Unit17>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppidentstring.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppIdentString"/>
       </Unit17>
       <Unit18>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppmessagelog.pas"/>
@@ -180,6 +188,7 @@
         <ComponentName Value="JeezData"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
+        <UnitName Value="UJeezData"/>
       </Unit25>
       <Unit26>
         <Filename Value="forms\ujeezproperties.pas"/>
@@ -187,6 +196,7 @@
         <ComponentName Value="JeezProperties"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <UnitName Value="UJeezProperties"/>
       </Unit26>
       <Unit27>
         <Filename Value="forms\ujeezsplash.pas"/>
@@ -194,13 +204,15 @@
         <ComponentName Value="JeezSplash"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <UnitName Value="UJeezSplash"/>
       </Unit27>
       <Unit28>
         <Filename Value="forms\ujeezmessages.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="JeezMessages"/>
+        <ComponentName Value="JeezConsole"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
+        <UnitName Value="UJeezMessages"/>
       </Unit28>
       <Unit29>
         <Filename Value="forms\ujeezide.pas"/>
@@ -213,34 +225,42 @@
       <Unit30>
         <Filename Value="utils\jeezresources.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="JeezResources"/>
       </Unit30>
       <Unit31>
         <Filename Value="utils\jeezinifile.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="JeezIniFile"/>
       </Unit31>
       <Unit32>
         <Filename Value="utils\jeeztreeview.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="JeezTreeView"/>
       </Unit32>
       <Unit33>
         <Filename Value="utils\jeezsynedit.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="JeezSynEdit"/>
       </Unit33>
       <Unit34>
         <Filename Value="..\jes2cpp\j2c.base\jes2cpptranslate.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppTranslate"/>
       </Unit34>
       <Unit35>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppprocess.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppProcess"/>
       </Unit35>
       <Unit36>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppfilenames.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppFileNames"/>
       </Unit36>
       <Unit37>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppeel.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppEel"/>
       </Unit37>
       <Unit38>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppparameter.pas"/>
@@ -260,18 +280,22 @@
       <Unit41>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppmoduleimporter.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppModuleImporter"/>
       </Unit41>
       <Unit42>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppstrings.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppStrings"/>
       </Unit42>
       <Unit43>
         <Filename Value="utils\jeezlabels.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="JeezLabels"/>
       </Unit43>
       <Unit44>
         <Filename Value="..\jes2cpp\j2c.base\jes2cppiterate.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppIterate"/>
       </Unit44>
       <Unit45>
         <Filename Value="..\jes2cpp\j2c.parser\jes2cppparserloops.pas"/>
@@ -281,6 +305,7 @@
       <Unit46>
         <Filename Value="..\jes2cpp\j2c.base\jes2cpptoken.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppToken"/>
       </Unit46>
       <Unit47>
         <Filename Value="..\jes2cpp\j2c.components\jes2cppfunctionidentifiers.pas"/>
@@ -300,6 +325,19 @@
         <Filename Value="..\soda\soda_basic.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit50>
+      <Unit51>
+        <Filename Value="..\jes2cpp\j2c.base\jes2cpptextfilecache.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Jes2CppTextFileCache"/>
+      </Unit51>
+      <Unit52>
+        <Filename Value="forms\ujeezabout.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="JeezAbout"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="UJeezAbout"/>
+      </Unit52>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

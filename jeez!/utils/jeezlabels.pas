@@ -72,7 +72,7 @@ begin
         LCaption := LHint;
       end;
       AControl.Hint := LHint;
-      if not NsPlatform.IsWindows9x then
+      if not GPlatform.IsWindows9x then
       begin
         AControl.Color := clInfoBlock;
       end;
@@ -95,7 +95,8 @@ procedure J2C_WinControlCreateLabels(const AWinControl: TWinControl);
 var
   LIndex: Integer;
 begin
-  if (AWinControl is TCustomEdit) or (AWinControl is TDirectoryEdit) or (AWinControl is TCustomComboBox) then
+  if (AWinControl is TCustomEdit) or (AWinControl is TDirectoryEdit) or
+    (AWinControl is TCustomComboBox) then
   begin
     J2C_ControlCreateLabel(AWinControl);
   end;
@@ -109,4 +110,3 @@ begin
 end;
 
 end.
-

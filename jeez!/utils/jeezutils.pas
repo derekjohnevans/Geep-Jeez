@@ -42,13 +42,19 @@ const
 
 type
 
-  Transpile = class(CJes2Cpp)
+  CJeezJes2Cpp = class(CJes2Cpp)
   protected
-    procedure LogMessage(const AMessage: String); override;
-    procedure LoadStringsFrom(const AStrings: TStrings; const AFileName: TFileName); override;
+    function LoadStringsFrom(const AFileName: TFileName): TStrings; override;
+  public
+    constructor Create(AOwner: TComponent); override;
   end;
 
-  Compiling = class(CJes2CppCompiler)
+  CJeezJes2CppLogMessages = class(CJeezJes2Cpp)
+  protected
+    procedure LogMessage(const AMessage: String); override;
+  end;
+
+  CJeezCompiler = class(CJes2CppCompiler)
   strict private
     FLineBreaker: TStrings;
   protected
@@ -58,32 +64,38 @@ type
     destructor Destroy; override;
   end;
 
-  NSJeezCanvas = object
-    class procedure DrawFunctionDefine(const ACanvas: TCanvas; const AX, AY: Integer; AString: String;
-      const AColorFunctions, AColorVariables, AColorSymbols: TColor);
-    class procedure DrawItemBackground(const ACanvas: TCanvas; const ARect: TRect; const ASelected: Boolean);
-    class procedure DrawItem(const ACanvas: TCanvas; const AString: String; const ARect: TRect; const ASelected: Boolean;
-      const AImageList: TCustomImageList; const AImageIndex: Integer);
-    class procedure DrawComboBoxItem(const AComboBox: TComboBox; const AIndex: Integer; const ARect: TRect;
-      const ADrawState: TOwnerDrawState; const AImageList: TImageList);
+  GJeezCanvas = object
+    class procedure DrawFunctionDefine(const ACanvas: TCanvas; const AX, AY: Integer;
+      AString: String; const AColorFunctions, AColorVariables, AColorSymbols: TColor);
+    class procedure DrawItemBackground(const ACanvas: TCanvas; const ARect: TRect;
+      const ASelected: Boolean; const AColor: TColor);
+    class procedure DrawItem(const ACanvas: TCanvas; const AString: String;
+      const ARect: TRect; const ASelected: Boolean; const AImageList: TCustomImageList;
+      const AImageIndex: Integer; const ABGColor, AFGColor: TColor);
+    class procedure DrawComboBoxItem(const AComboBox: TComboBox; const AIndex: Integer;
+      const ARect: TRect; const ADrawState: TOwnerDrawState; const AImageList: TImageList);
   end;
 
 implementation
 
-uses UJeezBuild, UJeezIde, UJeezMessages, UJeezOptions;
+uses UJeezBuild, UJeezData, UJeezIde, UJeezMessages, UJeezOptions;
 
-class procedure NSJeezCanvas.DrawFunctionDefine(const ACanvas: TCanvas; const AX, AY: Integer; AString: String;
+class procedure GJeezCanvas.DrawFunctionDefine(const ACanvas: TCanvas;
+  const AX, AY: Integer; AString: String;
   const AColorFunctions, AColorVariables, AColorSymbols: TColor);
 var
   LPos, LEnd: Integer;
 begin
   with ACanvas do
   begin
+    PenPos := Point(AX, AY);
     LPos := 1;
     LEnd := PosEx(CharOpeningParenthesis, AString, LPos);
-    if LEnd > 0 then
+    if LEnd = ZeroValue then
     begin
-      PenPos := Point(AX, AY);
+      Font.Color := AColorFunctions;
+      TextOut(PenPos.X, PenPos.Y, AString);
+    end else begin
       Font.Color := AColorFunctions;
       TextOut(PenPos.X, PenPos.Y, Copy(AString, LPos, LEnd - LPos));
       Font.Color := AColorSymbols;
@@ -110,25 +122,30 @@ begin
   end;
 end;
 
-class procedure NSJeezCanvas.DrawItemBackground(const ACanvas: TCanvas; const ARect: TRect; const ASelected: Boolean);
+class procedure GJeezCanvas.DrawItemBackground(const ACanvas: TCanvas;
+  const ARect: TRect; const ASelected: Boolean; const AColor: TColor);
 begin
   if ASelected then
   begin
     ACanvas.Pen.Color := JeezOptions.ColorLineFrame.Selected;
     ACanvas.Brush.Color := JeezOptions.ColorLineColor.Selected;
+    ACanvas.Rectangle(ARect);
   end else begin
-    ACanvas.Pen.Color := JeezOptions.ColorBackground.Selected;
-    ACanvas.Brush.Color := JeezOptions.ColorBackground.Selected;
+    ACanvas.Pen.Color := AColor;
+    ACanvas.Brush.Color := AColor;
+    ACanvas.FillRect(ARect);
   end;
-  ACanvas.Rectangle(ARect);
+  ACanvas.Brush.Style := bsClear;
 end;
 
-class procedure NSJeezCanvas.DrawItem(const ACanvas: TCanvas; const AString: String; const ARect: TRect;
-  const ASelected: Boolean; const AImageList: TCustomImageList; const AImageIndex: Integer);
+class procedure GJeezCanvas.DrawItem(const ACanvas: TCanvas; const AString: String;
+  const ARect: TRect; const ASelected: Boolean; const AImageList: TCustomImageList;
+  const AImageIndex: Integer; const ABGColor, AFGColor: TColor);
 begin
-  NSJeezCanvas.DrawItemBackground(ACanvas, ARect, ASelected);
-  ACanvas.Font.Color := JeezOptions.ColorIdentifiers.Selected;
-  ACanvas.TextRect(ARect, 25, (ARect.Top + ARect.Bottom - ACanvas.TextHeight(AString)) div 2, AString);
+  GJeezCanvas.DrawItemBackground(ACanvas, ARect, ASelected, ABGColor);
+
+  DrawFunctionDefine(ACanvas, 25, (ARect.Top + ARect.Bottom - ACanvas.TextHeight(AString)) div 2,
+    AString, AFGColor, JeezOptions.ColorIdentifiers.Selected, JeezOptions.ColorSymbols.Selected);
   if Assigned(AImageList) then
   begin
     AImageList.Draw(ACanvas, 4, ARect.Top + (ARect.Bottom - ARect.Top - AImageList.Height) div 2,
@@ -136,59 +153,109 @@ begin
   end;
 end;
 
-class procedure NSJeezCanvas.DrawComboBoxItem(const AComboBox: TComboBox; const AIndex: Integer; const ARect: TRect;
-  const ADrawState: TOwnerDrawState; const AImageList: TImageList);
+class procedure GJeezCanvas.DrawComboBoxItem(const AComboBox: TComboBox;
+  const AIndex: Integer; const ARect: TRect; const ADrawState: TOwnerDrawState;
+  const AImageList: TImageList);
+var
+  LTreeNode: TTreeNode;
+  LImageIndex: Integer;
+  LFGColor: TColor;
 begin
-  NSJeezCanvas.DrawItem(AComboBox.Canvas, AComboBox.Items[AIndex], ARect, odSelected in ADrawState, AImageList,
-    TTreeNode(AComboBox.Items.Objects[AIndex]).ImageIndex);
+  LTreeNode := AComboBox.Items.Objects[AIndex] as TTreeNode;
+  if Assigned(LTreeNode) then
+  begin
+    LImageIndex := LTreeNode.ImageIndex;
+    if LImageIndex < ZeroValue then
+    begin
+      LImageIndex := GiImageIndexRefInternal;
+    end;
+  end else begin
+    LImageIndex := GiImageIndexRefInternal;
+  end;
+  LFGColor := JeezOptions.GetComboBoxFontColor;
+  if Assigned(LTreeNode.Parent) then
+  begin
+    case LTreeNode.Parent.ImageIndex of
+      GiImageIndexVariablesSystem, GiImageIndexSliders, GiImageIndexSamples: begin
+        LFGColor := JeezOptions.ColorVariables.Selected;
+      end;
+      GiImageIndexFunctionsSystem: begin
+        LFGColor := JeezOptions.ColorFunctions.Selected;
+      end;
+      GiImageIndexFunctionsUser, GiImageIndexVariablesUser: begin
+        LFGColor := JeezOptions.ColorIdentifiers.Selected;
+      end;
+    end;
+  end;
+  GJeezCanvas.DrawItem(AComboBox.Canvas, AComboBox.Items[AIndex], ARect,
+    odSelected in ADrawState, AImageList,
+    LImageIndex, AComboBox.Color, LFGColor);
 end;
 
-procedure Transpile.LogMessage(const AMessage: String);
-begin
-  JeezMessages.LogMessage(ClassName, AMessage);
-end;
-
-procedure Transpile.LoadStringsFrom(const AStrings: TStrings; const AFileName: TFileName);
+function CJeezJes2Cpp.LoadStringsFrom(const AFileName: TFileName): TStrings;
 var
   LIndex: Integer;
 begin
   LIndex := JeezIde.GetPageIndexByFileName(AFileName);
-  if LIndex < 0 then
+  if LIndex >= ZeroValue then
   begin
-    inherited LoadStringsFrom(AStrings, AFileName);
+    Result := JeezIde.GetEditor(LIndex).SynEdit.Lines;
   end else begin
-    AStrings.Assign(JeezIde.GetEditor(LIndex).SynEdit.Lines);
+    Result := inherited LoadStringsFrom(AFileName);
   end;
 end;
 
-constructor Compiling.Create(AOwner: TComponent);
+constructor CJeezJes2Cpp.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  WarningsAsErrors := JeezOptions.EditWarningsAsErrors.Checked;
+  HintsAsErrors := JeezOptions.EditHintsAsErrors.Checked;
+  ForceGlobals := JeezOptions.EditForceGlobals.Checked;
+end;
+
+procedure CJeezJes2CppLogMessages.LogMessage(const AMessage: String);
+begin
+  JeezConsole.LogMessage(SMsgTranspile, AMessage);
+end;
+
+constructor CJeezCompiler.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FLineBreaker := TStringList.Create;
+  SetCompilerOption(coUseLibBass, JeezOptions.EditUseBass.Checked);
+  SetCompilerOption(coUseLibSndFile, JeezOptions.EditUseSndFile.Checked);
+  SetCompilerOption(coUseFastMath, JeezOptions.EditUseFastMath.Checked);
+  SetCompilerOption(coUseInline, JeezOptions.EditUseInlineFunctions.Checked);
+  SetCompilerOption(coUseCompression, JeezOptions.EditUseCompression.Checked);
+  Architecture := JeezOptions.GetArchitecture;
+  Precision := JeezOptions.GetPrecision;
+  PluginType := JeezOptions.GetPluginType;
+  OptimizeLevel := JeezOptions.GetOptimizeLevel;
 end;
 
-destructor Compiling.Destroy;
+destructor CJeezCompiler.Destroy;
 begin
   FreeAndNil(FLineBreaker);
   inherited Destroy;
 end;
 
-procedure Compiling.LogMessage(const AMessage: String);
+procedure CJeezCompiler.LogMessage(const AMessage: String);
 var
   LIndex: Integer;
 begin
   FLineBreaker.Text := WrapText(AMessage, LineEnding, [CharSpace], 100);
-  for LIndex := 0 to FLineBreaker.Count - 1 do
+  for LIndex := ZeroValue to FLineBreaker.Count - 1 do
   begin
-    JeezMessages.LogMessage(ClassName, StringOfChar(CharSpace, Min(LIndex, 1) * 4) + FLineBreaker[LIndex]);
+    JeezConsole.LogMessage(SMsgCompiling, StringOfChar(CharSpace, Min(LIndex, 1) * 4) +
+      FLineBreaker[LIndex]);
   end;
-  if JeezBuild.ProgressBar.Position > 0 then
+  if JeezBuild.ProgressBar.Position > ZeroValue then
   begin
     while JeezBuild.ProgressBar.Position < JeezBuild.ProgressBar.Max do
     begin
       JeezBuild.ProgressBar.StepIt;
     end;
-    JeezBuild.ProgressBar.Position := 0;
+    JeezBuild.ProgressBar.Position := ZeroValue;
   end;
   Application.ProcessMessages;
 end;

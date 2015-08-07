@@ -33,22 +33,28 @@ interface
 
 resourcestring
 
-  SMsgUnableToFindVariable1 = 'Unable to find variable ''%s''.';
-  SMsgUnableToFindFunction1 = 'Unable to find function ''%s''.';
-  SMsgFileNameMustBeAbsolute = 'File name must be absolute.';
-  SMsgFileDoesNotExist1 = 'The file ''%s'' does not exist.';
-  SMsgPluginDoesNotExistWouldYouLikeToBuildInstallIt1 = 'The plugin ''%s'' does not exist. Would you like to build/install it?';
-  SMsgFileIsNotText1 = 'The file ''%s'' is not a text file.';
-  SMsgSyntaxCheckingCompleteNoErrorsFound = 'Syntax checking complete. No errors were found.';
-  SMsgNoCompilerIsSelected = 'No Compiler is Selected. (Choose compiler from Tools->Options)';
-  SMsgDoYouWantToSaveModifiedFile1 = '''%s'' has been modified. Do you want to save?';
-  SMsgSearchCompleted1 = 'Search completed. Do you want to restart from the %s?';
+  SMsgParsingDotDotDot = 'Parsing ...';
   SMsgCompilationComplete1 = 'Compilation Complete - Time Duration = %s';
-  SMsgScriptsMustBeSaved = 'Script must be saved before VST can be installed.';
+  SMsgCountFunctions1 = '(%d Functions)';
+  SMsgCountVariables1 = '(%d Variables)';
+  SMsgDoYouWantToSaveModifiedFile1 = '''%s'' has been modified. Do you want to save?';
+  SMsgFileDoesNotExist1 = 'The file ''%s'' does not exist.';
+  SMsgFileIsNotText1 = 'The file ''%s'' is not a text file.';
+  SMsgFileNameMustBeAbsolute = 'File name must be absolute.';
+  SMsgNoCompilerIsSelected = 'No Compiler is Selected. (Choose compiler from Tools->Options)';
+  SMsgPluginDoesNotExistWouldYouLikeToBuildInstallIt1 =
+    'The plugin ''%s'' does not exist. Would you like to build/install it?';
+  SMsgPluginFailedToInstall =
+    'Failed to install plugin. (Please check VSTPath is valid and/or if plugin is in use)';
   SMsgPluginHasBeenInstalled = 'Plugin has been installed';
-  SMsgPluginFailedToInstall = 'Failed to install plugin. (Please check VSTPath is valid and/or if plugin is in use)';
+  SMsgScriptsMustBeSaved = 'Script must be saved before VST can be installed.';
+  SMsgSearchCompleted1 = 'Search completed. Do you want to restart from the %s?';
+  SMsgSyntaxCheckingCompleteNoErrorsFound = 'Syntax checking complete. No errors were found.';
+  SMsgSyntaxError = 'Syntax Error';
+  SMsgUnableToFind1 = 'Unable to find ''%s''.';
+  SMsgUnableToFindFunction1 = 'Unable to find function ''%s''.';
+  SMsgUnableToFindVariable1 = 'Unable to find variable ''%s''.';
 
 implementation
 
 end.
-

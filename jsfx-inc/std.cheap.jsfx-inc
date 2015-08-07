@@ -1,0 +1,67 @@
+/*
+** Name: heap.h
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import std.cstddef.jsfx-inc
+
+@init
+
+// Sets the starting offset for heap memory. Also resets heap link list.
+function heap.min(min) global()
+(
+  this.min = this.max = max(size_t(min), 4 << 16);
+  this.min[] = 0;
+);
+
+function heap.max(max) global()
+(
+  this.max = max(this.min, size_t(max));
+);
+
+heap.min(0);
+
+// Returns the max heap used. Includes memory that was freed.
+function heap.size() global()
+(
+  this.max - this.min;
+);
+
+// Checks the heap block is valid. Not 100% perfect, but the best we can achieve.
+function heap.check(block) global()
+(
+  block >= this.min && (block[] <= -1 || block[] >= 1);
+);
+
+// Returns true if heap block is free.
+function heap.isfree(block) global()
+(
+  this.heap.check(block) && block[] < 0;  
+);
+
+// Merges free blocks into one free block.
+function heap.merge(block) global() local(ptr, size)
+(
+  this.heap.isfree(block) ? (
+    size = 0; ptr = block;  
+    while (this.heap.isfree(ptr)) ( size += ptr[]; ptr += abs(ptr[]); );
+    block[] = size;
+  );
+);
+
+/* 
+Checks if block is avaliable to store a given size. Also handles merging
+of freed blocks after given block.
+*/
+function heap.avail(block, size) global() 
+(
+  !this.heap.check(block) ? block[] = -0x80000000; // 1 gig should be more than enough.
+  this.heap.merge(block);
+  size <= -block[];
+);
+

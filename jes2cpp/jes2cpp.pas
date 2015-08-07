@@ -31,14 +31,13 @@ unit Jes2Cpp;
 interface
 
 uses
-  Classes, Jes2CppCompiler, Jes2CppConstants, Jes2CppEel, Jes2CppFileNames, Jes2CppFunction, Jes2CppLoop, Jes2CppPrinter, Jes2CppTranslate,
-  SysUtils;
+  Classes, Jes2CppCompiler, Jes2CppConstants, Jes2CppEel, Jes2CppFileNames,
+  Jes2CppFunction, Jes2CppLoop, Jes2CppPrinter, Jes2CppTranslate,
+  StrUtils, SysUtils;
 
 type
 
   CJes2Cpp = class(CJes2CppPrinter)
-  strict private
-    FIsNoOutput: Boolean;
   strict private
     procedure PrintAudioEffectCallBacks;
     procedure PrintAudioEffectEntryPoint;
@@ -46,28 +45,30 @@ type
     procedure PrintParseSection(const ASectionName, AMethodName, ASource, AFileName: String);
     procedure PrintScriptClass(const AFileName: TFileName);
   public
-    procedure TranspileScript(const AScript: TStrings;
-      const AFileNameSrc, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String); overload;
-    procedure TranspileScript(const AScript: TStrings; const AFileNameSrc: String); overload;
-    procedure TranspileScriptFromFile(const AFileNameSrc, ADefVendorString, ADefEffectName, ADefProductString,
-      ADefVendorVersion, ADefUniqueId: String);
-  public
-    property IsNoOutput: Boolean read FIsNoOutput write FIsNoOutput;
+    procedure TranspileScript(const AScript: TStrings; const AFileName: TFileName;
+      const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion,
+      ADefUniqueId: String); overload;
+    procedure TranspileScript(const AScript: TStrings; const AFileName: TFileName); overload;
+    procedure TranspileScriptFromFile(const AFileName: TFileName;
+      const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion,
+      ADefUniqueId: String);
   end;
 
 // Helper functions (Dont use)
 
 procedure Jes2CppTranspile(const AFileNameDst, AFileNameSrc: TFileName;
-  const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String);
+  const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion,
+  ADefUniqueId: String);
 
 function Jes2CppTranspileCompile(const AFileName: TFileName;
-  const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String): TFileName;
+  const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion,
+  ADefUniqueId: String): TFileName;
 
 implementation
 
 procedure CJes2Cpp.PrintParseSection(const ASectionName, AMethodName, ASource, AFileName: String);
 begin
-  LogMessage(SMsgTypeParsing, EelSectionName(ASectionName));
+  LogMessage(SMsgTypeParsing, GEelSectionHeader.Make(ASectionName));
   ResetParser(ASource, AFileName);
   PrintMethodHead(AMethodName);
   Print(ParseSectionBody);
@@ -82,15 +83,17 @@ procedure CJes2Cpp.PrintScriptClass(const AFileName: TFileName);
 var
   LLoop: CJes2CppLoop;
   LFunction: CJes2CppFunction;
+  LOutputText: String;
 begin
-  if not FIsNoOutput then
+  if not IsNoOutput then
   begin
-    PrintTitle(SMsgJes2CppEffectClass);
+    PrintCommentTitle(SMsgJes2CppEffectClass);
     Print('class %s : public %s', [GsTJes2CppEffect, GsTJes2Cpp]);
     Print(CharOpeningBrace);
     Print('public:');
   end;
-  WriteSliderSerializationCode;
+
+  PrependSliderSerializationCode;
 
   PrintParseSection(GsEelSectionInit, GsDoInit, Description.AtInit, AFileName);
   PrintParseSection(GsEelSectionSlider, GsDoSlider, Description.AtSlider, AFileName);
@@ -99,41 +102,50 @@ begin
   PrintParseSection(GsEelSectionSample, GsDoSample, Description.AtSample, AFileName);
   PrintParseSection(GsEelSectionGfx, GsDoGfx, Description.AtGfx, AFileName);
 
-  if not FIsNoOutput then
+  if not IsNoOutput then
   begin
     if Variables.HasComponents then
     begin
-      PrintTitle(SMsgDefineGlobalVariables);
-      Print(Variables.EncodeDefineCpp);
+      PrintCommentTitle(SMsgDeclareGlobalVariables);
+      Print(Variables.CppDeclare);
       PrintBlankLine;
     end;
     if Loops.HasComponents then
     begin
-      PrintTitle(SMsgDefineInnerLoops);
+      PrintCommentTitle(SMsgDefineInnerLoops);
       for LLoop in Loops do
       begin
-        Print(LLoop.EncodeDefineCpp);
+        Print(LLoop.CppFunction);
       end;
     end;
-    PrintTitle(SMsgDefineInternalFunctions);
+    PrintCommentTitle(SMsgDefineInternalFunctions);
     for LFunction in Functions do
     begin
       if LFunction.IsInternalAndUsed then
       begin
-        PrintTitle(LFunction.GetTitle);
-        Print(LFunction.EncodeDefineCpp);
+        PrintCommentTitle(LFunction.GetTitle);
+        Print(LFunction.CppFunction);
       end;
     end;
-
+    // Basic macro replacing.
+    if Loops.HasComponents then
+    begin
+      LOutputText := Output.Text;
+      for LLoop in Loops do
+      begin
+        LOutputText := AnsiReplaceStr(LOutputText, LLoop.CppFunctionMacro, LLoop.CppFunctionProto);
+      end;
+      Output.Text := LOutputText;
+    end;
     PrintMethodHead(GsDoOpen);
-    Print(Variables.EncodeClearCpp);
-    Print(Description.EncodeFileNamesCpp);
-    Print(Variables.EncodeStringLiteralsCpp, True, False);
+    Print(Variables.CppSetValues);
+    Print(Description.CppSetFileNames);
+    Print(Variables.CppSetStrings, True, False);
     PrintMethodFoot;
 
     Print(GsCppFunct1, [GsTJes2CppEffect]);
     Print(CharOpeningBrace);
-    PrintTitle(SMsgEffectDescription);
+    PrintCommentTitle(SMsgEffectDescription);
     Print(Description.EncodeDescriptionCpp, True, False);
     PrintMethodFoot;
 
@@ -168,21 +180,24 @@ procedure CJes2Cpp.PrintAudioEffectCallBacks;
 
   procedure LPrintProcessReplacing(const AName, AFloatType: String);
   begin
-    Print(GsCppVoidSpace + 'VEST_WINAPI %s(HVEST AVeST, %s** AInputs, %s** AOutputs, int ASampleFrames)', [AName, AFloatType, AFloatType]);
+    Print(GsCppVoidSpace +
+      'VEST_WINAPI %s(HVEST AVeST, %s** AInputs, %s** AOutputs, int ASampleFrames)',
+      [AName, AFloatType, AFloatType]);
     Print(CharOpeningBrace);
-    LPrintJes2Cpp(GsDoSample + '(AInputs, AOutputs, ASampleFrames);');
+    LPrintJes2Cpp(GsDoProcess + '(AInputs, AOutputs, ASampleFrames);');
     Print(CharClosingBrace);
   end;
 
 begin
-  PrintTitle(SMsgJes2CppAudioCallBacks);
+  PrintCommentTitle(SMsgJes2CppAudioCallBacks);
   Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoCreate(HVEST AVeST)');
   Print(CharOpeningBrace);
   LPrintDefineLJes2Cpp;
   Print('VeST_SetNumInputs(AVeST, LJes2Cpp->GetChannelCount());');
   Print('VeST_SetNumOutputs(AVeST, LJes2Cpp->GetChannelCount());');
   Print('VeST_SetUniqueID(AVeST, LJes2Cpp->GetUniqueId());');
-  Print('VeST_SetGraphicsSize(AVeST, %d, %d);', [Description.GfxWidth, Description.GfxHeight], Description.GfxEnabled);
+  Print('VeST_SetGraphicsSize(AVeST, %d, %d);', [Description.GfxWidth, Description.GfxHeight],
+    Description.GfxEnabled);
   Print('VeST_SetIsSynth(AVeST, true);', Description.FIsSynth);
   Print('VeST_ProgramsAreChunks(AVeST, true);');
   Print(CharClosingBrace);
@@ -203,15 +218,18 @@ begin
   Print(CharOpeningBrace);
   LPrintJes2Cpp(GsDoGfx + '();');
   Print(CharClosingBrace);
-  Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoMouseMoved(HVEST AVeST, double AX, double AY, int AButtons)');
+  Print(GsCppVoidSpace +
+    'VEST_WINAPI EffectDoMouseMoved(HVEST AVeST, double AX, double AY, int AButtons)');
   Print(CharOpeningBrace);
   LPrintJes2Cpp('DoMouseMoved(AX, AY, AButtons);');
   Print(CharClosingBrace);
-  Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoMouseDown(HVEST AVeST, double AX, double AY, int AButtons)');
+  Print(GsCppVoidSpace +
+    'VEST_WINAPI EffectDoMouseDown(HVEST AVeST, double AX, double AY, int AButtons)');
   Print(CharOpeningBrace);
   LPrintJes2Cpp('DoMouseDown(AX, AY, AButtons);');
   Print(CharClosingBrace);
-  Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoMouseUp(HVEST AVeST, double AX, double AY, int AButtons)');
+  Print(GsCppVoidSpace +
+    'VEST_WINAPI EffectDoMouseUp(HVEST AVeST, double AX, double AY, int AButtons)');
   Print(CharOpeningBrace);
   LPrintJes2Cpp('DoMouseUp(AX, AY, AButtons);');
   Print(CharClosingBrace);
@@ -263,15 +281,18 @@ begin
   Print(CharOpeningBrace);
   LPrintJes2CppReturn('GetParameterValue(AIndex);');
   Print(CharClosingBrace);
-  Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoGetParameterName(HVEST AVeST, int AIndex, char* AString)');
+  Print(GsCppVoidSpace +
+    'VEST_WINAPI EffectDoGetParameterName(HVEST AVeST, int AIndex, char* AString)');
   Print(CharOpeningBrace);
   LPrintJes2Cpp('GetParameterName(AIndex, AString);');
   Print(CharClosingBrace);
-  Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoGetParameterLabel(HVEST AVeST, int AIndex, char* AString)');
+  Print(GsCppVoidSpace +
+    'VEST_WINAPI EffectDoGetParameterLabel(HVEST AVeST, int AIndex, char* AString)');
   Print(CharOpeningBrace);
   LPrintJes2Cpp('GetParameterLabel(AIndex, AString);');
   Print(CharClosingBrace);
-  Print(GsCppVoidSpace + 'VEST_WINAPI EffectDoGetParameterDisplay(HVEST AVeST, int AIndex, char* AString)');
+  Print(GsCppVoidSpace +
+    'VEST_WINAPI EffectDoGetParameterDisplay(HVEST AVeST, int AIndex, char* AString)');
   Print(CharOpeningBrace);
   LPrintJes2Cpp('GetParameterDisplay(AIndex, AString);');
   Print(CharClosingBrace);
@@ -287,7 +308,7 @@ procedure CJes2Cpp.PrintAudioEffectSetupCallBacks;
   end;
 
 begin
-  PrintTitle(SMsgCreateAudioEffectInstance);
+  PrintCommentTitle(SMsgCreateAudioEffectInstance);
   Print('void EffectSetupCallBacks(TVeSTCallBacks* AVeSTCallBacks)');
   Print(CharOpeningBrace);
   Print('memset(AVeSTCallBacks, 0, sizeof(*AVeSTCallBacks));');
@@ -329,8 +350,8 @@ procedure CJes2Cpp.PrintAudioEffectEntryPoint;
     Print('TVeSTCallBacks LVeSTCallBacks;');
     Print('EffectSetupCallBacks(&LVeSTCallBacks);');
     Print('TJes2CppEffect* LJes2Cpp = new TJes2CppEffect();');
-    Print('LJes2Cpp->FVeST = VeST_Init((HVEST_DATA)LJes2Cpp, &LVeSTCallBacks, ' + ASystemVariable +
-      ', 1, LJes2Cpp->GetParameterCount());');
+    Print('LJes2Cpp->FVeST = VeST_Init((HVEST_DATA)LJes2Cpp, &LVeSTCallBacks, ' +
+      ASystemVariable + ', 1, LJes2Cpp->GetParameterCount());');
     Print('return ' + AReturnFunction + '(LJes2Cpp->FVeST);');
     Print(CharClosingBrace);
   end;
@@ -346,7 +367,7 @@ procedure CJes2Cpp.PrintAudioEffectEntryPoint;
   end;
 
 begin
-  PrintTitle('Define VSTPluginMain() - VST Entry Point');
+  PrintCommentTitle('Define VSTPluginMain() - VST Entry Point');
   print('#ifdef VEST_VST');
   PrintExternCHead;
   Print('JES2CPP_EXPORT VEST_HANDLE VSTPluginMain(HVEST_AUDIOMASTER AAudioMaster)');
@@ -358,7 +379,7 @@ begin
   PrintExternCFoot;
   print('#endif // VEST_VST');
 
-  PrintTitle('Define ladspa_descriptor() - LADSPA v1 Entry Point');
+  PrintCommentTitle('Define ladspa_descriptor() - LADSPA v1 Entry Point');
   Print('#ifdef VEST_LV1');
   PrintExternCHead;
   Print('JES2CPP_EXPORT const LADSPA_Descriptor* ladspa_descriptor(unsigned long AIndex)');
@@ -370,7 +391,7 @@ begin
   PrintExternCFoot;
   print('#endif // VEST_LV1');
 
-  PrintTitle('Define lv2_descriptor() - LADSPA v2 Entry Point (NOT FINISHED)');
+  PrintCommentTitle('Define lv2_descriptor() - LADSPA v2 Entry Point (NOT FINISHED)');
   Print('#ifdef VEST_LV2');
   PrintExternCHead;
   Print('JES2CPP_EXPORT const LV2_Descriptor* lv2_descriptor(uint32_t AIndex)');
@@ -383,77 +404,83 @@ begin
   print('#endif // VEST_LV2');
 end;
 
-procedure CJes2Cpp.TranspileScript(const AScript: TStrings;
-  const AFileNameSrc, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String);
+procedure CJes2Cpp.TranspileScript(const AScript: TStrings; const AFileName: TFileName;
+  const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion,
+  ADefUniqueId: String);
 begin
   LogMessage(SMsgStarted);
   try
     Output.Clear;
 
-
-
     LogMessage(SMsgTypeParsing, SMsgDescription);
 
-    if not SameText(ExtractFileName(AFileNameSrc), ExtractFileName(NSFileNames.FileNameJes2CppJsFx)) then
+    if not SameText(ExtractFileName(AFileName),
+      ExtractFileName(GFileName.FileNameJes2CppJsFx)) then
     begin
-      ImportFrom(NSFileNames.FileNameJes2CppJsFx);
+      ImportFrom(GFileName.FileNameJes2CppJsFx);
     end;
-    ImportFrom(AScript, AFileNameSrc);
+    ImportFrom(AScript, AFileName);
 
-    Description.ExtractDescriptionElements(AScript, AFileNameSrc, ADefVendorString, ADefEffectName, ADefProductString,
+    Description.ExtractDescriptionElements(AScript, AFileName, ADefVendorString,
+      ADefEffectName, ADefProductString,
       ADefVendorVersion, ADefUniqueId);
 
-    LogMessage(Format('%s=%s %s=%s %s=%s', [GsVendorString, QuotedStr(Description.VendorString), GsEffectName,
-      QuotedStr(Description.EffectName), GsProductString, QuotedStr(Description.ProductString)]));
+    LogMessage(Format('%s=%s %s=%s %s=%s', [GsVendorString, QuotedStr(Description.VendorString),
+      GsEffectName, QuotedStr(Description.EffectName), GsProductString,
+      QuotedStr(Description.ProductString)]));
 
     LogMessage(Format(SMsgNumberOfParametersFound1, [Description.Parameters.ComponentCount]));
 
-    if not FIsNoOutput then
+    if not IsNoOutput then
     begin
-      PrintTitle(SMsgConvertedWith + GsJes2CppTitle);
+      PrintCommentTitle(SMsgConvertedWith + GsJes2CppTitle);
       PrintOriginalComments(Description.AtDescription);
-      PrintTitle('Include ' + GsJes2CppName + ' Header');
+      PrintCommentTitle('Include ' + GsJes2CppName + ' Header');
       Print('#include "' + GsFilePartJes2Cpp + GsFileExtH + '"');
     end;
-    PrintScriptClass(AFileNameSrc);
-    if not FIsNoOutput then
+    PrintScriptClass(AFileName);
+    if not IsNoOutput then
     begin
       PrintAudioEffectCallBacks;
       PrintAudioEffectSetupCallBacks;
       PrintAudioEffectEntryPoint;
-      PrintTitle('End of File');
+      PrintCommentTitle('End of File');
     end;
   finally
     LogMessage(SMsgFinished);
   end;
 end;
 
-procedure CJes2Cpp.TranspileScript(const AScript: TStrings; const AFileNameSrc: String);
+procedure CJes2Cpp.TranspileScript(const AScript: TStrings; const AFileName: TFileName);
 begin
-  TranspileScript(AScript, AFileNameSrc, EmptyStr, EmptyStr, EmptyStr, EmptyStr, EmptyStr);
+  TranspileScript(AScript, AFileName, EmptyStr, EmptyStr, EmptyStr, EmptyStr, EmptyStr);
 end;
 
-procedure CJes2Cpp.TranspileScriptFromFile(const AFileNameSrc, ADefVendorString, ADefEffectName, ADefProductString,
-  ADefVendorVersion, ADefUniqueId: String);
+procedure CJes2Cpp.TranspileScriptFromFile(const AFileName: TFileName;
+  const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion,
+  ADefUniqueId: String);
 var
   LStrings: TStrings;
 begin
   LStrings := TStringList.Create;
   try
-    LStrings.LoadFromFile(AFileNameSrc);
-    TranspileScript(LStrings, AFileNameSrc, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId);
+    LStrings.LoadFromFile(AFileName);
+    TranspileScript(LStrings, AFileName, ADefVendorString, ADefEffectName,
+      ADefProductString, ADefVendorVersion, ADefUniqueId);
   finally
     FreeAndNil(LStrings);
   end;
 end;
 
 procedure Jes2CppTranspile(const AFileNameDst, AFileNameSrc: TFileName;
-  const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String);
+  const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion,
+  ADefUniqueId: String);
 begin
   with CJes2Cpp.Create(nil) do
   begin
     try
-      TranspileScriptFromFile(AFileNameSrc, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId);
+      TranspileScriptFromFile(AFileNameSrc, ADefVendorString, ADefEffectName,
+        ADefProductString, ADefVendorVersion, ADefUniqueId);
       Output.SaveToFile(AFileNameDst);
     finally
       Free;
@@ -462,13 +489,15 @@ begin
 end;
 
 function Jes2CppTranspileCompile(const AFileName: TFileName;
-  const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String): TFileName;
+  const ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion,
+  ADefUniqueId: String): TFileName;
 var
   LJes2Cpp: CJes2Cpp;
 begin
   LJes2Cpp := CJes2Cpp.Create(nil);
   try
-    LJes2Cpp.TranspileScriptFromFile(AFileName, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId);
+    LJes2Cpp.TranspileScriptFromFile(AFileName, ADefVendorString, ADefEffectName,
+      ADefProductString, ADefVendorVersion, ADefUniqueId);
     with CJes2CppCompiler.Create(nil) do
     begin
       try

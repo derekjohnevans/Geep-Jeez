@@ -1,0 +1,25 @@
+/*
+** Name: StrUtils
+** Desc: This is part of a Pascal style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import pas.system.jsfx-inc
+
+@init
+
+function SameStr(s1, s2) global()
+(
+  !strcmp(s1, s2);
+);
+
+function SameText(s1, s2) global()
+(
+  !stricmp(s1, s2);
+);
+
+

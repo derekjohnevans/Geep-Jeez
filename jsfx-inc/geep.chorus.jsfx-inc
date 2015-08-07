@@ -1,0 +1,57 @@
+
+import std.cstdlib.jsfx-inc
+import axonlib.math.jsfx-inc
+
+@init
+
+function StereoChorus.Init(_maxms) global(srate)
+instance(msize, mem, p1)
+(
+  msize = floor(_maxms * srate / 1000) * 2;
+  mem = malloc(msize + 2);
+  p1 = 0;
+);
+
+function StereoChorus.Slider(_radius, _speed, _fback, _wetdry, _level) global(srate)
+instance(radius, speed, fback, lev, wet, dry)
+(
+  radius = _radius * srate / 1000 / 2;
+  speed = (2*$pi) * _speed / srate;
+  fback = _fback / 100;
+  
+  lev = 2 ^ (_level / 6);
+  wet = (_wetdry + 1) * 0.5 * lev;
+  dry = (1 - _wetdry) * 0.5 * lev;
+);
+
+function StereoChorus.Sample(spl0*, spl1*) global()
+instance(angle, speed, radius, fback, wet, dry, p1, msize, mem)
+local(co, sa, fl, fr, p2, p3, wet0, wet1)
+(
+  (angle += speed) >= (2*$pi) ? angle -= (2*$pi);
+
+  co = axCosf(angle);
+
+  sa = (1 + co) * radius;
+  fl = 0 | sa;
+  fr = sa - fl;
+  (p2 = (p1 + fl * 2)) >= msize ? p2 -= msize;
+  (p3 = p2 + 2) >= msize ? p3 -= msize;
+  wet0 = mem[p2+0] * (1 - fr) + mem[p3+0] * fr;
+
+  sa = (1 - co) * radius;
+  fl = 0 | sa;
+  fr = sa - fl;
+  (p2 = (p1 + fl * 2)) >= msize ? p2 -= msize;
+  (p3 = p2 + 2) >= msize ? p3 -= msize;
+  wet1 = mem[p2+1] * (1 - fr) + mem[p3+1] * fr;
+  
+  (p1 -= 2) < 0 ? p1 += msize;
+
+  mem[p1+0] = spl0 + wet0 * fback;
+  mem[p1+1] = spl1 + wet1 * fback;
+
+  spl0 = spl0 * dry + wet0 * wet;
+  spl1 = spl1 * dry + wet1 * wet;
+);
+

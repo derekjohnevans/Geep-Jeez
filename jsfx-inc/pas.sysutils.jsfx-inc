@@ -1,0 +1,32 @@
+/*
+** Name: SysUtils
+** Desc: This is part of a Pascal style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import pas.system.jsfx-inc
+
+@init
+
+function LastDelimiter(delimiters, str) global()
+local(pos)
+(
+  pos = strlen(str) - 1;
+  while (pos >= 0 && PosSet(delimiters, ChrToStr(str_getchar(str, pos))) < 0) (pos -= 1);
+  pos;
+);
+
+// Returns true if file exists.
+function FileExists(filename) global()
+(
+  // NOTE: We must prepend the program directory to filenames.
+  !
+  "struct stat buffer;"
+  "return stat((ProgramDirectory() + *GetString(filename$)).c_str(), &buffer) == 0";
+  1; // Always returns true in REAPER.
+);
+

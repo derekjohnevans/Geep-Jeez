@@ -1,0 +1,32 @@
+desc: Shared Test Import
+
+// ANSI C Headers
+
+import std.cmath.jsfx-inc
+import std.ctype.jsfx-inc
+import std.cstdio.jsfx-inc
+import std.cstdlib.jsfx-inc
+import std.cmemory.jsfx-inc
+import std.cstring.jsfx-inc
+import std.cassert.jsfx-inc
+
+// C++ Headers
+
+import std.string.jsfx-inc
+import std.vector.jsfx-inc
+
+import std.cconio.jsfx-inc
+
+@init
+
+function H1(s)
+(
+  puts(sprintf(#, "%s", s));
+  puts("-----------------------------------");
+);
+
+function H2(s)
+(
+  puts(sprintf(#, "\n// %s\n", s));
+);
+

@@ -20,9 +20,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef VEST_H
 #define VEST_H
 
+#define VEST_ENDIAN_BIG 0
+#define VEST_ENDIAN_LITTLE 1
+
 // Include C Headers
 
 #define _USE_MATH_DEFINES
+#define __STDC_LIMIT_MACROS
 
 #include <math.h>
 #include <time.h>
@@ -32,6 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <memory.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <sys/stat.h>
 
 // Golden ratio
 #define M_PHI 1.61803399
@@ -51,11 +56,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif // __GNUC__
 
 #ifdef _WIN32
+#define VEST_ENDIAN 1
 #include <io.h>
 #include <windows.h>
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #endif // _WIN32
+
+// Endian checking.
+
+#if !defined(VEST_ENDIAN) || (VEST_ENDIAN != VEST_ENDIAN_BIG && VEST_ENDIAN != VEST_ENDIAN_LITTLE)
+#error VEST_ENDIAN must be set to either 0 (VEST_ENDIAN_LITTLE) or 1 (VEST_ENDIAN_LITTLE).
+#endif // VEST_ENDIAN
 
 // The future supported plugin types are...
 // VEST_VST (done)
@@ -347,7 +359,7 @@ class CVeST_RIFF
 private:
 
   FILE* FFile;
-  unsigned FHead;
+  long FHead;
   int32_t FName;
   uint32_t FSize;
 
@@ -437,6 +449,100 @@ public:
     return Read(&AValue, sizeof(AValue));
   }
 };
+
+// Simple wav loader. Needs more testing. Use sndfile for better audio file support.
+// TODO: Doesn't support portable endianness. Unsure what needs to be done.
+// Note: This code may end up in VeST, if it gets good enough.
+inline bool VeST_LoadWavFromFile(std::vector<float>& ABuffer, const std::string& AFileName, int& AChannelCount,
+                                 int& ASampleRate)
+{
+bool LResult = false;
+int16_t LFormatTag = 0, LBlockAlign = 0, LBitsPerSample = 0, LExtSize = 0, LValidBitsPerSample = 0, LChannelCount = 0;
+int32_t LDataRate = 0, LChannelMask = 0, LSampleRate = 0;
+ABuffer.resize(0);
+FILE* LFile = fopen(AFileName.c_str(), "rb");
+if (LFile) {
+  CVeST_RIFF LRiff;
+  if (LRiff.Open(LFile), WAVE_RIFF) {
+    int32_t LWave;
+    if (LRiff.Read(LWave) && LWave == WAVE_WAVE) {
+      CVeST_RIFF LChunk;
+      while (LChunk.Open(LFile)) {
+        if (LChunk.IsName(WAVE_FMT)) {
+          LChunk.Read(LFormatTag);
+          LChunk.Read(LChannelCount);
+          LChunk.Read(LSampleRate);
+          LChunk.Read(LDataRate);
+          LChunk.Read(LBlockAlign);
+          LChunk.Read(LBitsPerSample);
+          LChunk.Read(LExtSize);
+          LChunk.Read(LValidBitsPerSample);
+          LChunk.Read(LChannelMask);
+          AChannelCount = LChannelCount;
+          ASampleRate = LSampleRate;
+        } else if (LChunk.IsName(WAVE_FACT)) {
+        } else if (LChunk.IsName(WAVE_CUE)) {
+        } else if (LChunk.IsName(WAVE_DATA)) {
+          std::vector<uint8_t> LData;
+          if (LChannelCount > 0 && LBlockAlign > 0 && LChunk.ReadChunk(LData)) {
+            int LSampleSize = LBlockAlign / LChannelCount;
+            if (LSampleSize > 0) {
+              LResult = true; // Good enough?
+              ABuffer.resize(LData.size() / LSampleSize);
+              uint8_t* LSrc = &LData[0];
+              float* LDst = &ABuffer[0];
+              for (int LIndex = ABuffer.size(); LIndex-- > 0; LSrc += LSampleSize) {
+                switch (LFormatTag) {
+                // PCM TYPES
+                case 1: {
+                  switch(LBitsPerSample) {
+                  case 8: {
+                    *LDst++ = (LSrc[0] + INT8_MIN) / (float)INT8_MAX;
+                    break;
+                  }
+                  case 16: {
+                    *LDst++ = EndianInt(LSrc[0], LSrc[1], true) / (float)INT16_MAX;
+                    break;
+                  }
+                  case 24: {
+                    *LDst++ = EndianInt(LSrc[0], LSrc[1], LSrc[2], true) / (float)(INT32_MAX >> 8);
+                    break;
+                  }
+                  case 32: {
+                    *LDst++ = EndianInt(LSrc[0], LSrc[1], LSrc[2], LSrc[3], true) / (float)INT32_MAX;
+                    break;
+                  }
+                  }
+                  break;
+                }
+                // FLOAT TYPES
+                case 3: {
+                  switch (LBitsPerSample) {
+                  case 32: {
+                    *LDst++ = (float)((float*)LSrc)[0];
+                    break;
+                  }
+                  case 64: {
+                    *LDst++ = (float)((double*)LSrc)[0];
+                    break;
+                  }
+                  }
+                  break;
+                }
+                }
+              }
+            }
+          }
+        } else if (LChunk.IsName(WAVE_LIST)) { }
+        LChunk.Close();
+      }
+    }
+    LRiff.Close();
+  }
+  fclose(LFile);
+}
+return LResult;
+}
 
 #endif
 

@@ -1,0 +1,83 @@
+/*
+** Name: array.jsfx-inc
+** Desc: Array objects for SWIPE.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+*/
+
+import std.vector.jsfx-inc
+import swipe.system.jsfx-inc
+
+@init
+
+
+// Linear samples a value given its position in this array.
+function TArray_GetLinear(x) global() local(fl, fr)
+(
+  fr = x - (fl = (x|0));
+  this[fl % _msize(this)] * (1 - fr) + this[(fl + 1) % _msize(this)] * fr;
+);
+
+// TBuffer Object
+
+// A buffer is an array where all the array is used. ie: Count = Size.
+function TBuffer(ASize) global()
+(
+  this.vector(ASize);
+);
+
+// Gets a value from this buffer relative to the buffers current position marker.
+function TBuffer_Get(AIndex) global()
+(
+  this[(this.Position.Get() + AIndex) % _msize(this)];
+);
+
+// Streams a value into a buffer. When the buffer position reaches count, the position is rewounded to zero.
+function TBuffer_Stream(AValue) global()
+(
+  this[this.Position.Get()] = AValue;
+  this.Position.Inc(1) >= this.size() ? this.Position.Set(0);
+);
+
+// Initializes this object to a 2D buffer. Used for stereo buffer storage.
+function TBuffer2(ASize) global()
+(
+  this.0.TBuffer(ASize);
+  this.1.TBuffer(ASize);
+);
+
+// Stream two values to this buffer.
+function TBuffer2_Stream(x, y) global()
+(
+  this.0.TBuffer_Stream(x);
+  this.1.TBuffer_Stream(y);
+);
+
+// TVector Objects
+
+function TVector2() global()
+(
+  this.vector(2);
+);
+
+function TVector3() global()
+(
+  this.vector(3);
+);
+
+// Matrix Objects
+
+function TMatrix33() global()
+(
+  this.vector2(3, 3);
+);
+
+function TMatrix44() global()
+(
+  this.vector2(4, 4);
+);
+
+
+
+

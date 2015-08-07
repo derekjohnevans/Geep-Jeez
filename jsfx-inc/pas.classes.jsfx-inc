@@ -1,0 +1,58 @@
+/*
+** Name: Classes
+** Desc: This is part of a Pascal style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import std.string.jsfx-inc
+import std.vector.jsfx-inc
+
+@init
+
+function Strings.Count() global()
+(
+  this.size();
+);
+
+function Strings.Clear() global() local(LIndex)
+(
+  LIndex = this.size();
+  while (LIndex > 0) (
+    LIndex -= 1;
+    sfree(this[LIndex]);
+  );
+  this.clear();
+);
+
+function Strings.LoadFromFile(AFileName) global() local(LString, LFile)
+(
+  this.Strings.Clear();
+  (LFile = file_open(AFileName)) >= 0 ? (
+    LString = #;
+    while (file_string(LFile, LString)) (
+      this.push_back(strcpy(salloc(), LString));
+    );
+    file_close(LFile);
+  );
+);
+
+function Strings.SetDelimitedText(AString, AChar) global() local(LPos, LEnd)
+(
+  this.Strings.Clear();
+  LPos = 0;
+  while ((LEnd = strchr(AString, AChar, LPos)) >= 0) (
+    this.push_back(strcpy_substr(salloc(), AString, LPos, LEnd - LPos));
+    LPos = LEnd + 1;
+  );
+  this.push_back(strcpy_substr(salloc(), AString, LPos));
+);
+
+function Strings.SetCommaText(AString) global()
+(
+  this.Strings.SetDelimitedText(AString, $',');
+);
+

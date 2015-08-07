@@ -1,0 +1,9 @@
+
+@init
+
+function Gain.Set(db) global()
+(
+  this.db = db;
+  this = 2 ^ (db / 6);
+);
+

@@ -31,27 +31,46 @@ unit Jes2CppUtils;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppStrings, Jes2CppTranslate, StrUtils, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppStrings, Math, StrUtils, SysUtils;
 
-function J2C_StripMarkers(const AString: String): String;
-function J2C_CleanComment(const AString: String): String;
+type
 
-function J2C_ExtractAttribute(const AString, AName: String): String;
-
-function J2C_ExtractFileSource(const AString: String): TFileName;
-function J2C_ExtractFileCaretY(const AString: String): Integer;
-
-procedure J2C_ExtractSection(const AName: String; const ADst, ASrc: TStrings; const AFileName: TFileName;
-  const AInsertMarkers: Boolean; out ASectionHeader: String); overload;
-function J2C_ExtractSection(const AName: String; const ASrc: TStrings; const AFileName: TFileName;
-  const AInsertMarker: Boolean; out ASectionHeader: String): String;
-  overload;
-
-function J2C_StrToIntDef(const AString: String; const ADefault: Integer): Integer;
+  GUtils = object
+    class function StripMarkers(const AString: String): String;
+    class function CleanComment(const AString: String): String;
+    class function ExtractAttribute(const AString, AName: String): String;
+    class function ExtractFileSource(const AString: String): TFileName;
+    class function ExtractFileCaretY(const AString: String): Integer;
+    class procedure ExtractSection(const AName: String; const ADst, ASrc: TStrings;
+      const AFileName: TFileName; const AInsertMarkers: Boolean;
+      out ASectionHeader: String); overload;
+    class function ExtractSection(const AName: String; const ASrc: TStrings;
+      const AFileName: TFileName; const AInsertMarker: Boolean;
+      out ASectionHeader: String): String; overload;
+    class function CodeToInt(const AString: String): Integer;
+    class function CodeToIntDef(const AString: String; const ADefault: Integer): Integer;
+    class function RPosSetEx(const ACharSet: TSysCharSet; const AString: String;
+      const AIndex: Integer): Integer;
+  end;
 
 implementation
 
-function J2C_StripMarkers(const AString: String): String;
+uses Jes2CppTranslate;
+
+class function GUtils.RPosSetEx(const ACharSet: TSysCharSet; const AString: String;
+  const AIndex: Integer): Integer;
+begin
+  for Result := Min(AIndex, Length(AString)) downto 1 do
+  begin
+    if AString[Result] in ACharSet then
+    begin
+      Exit;
+    end;
+  end;
+  Result := 0;
+end;
+
+class function GUtils.StripMarkers(const AString: String): String;
 var
   LPos, LEnd: Integer;
 begin
@@ -67,9 +86,9 @@ begin
   until False;
 end;
 
-function J2C_CleanComment(const AString: String): String;
+class function GUtils.CleanComment(const AString: String): String;
 begin
-  Result := J2C_StripMarkers(AString);
+  Result := StripMarkers(AString);
   if AnsiStartsStr(GsCppCommentHead, Result) or AnsiStartsStr(GsCppCommentLine, Result) then
   begin
     Result := Copy(Result, Length(GsCppCommentHead) + 1, MaxInt);
@@ -81,7 +100,7 @@ begin
   Result := Trim(Result);
 end;
 
-function J2C_ExtractAttribute(const AString, AName: String): String;
+class function GUtils.ExtractAttribute(const AString, AName: String): String;
 var
   LPos: Integer;
   LPChar: PChar;
@@ -96,23 +115,23 @@ begin
   end;
 end;
 
-function J2C_ExtractFileSource(const AString: String): TFileName;
+class function GUtils.ExtractFileSource(const AString: String): TFileName;
 begin
   try
-    Result := J2C_ExtractAttribute(AString, GsPath);
+    Result := ExtractAttribute(AString, GsPath);
   except
     Result := EmptyStr;
   end;
-  Result += J2C_ExtractAttribute(AString, GsFile);
+  Result += ExtractAttribute(AString, GsFile);
 end;
 
-function J2C_ExtractFileCaretY(const AString: String): Integer;
+class function GUtils.ExtractFileCaretY(const AString: String): Integer;
 begin
-  Result := StrToInt(J2C_ExtractAttribute(AString, GsLine));
+  Result := StrToInt(ExtractAttribute(AString, GsLine));
 end;
 
-procedure J2C_ExtractSection(const AName: String; const ADst, ASrc: TStrings; const AFileName: TFileName;
-  const AInsertMarkers: Boolean; out ASectionHeader: String);
+class procedure GUtils.ExtractSection(const AName: String; const ADst, ASrc: TStrings;
+  const AFileName: TFileName; const AInsertMarkers: Boolean; out ASectionHeader: String);
 var
   LIndex: Integer;
   LSrcLine: String;
@@ -128,13 +147,13 @@ begin
   begin
     if LIndex < 0 then
     begin
-      LSrcLine := EelSectionName(GsEelSectionDesc);
+      LSrcLine := GEelSectionHeader.Make(GsEelSectionDesc);
     end else begin
       LSrcLine := ASrc[LIndex];
     end;
-    if EelIsSection(LSrcLine) then
+    if GEelSectionHeader.IsMaybeSection(LSrcLine) then
     begin
-      LIsRequestedSection := EelIsSection(LSrcLine, AName);
+      LIsRequestedSection := GEelSectionHeader.IsSectionName(LSrcLine, AName);
       if LIsRequestedSection then
       begin
         ASectionHeader += LSrcLine + LineEnding;
@@ -149,40 +168,43 @@ begin
       end;
     end;
   end;
-  J2C_StringsTrim(ADst);
+  GStrings.Trim(ADst);
 end;
 
-function J2C_ExtractSection(const AName: String; const ASrc: TStrings; const AFileName: TFileName;
-  const AInsertMarker: Boolean; out ASectionHeader: String): String;
+class function GUtils.ExtractSection(const AName: String; const ASrc: TStrings;
+  const AFileName: TFileName; const AInsertMarker: Boolean; out ASectionHeader: String): String;
 var
   LStrings: TStrings;
 begin
   LStrings := TStringList.Create;
   try
-    J2C_ExtractSection(AName, LStrings, ASrc, AFileName, AInsertMarker, ASectionHeader);
+    ExtractSection(AName, LStrings, ASrc, AFileName, AInsertMarker, ASectionHeader);
     Result := LStrings.Text;
   finally
     FreeAndNil(LStrings);
   end;
 end;
 
-function J2C_StrToInt(const AString: String): Integer;
+class function GUtils.CodeToInt(const AString: String): Integer;
 begin
-  if (Length(AString) = 6) and (AString[1] = CharQuoteSingle) and (AString[Length(AString)] = CharQuoteSingle) then
+  if (Length(AString) = 6) and (AString[1] = CharQuoteSingle) and
+    (AString[Length(AString)] = CharQuoteSingle) then
   begin
-    Exit((Ord(AString[2]) shl 24) or (Ord(AString[3]) shl 16) or (Ord(AString[4]) shl 8) or (Ord(AString[5]) shl 0));
+    Exit((Ord(AString[2]) shl 24) or (Ord(AString[3]) shl 16) or (Ord(AString[4]) shl 8) or
+      (Ord(AString[5]) shl 0));
   end;
-  if (Length(AString) >= 2) and (AString[1] = CharQuoteDouble) and (AString[Length(AString)] = CharQuoteDouble) then
+  if (Length(AString) >= 2) and (AString[1] = CharQuoteDouble) and
+    (AString[Length(AString)] = CharQuoteDouble) then
   begin
     Exit(HashName(PChar(Copy(AString, 2, Length(AString) - 2))));
   end;
   Result := StrToInt(AString);
 end;
 
-function J2C_StrToIntDef(const AString: String; const ADefault: Integer): Integer;
+class function GUtils.CodeToIntDef(const AString: String; const ADefault: Integer): Integer;
 begin
   try
-    Result := J2C_StrToInt(AString);
+    Result := CodeToInt(AString);
   except
     Result := ADefault;
   end;

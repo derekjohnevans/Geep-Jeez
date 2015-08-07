@@ -1,0 +1,17 @@
+
+slider1:4000<10,20000,10>band (Hz)
+slider2:0<-12,12,0.5>gain (dB)
+slider3:0.7<0.01,50,0.05>width
+
+import swipe.effects.jsfx-inc
+
+@slider
+
+spl0.EffectFilterParametric(slider1, slider3, slider2);
+spl1.EffectFilterParametric(slider1, slider3, slider2);
+
+@sample
+
+spl0.EffectFilterParametric();
+spl1.EffectFilterParametric();
+

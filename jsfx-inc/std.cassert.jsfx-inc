@@ -1,0 +1,28 @@
+
+@init
+
+function _assert(message, file, line)
+(
+  fprintf(stderr, "Assertion failed: %s, file %s, line %d\n", message, file, line);
+);
+
+function assert(true, message, file, line) global()
+(
+  !true ? _assert(message, file, line);
+);
+
+function assert(true, message, file) global()
+(
+  assert(true, message, file, -1);  
+);
+
+function assert(true, message) global()
+(
+  assert(true, message, "unknown");  
+);
+
+function assert(true) global()
+(
+  assert(true, "error");
+);
+

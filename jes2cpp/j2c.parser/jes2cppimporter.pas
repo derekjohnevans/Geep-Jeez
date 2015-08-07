@@ -31,7 +31,8 @@ unit Jes2CppImporter;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppDescription, Jes2CppEel, Jes2CppMessageLog, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppDescription, Jes2CppEel, Jes2CppMessageLog,
+  Jes2CppTextFileCache, Math, SysUtils;
 
 type
 
@@ -40,10 +41,11 @@ type
     FDescription: CJes2CppDescription;
     FFileNamesImported: TStringList;
   protected
-    procedure WriteSliderSerializationCode;
-    procedure LoadStringsFrom(const AStrings: TStrings; const AFileName: TFileName); virtual;
-    procedure ImportFrom(const AScript: TStrings; const AScriptFileName: TFileName; const ALevel: Integer = 0); overload;
-    procedure ImportFrom(const AScriptFileName: TFileName); overload;
+    procedure PrependSliderSerializationCode;
+    function LoadStringsFrom(const AFileSource: TFileName): TStrings; virtual;
+    procedure ImportFrom(const AScript: TStrings; const AFileSource: TFileName;
+      const ALevel: Integer = 0); overload;
+    procedure ImportFrom(const AFileSource: TFileName); overload;
   protected
     procedure DoCreate; override;
     procedure DoDestroy; override;
@@ -67,70 +69,56 @@ begin
   inherited DoDestroy;
 end;
 
-procedure CJes2CppImporter.LoadStringsFrom(const AStrings: TStrings; const AFileName: TFileName);
+function CJes2CppImporter.LoadStringsFrom(const AFileSource: TFileName): TStrings;
 begin
-  AStrings.LoadFromFile(AFileName);
+  Result := GFileCache.LoadFromFile(AFileSource);
 end;
 
-procedure CJes2CppImporter.ImportFrom(const AScript: TStrings; const AScriptFileName: TFileName; const ALevel: Integer);
+procedure CJes2CppImporter.ImportFrom(const AScript: TStrings; const AFileSource: TFileName;
+  const ALevel: Integer);
 var
   LIndex: Integer;
-  LImportStrings: TStrings;
   LImportFileName: TFileName;
 begin
   if ALevel > 10 then
   begin
     LogException('Max Importing Depth Reached.');
   end else begin
-    if FFileNamesImported.IndexOf(AScriptFileName) < 0 then
+    if FFileNamesImported.IndexOf(AFileSource) < ZeroValue then
     begin
-      LogFileName(SMsgTypeImporting, AScriptFileName);
-      for LIndex := 0 to EelDescHigh(AScript) do
+      FFileNamesImported.Add(AFileSource);
+      LogFileName(SMsgTypeImporting, AFileSource);
+      for LIndex := ZeroValue to GEel.DescHigh(AScript) do
       begin
-        if EelIsImport(AScript[LIndex], LImportFileName) then
+        if GEel.IsImport(AScript[LIndex], LImportFileName) then
         begin
-          LImportStrings := TStringList.Create;
           try
-            LImportFileName := EelFileNameResolve(LImportFileName, AScriptFileName);
-            try
-              LoadStringsFrom(LImportStrings, LImportFileName);
-            except
-              on AException: Exception do
-              begin
-                FileCaretY := LIndex + 1;
-                FileSource := AScriptFileName;
-                LogException(AException.Message);
-              end;
+            LogAssert(GEel.ImportResolve(LImportFileName, AFileSource),
+              SMsgUnableToFindImportFile);
+            ImportFrom(LoadStringsFrom(LImportFileName), LImportFileName, ALevel + 1);
+          except
+            on AException: Exception do
+            begin
+              FileCaretY := LIndex + 1;
+              FileSource := AFileSource;
+              LogException(AException.Message);
             end;
-            ImportFrom(LImportStrings, LImportFileName, ALevel + 1);
-          finally
-            FreeAndNil(LImportStrings);
           end;
         end;
       end;
-      FDescription.ImportFromScript(AScript, AScriptFileName);
-      FFileNamesImported.Add(AScriptFileName);
+      FDescription.ImportFromScript(AScript, AFileSource);
     end;
   end;
 end;
 
-procedure CJes2CppImporter.ImportFrom(const AScriptFileName: TFileName);
-var
-  LStrings: TStrings;
+procedure CJes2CppImporter.ImportFrom(const AFileSource: TFileName);
 begin
-  LStrings := TStringList.Create;
-  try
-    LoadStringsFrom(LStrings, AScriptFileName);
-    ImportFrom(LStrings, AScriptFileName);
-  finally
-    FreeAndNil(LStrings);
-  end;
+  ImportFrom(LoadStringsFrom(AFileSource), AFileSource);
 end;
 
-procedure CJes2CppImporter.WriteSliderSerializationCode;
+procedure CJes2CppImporter.PrependSliderSerializationCode;
 begin
-  LogMessage('HERE'+IntToStr(FDescription.Parameters.ComponentCount));
-  //FDescription.
+  // TODO: Read/Write slider in Jesusonic?
 end;
 
 end.

@@ -1,0 +1,79 @@
+/*
+** Name: stdlib.h
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import std.cheap.jsfx-inc
+
+@init
+
+function malloc(size) global(heap*) local(block)
+( 
+  size = size_t(size) + 1; 
+  size >= 1 && size < 0x80000000 ? (    
+    block = heap.min;
+    while (!heap.avail(block, size)) ( block += abs(block[]); );
+    size != -block[] ? block[size] = block[] + size;
+    block[] = size;
+    heap.max(max(heap.max, block + size));
+    block + 1;
+  ) : 0;
+);
+
+function calloc(size) global()
+(
+  size = size_t(size);
+  memset(malloc(size), 0, size);
+);
+
+function calloc(count, size) global()
+(
+  calloc(size_t(count) * size_t(size));
+);
+
+function mcheck(memory) global(heap*)
+(
+  heap.check(memory - 1);
+);
+
+function _msize(memory) global()
+(
+  mcheck(memory) && memory[-1] > 0 ? memory[-1] - 1 : 0;
+);
+
+function malloc_size(memory) global()
+(
+  _msize(memory);
+);
+
+function free(memory) global()
+(
+  mcheck(memory) ? memory[-1] = -abs(memory[-1]);
+  0;
+);
+
+function realloc(memory, size, clear) global() local(newmem)
+(
+  size = size_t(size);
+  size == _msize(memory) ? (
+    memory;
+  ) : (
+    newmem = clear ? calloc(size) : malloc(size);    
+    memcpy(newmem, memory, min(size, _msize(memory)));
+    free(memory);
+    newmem;
+  );
+);
+
+function realloc(m, n) global()
+(
+  realloc(m, n, 0);
+);
+
+
+

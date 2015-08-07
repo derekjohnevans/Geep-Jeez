@@ -31,18 +31,19 @@ unit UJeezBuild;
 interface
 
 uses
-  Buttons, ComCtrls, Controls, ExtCtrls, Forms, JeezResources, JeezUtils, Jes2CppCompiler, Jes2CppConstants,
-  Jes2CppProcess, SysUtils;
+  Buttons, ComCtrls, Controls, ExtCtrls, Forms, JeezResources, JeezUtils,
+  Jes2CppCompiler, Jes2CppConstants,
+  Jes2CppProcess, SysUtils, UJeezEditor;
 
 type
 
   { TJeezBuild }
 
   TJeezBuild = class(TForm)
-    ButtonAbort: TBitBtn;
+    ButtonAbortBuild: TBitBtn;
     ProgressBar: TProgressBar;
     Timer: TTimer;
-    procedure ButtonAbortClick(ASender: TObject);
+    procedure ButtonAbortBuildClick(ASender: TObject);
     procedure FormPaint(ASender: TObject);
     procedure TimerTimer(ASender: TObject);
   private
@@ -50,8 +51,9 @@ type
     FStartTime: TTime;
     FOutputFile: TFileName;
     FCompiler: CJes2CppCompiler;
+    FEditor: TJeezEditor;
   public
-    function Execute: Boolean;
+    function Execute(const AEditor: TJeezEditor): Boolean;
     property OutputFile: TFileName read FOutputFile;
   end;
 
@@ -62,26 +64,29 @@ implementation
 
 {$R *.lfm}
 
-uses UJeezIde, UJeezMessages, UJeezOptions;
+uses UJeezMessages, UJeezOptions;
 
-function TJeezBuild.Execute: Boolean;
+function TJeezBuild.Execute(const AEditor: TJeezEditor): Boolean;
 begin
-  FCaption := SMsgTypeBuilding + CharSpace + UpperCase(TypePluginAsString(JeezOptions.GetTypePlugin)) +
+  Assert(Assigned(AEditor));
+  FEditor := AEditor;
+  FCaption := SMsgTypeBuilding + CharSpace +
+    UpperCase(CJes2CppCompiler.TypePluginAsString(JeezOptions.GetPluginType)) +
     CharSpace + GsPlugin + CharSpace + CharOpeningParenthesis;
-  case JeezOptions.GetTypeArchitecture of
-    pa32bit: begin
+  case JeezOptions.GetArchitecture of
+    ca32bit: begin
       FCaption += Gs32Bit + CharSpace + SMsgArchitecture;
     end;
-    pa64bit: begin
+    ca64bit: begin
       FCaption += Gs64Bit + CharSpace + SMsgArchitecture;
     end;
   end;
   FCaption += CharSlashForward;
-  case JeezOptions.GetTypePrecision of
-    ptSingle: begin
+  case JeezOptions.GetPrecision of
+    cfpSingle: begin
       FCaption += Gs32Bit + CharSpace + SMsgPrecision;
     end;
-    ptDouble: begin
+    cfpDouble: begin
       FCaption += Gs64Bit + CharSpace + SMsgPrecision;
     end;
   end;
@@ -91,7 +96,7 @@ begin
   OnPaint := FormPaint;
   Timer.Enabled := True;
   ProgressBar.Position := 0;
-  ButtonAbort.Enabled := True;
+  ButtonAbortBuild.Enabled := True;
   FExceptionMessage := EmptyStr;
   Result := ShowModal = mrOk;
   if FExceptionMessage <> EmptyStr then
@@ -106,30 +111,22 @@ end;
 
 procedure TJeezBuild.FormPaint(ASender: TObject);
 var
-  LTranspiler: Transpile;
+  LTranspiler: CJeezJes2CppLogMessages;
 begin
   OnPaint := nil;
   ModalResult := mrAbort;
   Refresh;
   Application.ProcessMessages;
   try
-    LTranspiler := Transpile.Create(Self);
+    LTranspiler := CJeezJes2CppLogMessages.Create(Self);
     try
-      LTranspiler.WarningsAsErrors := JeezOptions.EditWarningsAsErrors.Checked;
-      LTranspiler.TranspileScript(JeezIde.GetActiveEditor.SynEdit.Lines, JeezIde.GetActiveEditor.Filename,
-        JeezOptions.EditDefVendorString.Text, ExtractFileName(JeezIde.GetActiveEditor.Filename), JeezOptions.EditDefProductString.Text,
+      LTranspiler.TranspileScript(FEditor.SynEdit.Lines, FEditor.FileName,
+        JeezOptions.EditDefVendorString.Text, ExtractFileName(FEditor.FileName),
+        JeezOptions.EditDefProductString.Text,
         JeezOptions.EditDefVendorVersion.Text, JeezOptions.EditDefUniqueId.Text);
-      FCompiler := Compiling.Create(Self);
+      FCompiler := CJeezCompiler.Create(Self);
       try
-        FCompiler.SetCompilerOption(coUseLibBass, JeezOptions.EditUseBass.Checked);
-        FCompiler.SetCompilerOption(coUseLibSndFile, JeezOptions.EditUseSndFile.Checked);
-        FCompiler.SetCompilerOption(coUseFastMath, JeezOptions.EditUseFastMath.Checked);
-        FCompiler.SetCompilerOption(coUseInline, JeezOptions.EditUseInlineFunctions.Checked);
-        FCompiler.SetCompilerOption(coUseCompression, JeezOptions.EditUseCompression.Checked);
-        FCompiler.TypeArchitecture := JeezOptions.GetTypeArchitecture;
-        FCompiler.TypePrecision := JeezOptions.GetTypePrecision;
-        FCompiler.TypePlugin := JeezOptions.GetTypePlugin;
-        FOutputFile := FCompiler.Compile(JeezOptions.GetCompiler, LTranspiler.Output);
+        FOutputFile := FCompiler.Compile(JeezOptions.GetGccExecutable, LTranspiler.Output);
         ModalResult := mrOk;
       finally
         FreeAndNil(FCompiler);
@@ -137,7 +134,7 @@ begin
     finally
       FreeAndNil(LTranspiler);
     end;
-    JeezMessages.LogMessage(Format(SMsgCompilationComplete1, [TimeToStr(Now - FStartTime)]));
+    JeezConsole.LogMessage(Format(SMsgCompilationComplete1, [TimeToStr(Now - FStartTime)]));
   except
     on AException: Exception do
     begin
@@ -155,12 +152,12 @@ begin
   end;
 end;
 
-procedure TJeezBuild.ButtonAbortClick(ASender: TObject);
+procedure TJeezBuild.ButtonAbortBuildClick(ASender: TObject);
 begin
   if Assigned(FCompiler) then
   begin
     Caption := SMsgAbortingCompilationPleaseWait;
-    ButtonAbort.Enabled := False;
+    ButtonAbortBuild.Enabled := False;
     FCompiler.Terminate(GiExitStatusAbort);
   end;
 end;

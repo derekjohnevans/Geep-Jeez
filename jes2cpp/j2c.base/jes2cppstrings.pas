@@ -31,7 +31,7 @@ unit Jes2CppStrings;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppFileNames, Jes2CppTranslate, StrUtils, SysUtils;
+  Classes, DateUtils, Jes2CppConstants, Jes2CppEel, Jes2CppFileNames, Math, StrUtils, SysUtils;
 
 type
 
@@ -43,21 +43,36 @@ type
     procedure Append(const AIdent: String);
   end;
 
-function J2C_StringLine(const ALength: Integer = GiColWidth): String;
-function J2C_StringIsSpace(const AString: String): Boolean;
-procedure J2C_StringAppendCSV(var AString: String; const AValue: String);
-function J2C_DecodeNameValue(AString: String; out AName, AValue: String): Boolean;
-function J2C_StringSplit(const AString: String; const ACharSet: TSysCharSet; out ALeft, ARight: String): Boolean;
+type
+  GString = object
+  private
+    class function EncodeNameValue(AName, AValue: String): String;
+  public
+    class function SplitterLine(const ALength: Integer = GiColWidth): String;
+    class function IsEmpty(const AString: String): Boolean;
+    class function IsSpace(const AString: String): Boolean;
+    class procedure AppendCSV(var AString: String; const AValue: String);
+    class function DecodeNameValue(AString: String; out AName, AValue: String): Boolean;
+    class function Split(const AString: String; const ACharSet: TSysCharSet;
+      out ALeft, ARight: String): Boolean;
+  end;
 
-function J2C_StringsGetValue(const AStrings: TStrings; const AName, ADefault: String; const ADecodeMeta: Boolean = False): String;
-function J2C_StringsIndexOfName(const AStrings: TStrings; const AName: String): Integer;
-procedure J2C_StringsAddComment(const AStrings: TStrings; const AString: String);
-procedure J2C_StringsAddCommentLine(const AStrings: TStrings);
-procedure J2C_StringsAddCommentTitle(const AStrings: TStrings; const AString: String);
-procedure J2C_StringsSetValue(const AStrings: TStrings; const AName, AValue: String);
-procedure J2C_StringsTrim(const AStrings: TStrings);
+
+  GStrings = object
+    class function GetValue(const AStrings: TStrings; const AName, ADefault: String;
+      const ADecodeMeta: Boolean = False): String;
+    class function DescIndexOfName(const AStrings: TStrings; const AName: String): Integer;
+    class procedure AddComment(const AStrings: TStrings; const AString: String);
+    class procedure AddCommentLine(const AStrings: TStrings);
+    class procedure AddCommentTitle(const AStrings: TStrings; const AString: String);
+    class procedure SetValue(const AStrings: TStrings; const AName, AValue: String);
+    class procedure Trim(const AStrings: TStrings);
+    class procedure CreateUntitled(const AStrings: TStrings);
+  end;
 
 implementation
+
+uses Jes2CppTranslate;
 
 function TArrayOfString.Count: Integer;
 begin
@@ -70,7 +85,12 @@ begin
   Items[High(Items)] := AIdent;
 end;
 
-function J2C_StringIsSpace(const AString: String): Boolean;
+class function GString.IsEmpty(const AString: String): Boolean;
+begin
+  Result := Length(AString) = ZeroValue;
+end;
+
+class function GString.IsSpace(const AString: String): Boolean;
 var
   LIndex: Integer;
 begin
@@ -84,21 +104,22 @@ begin
   Result := True;
 end;
 
-procedure J2C_StringAppendCSV(var AString: String; const AValue: String);
+class procedure GString.AppendCSV(var AString: String; const AValue: String);
 begin
-  if not J2C_StringIsSpace(AString) then
+  if not IsSpace(AString) then
   begin
     AString += GsCppCommaSpace;
   end;
   AString += AValue;
 end;
 
-function J2C_StringSplit(const AString: String; const ACharSet: TSysCharSet; out ALeft, ARight: String): Boolean;
+class function GString.Split(const AString: String; const ACharSet: TSysCharSet;
+  out ALeft, ARight: String): Boolean;
 var
   LPos: Integer;
 begin
   LPos := PosSet(ACharSet, AString);
-  Result := LPos > 0;
+  Result := LPos > ZeroValue;
   if Result then
   begin
     ARight := AString;
@@ -107,7 +128,7 @@ begin
   end;
 end;
 
-function J2C_EncodeNameValue(AName, AValue: String): String;
+class function GString.EncodeNameValue(AName, AValue: String): String;
 begin
   if SameText(AName, GsProductString) then
   begin
@@ -116,10 +137,10 @@ begin
   Result := Trim(AName) + CharColon + CharSpace + Trim(AValue);
 end;
 
-function J2C_DecodeNameValue(AString: String; out AName, AValue: String): Boolean;
+class function GString.DecodeNameValue(AString: String; out AName, AValue: String): Boolean;
 begin
   AString := Trim(AString);
-  Result := J2C_StringSplit(AString, [CharColon, CharEqualSign], AName, AValue);
+  Result := Split(AString, [CharColon, CharEqualSign], AName, AValue);
   if Result then
   begin
     if SameText(AName, GsEelDescDesc) then
@@ -132,13 +153,13 @@ begin
   end;
 end;
 
-function J2C_StringsIndexOfName(const AStrings: TStrings; const AName: String): Integer;
+class function GStrings.DescIndexOfName(const AStrings: TStrings; const AName: String): Integer;
 var
   LName, LValue: String;
 begin
-  for Result := 0 to EelDescHigh(AStrings) do
+  for Result := ZeroValue to GEel.DescHigh(AStrings) do
   begin
-    if J2C_DecodeNameValue(AStrings[Result], LName, LValue) and SameText(LName, AName) then
+    if GString.DecodeNameValue(AStrings[Result], LName, LValue) and SameText(LName, AName) then
     begin
       Exit;
     end;
@@ -146,15 +167,17 @@ begin
   Result := -1;
 end;
 
-function J2C_StringsGetValue(const AStrings: TStrings; const AName, ADefault: String; const ADecodeMeta: Boolean): String;
+class function GStrings.GetValue(const AStrings: TStrings; const AName, ADefault: String;
+  const ADecodeMeta: Boolean): String;
 var
   LIndex: Integer;
   LName, LValue: String;
 begin
   Result := ADefault;
-  for LIndex := 0 to EelDescHigh(AStrings) do
+  for LIndex := ZeroValue to GEel.DescHigh(AStrings) do
   begin
-    if J2C_DecodeNameValue(AStrings[LIndex], LName, LValue) and SameText(LName, AName) and (Length(LValue) > 0) then
+    if GString.DecodeNameValue(AStrings[LIndex], LName, LValue) and
+      SameText(LName, AName) and (Length(LValue) > 0) then
     begin
       Result := LValue;
       Break;
@@ -162,28 +185,28 @@ begin
   end;
   if ADecodeMeta then
   begin
-    Result := NSFileNames.DecodeMeta(Result);
+    Result := GFileName.DecodeMeta(Result);
   end;
 end;
 
-procedure J2C_StringsSetValue(const AStrings: TStrings; const AName, AValue: String);
+class procedure GStrings.SetValue(const AStrings: TStrings; const AName, AValue: String);
 var
   LIndex: Integer;
   LName, LValue: String;
 begin
-  for LIndex := 0 to EelDescHigh(AStrings) do
+  for LIndex := ZeroValue to GEel.DescHigh(AStrings) do
   begin
-    if J2C_DecodeNameValue(AStrings[LIndex], LName, LValue) and SameText(LName, AName) then
+    if GString.DecodeNameValue(AStrings[LIndex], LName, LValue) and SameText(LName, AName) then
     begin
-      AStrings[LIndex] := J2C_EncodeNameValue(AName, AValue);
+      AStrings[LIndex] := GString.EncodeNameValue(AName, AValue);
       Exit;
     end;
   end;
   // TODO: Find a better place to insert new values.
-  AStrings.Insert(LIndex + 1, J2C_EncodeNameValue(AName, AValue));
+  AStrings.Insert(LIndex + 1, GString.EncodeNameValue(AName, AValue));
 end;
 
-procedure J2C_StringsAddComment(const AStrings: TStrings; const AString: String);
+class procedure GStrings.AddComment(const AStrings: TStrings; const AString: String);
 var
   LIndex: Integer;
 begin
@@ -191,7 +214,7 @@ begin
   begin
     try
       Text := WrapText(AString, GiColWidth);
-      for LIndex := 0 to Count - 1 do
+      for LIndex := ZeroValue to Count - 1 do
       begin
         AStrings.Add(GsCppCommentSpace + Strings[LIndex]);
       end;
@@ -201,32 +224,111 @@ begin
   end;
 end;
 
-function J2C_StringLine(const ALength: Integer): String;
+class function GString.SplitterLine(const ALength: Integer): String;
 begin
   Result := StringOfChar(CharEqualSign, ALength);
 end;
 
-procedure J2C_StringsAddCommentLine(const AStrings: TStrings);
+class procedure GStrings.AddCommentLine(const AStrings: TStrings);
 begin
-  J2C_StringsAddComment(AStrings, J2C_StringLine);
+  AddComment(AStrings, GString.SplitterLine);
 end;
 
-procedure J2C_StringsAddCommentTitle(const AStrings: TStrings; const AString: String);
+class procedure GStrings.AddCommentTitle(const AStrings: TStrings; const AString: String);
 begin
-  J2C_StringsAddCommentLine(AStrings);
-  J2C_StringsAddComment(AStrings, AString);
-  J2C_StringsAddCommentLine(AStrings);
+  AddCommentLine(AStrings);
+  AddComment(AStrings, AString);
+  AddCommentLine(AStrings);
 end;
 
-procedure J2C_StringsTrim(const AStrings: TStrings);
+class procedure GStrings.Trim(const AStrings: TStrings);
 begin
-  while (AStrings.Count > 0) and J2C_StringIsSpace(AStrings[AStrings.Count - 1]) do
+  while (AStrings.Count > ZeroValue) and GString.IsSpace(AStrings[AStrings.Count - 1]) do
   begin
     AStrings.Delete(AStrings.Count - 1);
   end;
-  while (AStrings.Count > 0) and J2C_StringIsSpace(AStrings[0]) do
+  while (AStrings.Count > ZeroValue) and GString.IsSpace(AStrings[ZeroValue]) do
   begin
-    AStrings.Delete(0);
+    AStrings.Delete(ZeroValue);
+  end;
+end;
+
+class procedure GStrings.CreateUntitled(const AStrings: TStrings);
+begin
+  with AStrings do
+  begin
+    Clear;
+    AddCommentLine(AStrings);
+    AddComment(AStrings, 'Name:');
+    AddComment(AStrings, 'Website:');
+    AddComment(AStrings, 'Created: ' + FormatDateTime(FormatSettings.LongDateFormat, Now));
+    AddComment(AStrings, Format('Copyright %d (C) (Enter Your Name) <your@email.com>',
+      [YearOf(Now)]));
+    AddCommentLine(AStrings);
+    Add(EmptyStr);
+
+    AddComment(AStrings, 'Desc should be a one line description of your effect.');
+    Add('desc: New Jesusonic Effect');
+    Add(EmptyStr);
+
+    AddComment(AStrings,
+      'The following properties are used for plugin DLL generation. If a property doesnt exist (or is blank), then the default "tools->options" properties are used.');
+    Add(EmptyStr);
+
+    AddComment(AStrings, 'EffectName should be ~10-20 chars and simply describe your effect.');
+    Add(GsEffectName + ': Enter Effect Name');
+    Add(EmptyStr);
+
+    AddComment(AStrings, GsVendorString +
+      ' should be ~10-20 chars and common to all your effects. It is shown in brackets after the EffectName. eg: BeatBox (mda)');
+    Add(GsVendorString + ': Vendor');
+    Add(EmptyStr);
+
+    AddComment(AStrings, GsVendorVersion + ' is a 32bit integer.');
+    Add(GsVendorVersion + ': 1000');
+    Add(EmptyStr);
+
+    AddComment(AStrings, GsUniqueId +
+      ' is a 32bit integer and should be registered with Steinberg if you are releasing a global plugin. It is used to resolve plugin name clashes.');
+    Add(GsUniqueId + ': 1234');
+    Add(EmptyStr);
+
+    AddComment(AStrings, GsInstallPath +
+      ' is the location in which the plugin DLL will be installed. Note: On most systems, the plugin path will require admin privileges, so you may have to place plugin''s in a non-admin folder.');
+    Add(GsInstallPath + ': %PROGRAMFILES%\VST\');
+    Add(EmptyStr);
+
+    Add(GEelSectionHeader.Make(GsEelSectionInit));
+    AddComment(AStrings, '@init is called each time the effect is resumed. ie: Start of play.');
+    AddComment(AStrings, 'Constants');
+    Add('cDenorm = 10^-30;');
+    Add('cAmpDB = 8.65617025;');
+    Add(EmptyStr);
+    Add(GEelSectionHeader.Make(GsEelSectionBlock));
+    AddComment(AStrings,
+      '@block is called every N samples, where N is set by your audio card. This setting is often called "latency".');
+    Add(EmptyStr);
+
+    Add(GEelSectionHeader.Make(GsEelSectionSample));
+    AddComment(AStrings, '@sample is called for each audio sample.');
+    AddComment(AStrings, 'Simple M/S Code');
+    Add('mid = (spl0 + spl1) * 0.5;');
+    Add('sid = (spl0 - spl1) * 0.5;');
+    Add('spl0 = mid;');
+    Add('spl1 = sid;');
+    Add(EmptyStr);
+
+    Add(GEelSectionHeader.Make(GsEelSectionGfx) + ' 320 240');
+    AddComment(AStrings,
+      'NOTE: Sliders must be hidden before graphics are enabled. Review the SWIPE GUI demos to see how this is done.');
+    Add(EmptyStr);
+
+    Add(GEelSectionHeader.Make(GsEelSectionSerialize));
+    AddComment(AStrings,
+      '@serialize is called when effect settings need to be stored & restored. ' +
+      'NOTE: @serialize has just been implemented, so please contact myself if you find a bug. ' +
+      'You can also use the default slider serialization to store/restore effect settings.');
+    Add(EmptyStr);
   end;
 end;
 

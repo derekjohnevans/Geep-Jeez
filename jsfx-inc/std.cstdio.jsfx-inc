@@ -1,0 +1,61 @@
+/*
+** Name: stdio.h
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import std.cstring.jsfx-inc
+
+@init
+
+stdout = strcpy(#stdout, "");
+stderr = strcpy(#stderr, "");
+stdin  = strcpy(#stdin , ""); // Unused
+
+function fputs(str, file) global()
+(
+  strcat(file, str);
+);
+
+function puts(s) global(stdout)
+(
+  fputs(strcat(strcpy(#, s), "\n"), stdout);
+);
+
+function fprintf(file, fmt               ) global() ( fputs(sprintf(#, fmt), file); );
+function fprintf(file, fmt, a            ) global() ( fputs(sprintf(#, fmt, a), file); );
+function fprintf(file, fmt, a, b         ) global() ( fputs(sprintf(#, fmt, a, b), file); );
+function fprintf(file, fmt, a, b, c      ) global() ( fputs(sprintf(#, fmt, a, b, c), file); );
+function fprintf(file, fmt, a, b, c, d   ) global() ( fputs(sprintf(#, fmt, a, b, c, d), file); );
+function fprintf(file, fmt, a, b, c, d, e) global() ( fputs(sprintf(#, fmt, a, b, c, d, e), file); );
+
+function printf(fmt               ) global(stdout) ( fprintf(stdout, fmt); );
+function printf(fmt, a            ) global(stdout) ( fprintf(stdout, fmt, a); );
+function printf(fmt, a, b         ) global(stdout) ( fprintf(stdout, fmt, a, b); );
+function printf(fmt, a, b, c      ) global(stdout) ( fprintf(stdout, fmt, a, b, c); );
+function printf(fmt, a, b, c, d   ) global(stdout) ( fprintf(stdout, fmt, a, b, c, d); );
+function printf(fmt, a, b, c, d, e) global(stdout) ( fprintf(stdout, fmt, a, b, c, d, e); );
+
+// Call this in your @gfx section to display stderr.
+function gfx_stderr(x1, y1, x2, y2) 
+global(gfx_x, gfx_y, gfx_r, gfx_g, gfx_b, gfx_a)
+global(stderr)
+(
+  strlen(stderr) ? (
+    gfx_a = 0.5;
+    gfx_r = gfx_g = gfx_b = 0;
+    gfx_x = x1; gfx_y = y1;
+    gfx_rectto(x2, y2);
+    gfx_setfont(0);
+    gfx_r = gfx_a = 1;
+    gfx_g = gfx_b = 0;
+    gfx_x = x1 + 4;
+    gfx_y = y1 + 4;
+    gfx_drawstr(stderr);
+  );
+);
+

@@ -32,8 +32,9 @@ unit Jes2CppFunction;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppFunctionIdentifiers, Jes2CppIdentifier, Jes2CppIdentString,
-  Jes2CppMessageLog, Jes2CppStrings, Jes2CppTranslate, Soda, StrUtils, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppFunctionIdentifiers,
+  Jes2CppIdentifier, Jes2CppIdentString,
+  Jes2CppMessageLog, Jes2CppStrings, Jes2CppTranslate, Math, Soda, StrUtils, SysUtils;
 
 type
 
@@ -50,19 +51,22 @@ type
   public
     FBody, FReturnExpression: String;
   strict private
-    function EncodeCppParams: String;
-    function EncodeCppLocals: String;
-    function EncodeCppStatics: String;
+    function CppFunctionParams: String;
+    function CppFunctionLocals: String;
+    function CppFunctionStatics: String;
   protected
     procedure DoCreate; override;
   public
-    function EncodeDefineCpp: String;
-    function EncodeDefineEel: String;
+    function CppFunction: String;
+    function EelPrototype: String;
+    function CppFunctionName: String;
   public
+    function GetNameSpace: String;
     function DefaultNameSpace: String;
     function GetTitle: String;
     function IsInternalAndUsed: Boolean;
-    function IsNameLocal(const AName: TComponentName; const AMessageLog: CJes2CppMessageLog): Boolean;
+    function IsNameLocal(const AName: TComponentName;
+      const AMessageLog: CJes2CppMessageLog): Boolean;
     procedure AppendInstance(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog);
   public
     property HasGlobals: Boolean read FHasGlobals write FHasGlobals;
@@ -84,7 +88,8 @@ type
     {$INCLUDE soda.inc}
   public
     function FindFunction(const AIdent: TIdentString; const ACount: Integer): CJes2CppFunction;
-    function FindOverload(const AName: TIdentString; out ANameSpace, AFunctName: String; const AParamCount: Integer): CJes2CppFunction;
+    function FindOverload(const AName: TIdentString; out ANameSpace, AFunctName: String;
+      const AParamCount: Integer): CJes2CppFunction;
   end;
 
 implementation
@@ -104,7 +109,8 @@ begin
   FInstancesAll := CJes2CppFunctionIdentifiers.Create(Self);
 end;
 
-procedure CJes2CppFunction.AppendInstance(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog);
+procedure CJes2CppFunction.AppendInstance(const AIdent: TIdentString;
+  const AMessageLog: CJes2CppMessageLog);
 var
   LIndex: Integer;
 begin
@@ -120,26 +126,26 @@ end;
 
 function CJes2CppFunction.GetTitle: String;
 begin
-  Result := GsEelFunction + CharSpace + EncodeDefineEel + LineEnding + Comment + LineEnding;
+  Result := GsEelFunction + CharSpace + EelPrototype + LineEnding + Comment + LineEnding;
   if References.HasComponents then
   begin
     Result += References[0].EncodeLineFile;
   end;
 end;
 
-function CJes2CppFunction.EncodeDefineEel: String;
+function CJes2CppFunction.EelPrototype: String;
 var
   LIdent: TComponent;
 begin
   Result := EmptyStr;
   for LIdent in FParams do
   begin
-    J2C_StringAppendCSV(Result, J2C_IdentClean(LIdent.Name));
+    GString.AppendCSV(Result, GIdentString.Clean(LIdent.Name));
   end;
   Result := Name + CharOpeningParenthesis + Result + CharClosingParenthesis;
 end;
 
-function CJes2CppFunction.EncodeCppParams: String;
+function CJes2CppFunction.CppFunctionParams: String;
 var
   LIdent: CJes2CppDataType;
 begin
@@ -148,18 +154,20 @@ begin
   begin
     if LIdent.Name = GsEelVariadic then
     begin
-      J2C_StringAppendCSV(Result, GsEelVariadic);
+      GString.AppendCSV(Result, GsEelVariadic);
     end else begin
-      J2C_StringAppendCSV(Result, LIdent.DataType + CharSpace + CppEncodeVariable(LIdent.Name));
+      GString.AppendCSV(Result, LIdent.DataType + CharSpace +
+        GCpp.Encode.NameVariable(LIdent.Name));
     end;
   end;
   for LIdent in FInstancesAll do
   begin
-    J2C_StringAppendCSV(Result, LIdent.DataType + CharAmpersand + CharSpace + CppEncodeVariable(GsEelSpaceThis + LIdent.Name));
+    GString.AppendCSV(Result, LIdent.DataType + CharAmpersand + CharSpace +
+      GCpp.Encode.NameVariable(GsEelSpaceThis + LIdent.Name));
   end;
 end;
 
-function CJes2CppFunction.EncodeCppLocals: String;
+function CJes2CppFunction.CppFunctionLocals: String;
 var
   LComponent: TComponent;
 begin
@@ -168,13 +176,14 @@ begin
   begin
     for LComponent in FLocals do
     begin
-      J2C_StringAppendCSV(Result, CppEncodeVariable(LComponent.Name) + GsCppAssign + GsCppZero);
+      GString.AppendCSV(Result, GCpp.Encode.NameVariable(LComponent.Name) +
+        GsCppAssign + GsCppZero);
     end;
     Result := GsCppEelF + CharSpace + Result + GsCppLineEnding;
   end;
 end;
 
-function CJes2CppFunction.EncodeCppStatics: String;
+function CJes2CppFunction.CppFunctionStatics: String;
 var
   LComponent: TComponent;
 begin
@@ -183,22 +192,31 @@ begin
   begin
     for LComponent in FStatics do
     begin
-      J2C_StringAppendCSV(Result, CppEncodeVariable(LComponent.Name) + GsCppAssign + GsCppZero);
+      GString.AppendCSV(Result, GCpp.Encode.NameVariable(LComponent.Name) +
+        GsCppAssign + GsCppZero);
     end;
     Result := GsCppStatic + CharSpace + GsCppEelF + CharSpace + Result + GsCppLineEnding;
   end;
 end;
 
-function CJes2CppFunction.EncodeDefineCpp: String;
+function CJes2CppFunction.CppFunctionName: String;
 begin
-  Result := GsCppJes2CppInlineSpace + Format(GsCppFunct2, [DataType + CharSpace + CppEncodeFunction(Name), EncodeCppParams]) +
-    LineEnding + CharOpeningBrace + LineEnding + EncodeCppLocals + EncodeCppStatics + FBody + GsCppReturnSpace +
-    FReturnExpression + GsCppLineEnding + CharClosingBrace + LineEnding;
+  Result := GCpp.Encode.NameFunction(Name, InstancesAll.ComponentCount);
 end;
 
-function CJes2CppFunction.IsNameLocal(const AName: TComponentName; const AMessageLog: CJes2CppMessageLog): Boolean;
+function CJes2CppFunction.CppFunction: String;
 begin
-  Result := J2C_IdentIsNameSpaceThis(AName) or FParams.ExistsIdent(AName, AMessageLog) or FLocals.ExistsIdent(AName, AMessageLog);
+  Result := GsCppJes2CppInlineSpace + Format(GsCppFunct2,
+    [DataType + CharSpace + CppFunctionName, CppFunctionParams]) + LineEnding +
+    CharOpeningBrace + LineEnding + CppFunctionLocals + CppFunctionStatics + FBody +
+    GsCppReturnSpace + FReturnExpression + GsCppLineEnding + CharClosingBrace + LineEnding;
+end;
+
+function CJes2CppFunction.IsNameLocal(const AName: TComponentName;
+  const AMessageLog: CJes2CppMessageLog): Boolean;
+begin
+  Result := GIdentString.IsNameSpaceThis(AName) or FParams.ExistsIdent(AName, AMessageLog) or
+    FLocals.ExistsIdent(AName, AMessageLog);
 end;
 
 function CJes2CppFunction.IsInternalAndUsed: Boolean;
@@ -208,12 +226,26 @@ begin
   Result := (IdentType = itInternal);// and (References.Count > 1);
 end;
 
+function CJes2CppFunction.GetNameSpace: String;
+var
+  LPos: Integer;
+begin
+  LPos := RPos(CharDot, Name);
+  if LPos = ZeroValue then
+  begin
+    Result := Name + CharDot;
+  end else begin
+    Result := Copy(Name, 1, LPos);
+  end;
+end;
+
 function CJes2CppFunction.DefaultNameSpace: String;
 begin
   Result := Name + CharDot;
 end;
 
-function CJes2CppFunctions.FindFunction(const AIdent: TIdentString; const ACount: Integer): CJes2CppFunction;
+function CJes2CppFunctions.FindFunction(const AIdent: TIdentString;
+  const ACount: Integer): CJes2CppFunction;
 begin
   for Result in Self do
   begin
@@ -225,19 +257,23 @@ begin
   Result := nil;
 end;
 
-function CJes2CppFunctions.FindOverload(const AName: TIdentString; out ANameSpace, AFunctName: String;
-  const AParamCount: Integer): CJes2CppFunction;
+function CJes2CppFunctions.FindOverload(const AName: TIdentString;
+  out ANameSpace, AFunctName: String; const AParamCount: Integer): CJes2CppFunction;
 var
   LPos: Integer;
 begin
+  // TODO: We need to check function find order. Function namespaces might be a linear search, not a
+  // namespace search.
   ANameSpace := EmptyStr;
-  LPos := M_ZERO;
+  LPos := ZeroValue;
   repeat
-    Result := FindFunction(Copy(AName, LPos + 1, MaxInt), AParamCount);
+    AFunctName := Copy(AName, LPos + 1, MaxInt);
+    Result := FindFunction(AFunctName, AParamCount);
     if Assigned(Result) then
     begin
-      ANameSpace := Copy(AName, 1, LPos);
-      AFunctName := Copy(AName, LPos + 1, MaxInt);
+      ANameSpace := GIdentString.ExtractNameSpace(AName);
+      // We can not use ExtractFuncName here because function names can
+      // overlap namespaces.
       if ANameSpace = EmptyStr then
       begin
         ANameSpace := Result.DefaultNameSpace;
@@ -245,7 +281,7 @@ begin
       Break;
     end;
     LPos := PosEx(CharDot, AName, LPos + 1);
-  until LPos = M_ZERO;
+  until LPos = ZeroValue;
 end;
 
 end.

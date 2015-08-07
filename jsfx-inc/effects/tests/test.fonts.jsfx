@@ -1,0 +1,36 @@
+@init
+
+name_count = 4;
+names = 0;
+names[0] = "impact";
+names[1] = "times";
+names[2] = "verdana";
+names[3] = "arial";
+
+@gfx 800 600
+
+gfx_a = 1;
+
+gfx_b = gfx_g = 0; gfx_r = 0.3;
+gfx_x = gfx_y = 0;
+gfx_rectto(gfx_w, gfx_h);
+
+gfx_r = gfx_g = gfx_b = gfx_a = 1;
+gfx_x = gfx_y = 0;
+
+gfx_setfont(1, "verdana", 19);
+gfx_drawstr("Verdana 19"); gfx_x += 20;
+gfx_setfont(1, "verdana", 0);
+gfx_drawstr("Verdana 0");  gfx_x += 20;
+gfx_setfont(1, "verdana", -19);
+gfx_drawstr("Verdana -19");  gfx_x += 20;
+
+name = names[count % name_count];
+size = sin(count += 0.04) * 100;
+gfx_setfont(1, name, size);
+
+s = sprintf(#, "Jesusonic Rocks!\n%s: %d", name, size);
+gfx_measurestr(s, w, h);
+gfx_x = (gfx_w - w) * 0.5;
+gfx_y = (gfx_h - h) * 0.5;
+gfx_drawstr(s);

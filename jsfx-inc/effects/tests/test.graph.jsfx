@@ -1,0 +1,58 @@
+desc: Graph Drawer
+
+import pas.graphics.jsfx-inc
+
+slider1:<,,{none,sin,cos,tan,asin,acos,atan,sqr,sqrt,invsqrt,exp,log,log10,abs,user1,user2}>Function:
+slider2:<,,{none,-x,1-x,x*x}>Modifier
+slider10:20<1, 100>X Zoom:
+slider11:20<1, 100>Y Zoom:
+
+@gfx
+
+Canvas.Brush.Color = 0x332211;
+Canvas.FillRect(0, 0, gfx_w, gfx_h);
+
+Canvas.Pen.Color = clRed;
+
+w = gfx_w * 0.5;
+h = gfx_h * 0.5;
+
+Canvas.Line(w, 0, w, gfx_h);
+Canvas.Line(0, h, gfx_w, h);
+
+Canvas.Pen.Color = clWhite;
+x = 0;
+Canvas.MoveTo(x, h);
+while (x < gfx_w) (
+  v = (x - w) / slider10;
+  y = (
+    slider1 == 0  ? v          :
+    slider1 ==  1 ? sin    (v) : 
+    slider1 ==  2 ? cos    (v) :
+    slider1 ==  3 ? tan    (v) :
+    slider1 ==  4 ? asin   (v) :
+    slider1 ==  5 ? acos   (v) :
+    slider1 ==  6 ? atan   (v) :
+    slider1 ==  7 ? sqr    (v) :
+    slider1 ==  8 ? sqrt   (v) :
+    slider1 ==  9 ? invsqrt(v) :
+    slider1 == 10 ? exp    (v) :
+    slider1 == 11 ? log    (v) :
+    slider1 == 12 ? log10  (v) :
+    slider1 == 13 ? abs    (v) :
+    slider1 == 14 ? 2 / (1 + exp(v * -2)) - 1 :
+    slider1 == 15 ? sqrt(abs(v)^0.5) * sign(v) :
+    0
+  );
+  y = (
+    slider2 == 0 ? y     :
+    slider2 == 1 ? -y    :
+    slider2 == 2 ? 1 - y :
+    slider2 == 3 ? y * y :
+    y;
+  );
+  Canvas.LineTo(x, y * -slider11 + h);
+  x += 1;
+);
+
+

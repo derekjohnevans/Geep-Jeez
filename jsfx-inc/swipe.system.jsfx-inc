@@ -1,0 +1,23 @@
+/*
+** Name: system.jsfx-inc
+** Desc: System functions and TObject for the SWIPE library. (Based on FreePascal)
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+*/
+
+import swipe.properties.jsfx-inc
+
+@init
+
+// Object Initialization
+
+/*
+Initialization helper. Use this to prevent an object from being
+initialized more than once.
+*/
+function TObject() global()
+(
+  this.IsCreated.Get() ? 0 : this.IsCreated.Set(1);
+);
+

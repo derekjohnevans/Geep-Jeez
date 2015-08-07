@@ -31,7 +31,9 @@ unit Jes2CppParser;
 interface
 
 uses
-  Jes2CppConstants, Jes2CppEel, Jes2CppImporter, Jes2CppToken, Jes2CppTranslate, Jes2CppUtils, StrUtils, SysUtils;
+  Jes2CppConstants, Jes2CppEel, Jes2CppImporter, Jes2CppToken, Jes2CppTranslate,
+  Jes2CppUtils, Math,
+  StrUtils, SysUtils;
 
 type
 
@@ -43,14 +45,14 @@ type
     procedure ParseWhiteSpace;
   protected
     function ParseSign: String;
-    function ParseRawString: String;
-    function ParseExtension: String;
+    function ParseCppString: String;
+    function ParseCppExtension: String;
   protected
     function CurrentToken: String; override;
     function PullToken: String;
     function PullIdent: String;
     function PullIdentVariable: String;
-    function PullIdentFunctionCall: String;
+    function PullIdentFunction: String;
   protected
     function IsEol: Boolean;
     function IsFunctionCall: Boolean;
@@ -77,7 +79,7 @@ implementation
 
 procedure CJes2CppParser.ResetParser(const ASource: String; const AFileName: TFileName);
 begin
-  FileCaretY := M_ZERO;
+  FileCaretY := ZeroValue;
   FileSource := AFileName;
   FSource := ASource;
   FTokenNext := PChar(FSource);
@@ -128,9 +130,10 @@ begin
       LToken := FTokenNext;
       repeat
         Inc(FTokenNext);
-      until (FTokenNext[0] in CharSetNull) or ((FTokenNext[-2] = CharAsterisk) and (FTokenNext[-1] = CharSlashForward));
+      until (FTokenNext[0] in CharSetNull) or ((FTokenNext[-2] = CharAsterisk) and
+          (FTokenNext[-1] = CharSlashForward));
       SetString(FCurrentComment, LToken, FTokenNext - LToken);
-      FCurrentComment := J2C_CleanComment(FCurrentComment);
+      FCurrentComment := GUtils.CleanComment(FCurrentComment);
     end else if (FTokenNext[0] = CharSlashForward) and (FTokenNext[1] = CharSlashForward) then
     begin
       LToken := FTokenNext;
@@ -138,7 +141,7 @@ begin
         Inc(FTokenNext);
       until FTokenNext[0] in CharSetLineEnding;
       SetString(FCurrentComment, LToken, FTokenNext - LToken);
-      FCurrentComment := J2C_CleanComment(FCurrentComment);
+      FCurrentComment := GUtils.CleanComment(FCurrentComment);
     end else begin
       Break;
     end;
@@ -181,8 +184,8 @@ begin
         Inc(FTokenFoot);
       end;
       Inc(FTokenFoot);
-    end else if (FTokenHead[0] = CharDollar) and (FTokenHead[1] = CharQuoteSingle) and (FTokenHead[2] <> CharNull) and
-      (FTokenHead[3] = CharQuoteSingle) then
+    end else if (FTokenHead[0] = CharDollar) and (FTokenHead[1] = CharQuoteSingle) and
+      (FTokenHead[2] <> CharNull) and (FTokenHead[3] = CharQuoteSingle) then
     begin
       Inc(FTokenFoot, 4);
     end else if FTokenHead[0] in CharSetNumberHead then
@@ -220,22 +223,18 @@ function CJes2CppParser.PullIdent: String;
 begin
   LogAssertExpected(IsIdentHead, SMsgIdentifier);
   Result := PullToken;
+  LogAssert(not AnsiContainsStr(Result, GsEelEllipses), SMsgIdentifierEllipsesNotSupported);
 end;
 
 function CJes2CppParser.PullIdentVariable: String;
 begin
-  Result := PullIdent;
-  LogAssert(not AnsiContainsStr(Result, GsEelEllipses), SMsgEllipsesNotSupported);
-  if not AnsiEndsStr(CharDot, Result) then
-  begin
-    Result += CharDot;
-  end;
+  Result := PullIdent + CharDot;
 end;
 
-function CJes2CppParser.PullIdentFunctionCall: String;
+function CJes2CppParser.PullIdentFunction: String;
 begin
   LogAssertExpected(IsFunctionCall, SMsgIdentifier);
-  Result := PullToken;
+  Result := PullIdent;
 end;
 
 function CJes2CppParser.IsToken(const AToken: String): Boolean;
@@ -323,21 +322,25 @@ begin
   end;
 end;
 
-function CJes2CppParser.ParseRawString: String;
+function CJes2CppParser.ParseCppString: String;
 begin
   LogAssertExpected(IsStringHead, 'String');
-  Result := CppDecodeString(PullToken);
+  Result := GCpp.Decode.QuotedString(PullToken);
   while IsStringHead do
   begin
-    Result += LineEnding + CppDecodeString(PullToken);
+    Result += LineEnding + GCpp.Decode.QuotedString(PullToken);
   end;
 end;
 
-function CJes2CppParser.ParseExtension: String;
+function CJes2CppParser.ParseCppExtension: String;
 begin
-  if IsStringHead then
+  if IsTokenThenPull(CharExclamation) then
   begin
-    Result := ParseRawString;
+    Result := ParseCppString;
+  end else if AnsiStartsStr(CharExclamation, FCurrentComment) then
+  begin
+    Result := Copy(FCurrentComment, 2, MaxInt);
+    FCurrentComment := EmptyStr;
   end else begin
     Result := EmptyStr;
   end;

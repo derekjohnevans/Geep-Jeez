@@ -1,0 +1,686 @@
+/*
+** Name: widgets.jsfx-inc
+** Desc: Define widgets for the SWIPE library.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+*/
+
+import swipe.properties.jsfx-inc
+import swipe.limits.jsfx-inc
+import swipe.graphics.jsfx-inc
+import swipe.array.jsfx-inc
+
+import pas.classes.jsfx-inc
+import pas.types.jsfx-inc
+import pas.controls.jsfx-inc
+
+@init
+
+// TWidget Object
+
+// Returns the value of a widget. If the widget is linked to a slider, then the value of the slider is returned.
+function TWidget_GetValue() global() local(LSlider)
+(
+  LSlider = this.Slider.Get();
+  LSlider > 0 ? slider(LSlider) : this;
+);
+
+// Sets the value of a widget. If the widget is linked to a slider, then then value of the slider is set.
+function TWidget_SetValue(AValue)
+global(SWIPE.WidgetChanged, SWIPE.WidgetChangeCount)
+(
+  this.IsLimited.Get() ? AValue = max(min(AValue, this.Max.Get()), this.Min.Get());
+  this != AValue ?
+  (
+    this = AValue;
+    this.Slider.Get() > 0 ? slider(this.Slider.Get()) = AValue;
+    SWIPE.WidgetChanged = 1;
+    SWIPE.WidgetChangeCount += 1;
+  );
+  this;
+);
+
+// Validates this widgets value with the objects limits.
+function TWidget_Validate() global()
+(
+  this.TWidget_SetValue(this.TWidget_GetValue());
+);
+
+// Toggles this widgets value between TRUE and FALSE.
+function TWidget_Toggle() global()
+(
+  this.TWidget_SetValue(!this.TWidget_GetValue());
+);
+
+// Set this widgets value from a normalized value. ie: (0..1)
+function TWidget_SetNormal(AValue) global()
+(
+  this.TWidget_SetValue(this.Min.Get() + (this.Max.Get() - this.Min.Get()) * AValue);
+);
+
+// Gets this widgets value as a normalized value. ie: (0..1)
+function TWidget_GetNormal() global()
+(
+  (this.TWidget_GetValue() - this.Min.Get()) / (this.Max.Get() - this.Min.Get());
+);
+
+function TWidget_SetMouseX(x1, x2, sz) global(mouse_x)
+(
+  this.TWidget_SetNormal((mouse_x - x1 - (sz * 0.5)) / (x2 - x1 - sz));
+);
+
+function TWidget_SetMouseY(y1, y2, sz) global(mouse_y)
+(
+  this.TWidget_SetNormal(1 - ((mouse_y - y1 - (sz * 0.5)) / (y2 - y1 - sz)));
+);
+
+// Initilizes a widget given a slider index, min & max limits, text, extra label + default value.
+function TWidget(ASlider, AMin, AMax, AText, ALabel, ADef) global()
+(
+  this.TLimits(AMin, AMax, ADef);
+  this.Slider.Set(ASlider);
+  this.Text.Set(AText);
+  this.Label.Set(ALabel);
+  this.TWidget_Validate();
+);
+
+// Same as above, but defaults to 0.
+function TWidget(ASlider, AMin, AMax, AText, ALabel) global()
+(
+  this.TWidget(ASlider, AMin, AMax, AText, ALabel, 0);
+);
+
+/*
+This is the base widget draw function. Here we handle mouse capturing and mouse clicking.
+This function doesn't actually draw anything, but is a key part of the widget drawing system.
+*/
+function TWidget_Draw(x1, y1, x2, y2)
+global(Mouse*)
+(
+  this.IsCaptured.Get() ? (
+    this.IsCaptured.Set(Mouse.Buttons.L.Down.Get());
+  ) : (
+    Mouse.Buttons.L.Clicked.Get() && Mouse.Point.TPoint_Inside(x1, y1, x2, y2) ? (
+      this.IsCaptured.Set(1);
+    );
+  );
+);
+
+function TWidget_DrawFastClick(x1, y1, x2, y2)
+global(Mouse*)
+(
+  this.TWidget_Draw(x1, y1, x2, y2);
+  this.Buttons.L.Clicked.Set(Mouse.Buttons.L.Clicked.Get() && Mouse.Point.TPoint_Inside(x1, y1, x2, y2));
+  this.Buttons.R.Clicked.Set(Mouse.Buttons.R.Clicked.Get() && Mouse.Point.TPoint_Inside(x1, y1, x2, y2));
+  this.Buttons.R.Clicked.Get() ? this.TWidget_SetValue(this.Def.Get());
+);
+
+function TWidget_DrawSlowClick(x1, y1, x2, y2)
+global(Mouse*)
+(
+  this.TWidget_Draw(x1, y1, x2, y2);
+  this.Buttons.L.Clicked.Set(Mouse.Buttons.L.UnClicked.Get() && Mouse.Point.TPoint_Inside(x1, y1, x2, y2));
+  this.Buttons.R.Clicked.Set(Mouse.Buttons.R.UnClicked.Get() && Mouse.Point.TPoint_Inside(x1, y1, x2, y2));
+  this.Buttons.R.Clicked.Get() ? this.TWidget_SetValue(this.Def.Get());
+);
+
+// TWidget2D Object
+
+function TWidget2D(
+  ASlider1, AMin1, AMax1, AText1, ALabel1, ADefault1,
+  ASlider2, AMin2, AMax2, AText2, ALabel2, ADefault2)
+(
+  this.0.TWidget(ASlider1, AMin1, AMax1, AText1, ALabel1, ADefault1);
+  this.1.TWidget(ASlider2, AMin2, AMax2, AText2, ALabel2, ADefault2);
+);
+
+function TWidget2D_Draw(x1, y1, x2, y2)
+(
+  this.0.TWidget_Draw(x1, y1, x2, y2);
+  //this.1.TWidget_Draw(x1, y1, x2, y2);
+);
+
+// TTrigger Objects
+
+/*
+NOTE: ALL trigger functions need to return the controls
+down status.
+*/
+function TTrigger_DefaultDraw(x1, y1, x2, y2)
+global(Mouse*)
+(
+  this.TWidget_DrawSlowClick(x1, y1, x2, y2);
+  this.TWidget_SetValue(this.IsCaptured.Get() && Mouse.Point.TPoint_Inside(x1, y1, x2, y2));
+);
+
+function TTrigger_SpeedDraw(x1, y1, x2, y2) global()
+(
+  this.TWidget_DrawFastClick(x1, y1, x2, y2);
+  this.TWidget_SetValue(this.IsCaptured.Get());
+);
+
+function TTrigger_ToggleDraw(x1, y1, x2, y2)
+global(Mouse*)
+(
+  this.TWidget_DrawFastClick(x1, y1, x2, y2);
+  this.Buttons.L.Clicked.Get() ? this.Value.Set(this.TWidget_Toggle());
+  this.IsCaptured.Get() ? (
+    this.TWidget_SetValue(Mouse.Point.TPoint_Inside(x1, y1, x2, y2) ?
+      this.Value.Get() : !this.Value.Get());
+  );
+  this.TWidget_GetValue();
+);
+
+// Define Strings Variable
+
+function Strings.Draw(x1, y1, x2, y2, AOffset)
+global(gfx_texth, clWindowText)
+(
+  GfxSetColor(clWindowText);
+  y2 -= gfx_texth;
+  while (AOffset < this.Strings.Count() && y1 < y2) (
+    GfxDrawStr(x1, y1, x2, y1 + gfx_texth, this[AOffset], -1, 0);
+    y1 += gfx_texth;
+    AOffset += 1;
+  );
+);
+
+// TMenu Object
+
+function _TMenu() global()
+(
+  0;
+);
+
+// Draws a popmenu for this object.
+function TMenu_Draw(x1, y1, x2, ALineHeight)
+global(clMenu, clMenuBar, clMenuHighlight, clMenuText, Mouse*)
+local(LIndex, y2)
+(
+  y2 = y1 + this.Strings.Count() * ALineHeight + 8;
+  this.TWidget_DrawFastClick(x1, y1, x2, y2);
+  this.Rect.TRect_SetRect(x1, y1, x2, y2);
+  GfxDrawShadowHard(x1, y1, x2, y2, 2);
+  GfxSetColor(clMenu);
+  GfxFillRect(x1, y1, x2, y2);
+  GfxSetColor(clMenuBar);
+  GfxDrawRect(x1, y1, x2, y2);
+  x1 += 4; x2 -= 4;
+  y1 += 4; y2 = y1 + ALineHeight;
+  LIndex = 0;
+  loop (this.Strings.Count(),
+    Mouse.Point.TPoint_Inside(x1, y1, x2, y2) ? (
+      Mouse.Buttons.L.Clicked.Get() ? (
+        this.TWidget_SetValue(LIndex);
+        this.Buttons.L.Clicked.Set(1);
+      );
+      GfxSetColor(clMenuHighlight);
+      GfxFillRect(x1, y1, x2, y2);
+    );
+    GfxSetColor(clMenuText);
+    GfxDrawStr(x1, y1, x2, y2, this.Strings[LIndex], -1, 0);
+    y1 += ALineHeight;
+    y2 += ALineHeight;
+    LIndex += 1;
+  );
+);
+
+function TMenu_Draw(x1, y1, x2) global()
+(
+  this.TMenu_Draw(x1, y1, x2, 17);
+);
+
+// TCheckBox Objects
+
+function TCheckBox_DrawLabel(x1, y1, x2, y2, s)
+global(gfx_w)
+global(clFormText)
+(
+  GfxSetColor(clFormText);
+  GfxDrawStr(x2 + 4, y1, gfx_w, y2, s, -1, 0);
+);
+
+function TCheckBox_Draw1(x1, y1, x2, y2) global()
+(
+  GfxDrawCheckBox(x1, y1, x2, y2, this.TTrigger_ToggleDraw(x1, y1, x2, y2));
+);
+
+function TCheckBox_Draw1(x1, y1, x2, y2, s) global()
+(
+  this.TCheckBox_Draw1(x1, y1, x2, y2);
+  this.TCheckBox_DrawLabel(x1, y1, x2, y2, s);
+);
+
+function TCheckBox_Draw2(x1, y1, x2, y2) global()
+(
+  GfxDrawTickBox(x1, y1, x2, y2, this.TTrigger_ToggleDraw(x1, y1, x2, y2));
+);
+
+function TCheckBox_Draw2(x1, y1, x2, y2, s) global()
+(
+  this.TCheckBox_Draw2(x1, y1, x2, y2);
+  this.TCheckBox_DrawLabel(x1, y1, x2, y2, s);
+);
+
+function TCheckBox_Draw3(x1, y1, x2, y2) global()
+(
+  GfxDrawDotBox(x1, y1, x2, y2, this.TTrigger_ToggleDraw(x1, y1, x2, y2));
+);
+
+function TCheckBox_Draw3(x1, y1, x2, y2, s) global()
+(
+  this.TCheckBox_Draw3(x1, y1, x2, y2);
+  this.TCheckBox_DrawLabel(x1, y1, x2, y2, s);
+);
+
+
+// TButton Objects
+
+function TButton_Draw(x1, y1, x2, y2, s) global()
+(
+  GfxDrawButton(x1, y1, x2, y2, s, this.TTrigger_DefaultDraw(x1, y1, x2, y2));
+);
+
+function TSpeedButton_Draw(x1, y1, x2, y2) global()
+(
+  GfxDrawButton(x1, y1, x2, y2, this.Text.Get(), this.TTrigger_SpeedDraw(x1, y1, x2, y2));
+);
+
+function TToggleButton_Draw0(x1, y1, x2, y2, s) global()
+(
+  GfxDrawButton(x1, y1, x2, y2, s, this.TTrigger_ToggleDraw(x1, y1, x2, y2));
+);
+
+function TToggleButton_Draw1(x1, y1, x2, y2, s) global()
+(
+  GfxDrawButton(x1, y1, x2, y2, s, this.TTrigger_ToggleDraw(x1, y1, x2, y2));
+);
+
+function TToolButton_Draw(x1, y1, x2, y2, s) global()
+(
+  GfxDrawButton(x1, y1, x2, y2, s, this.TTrigger_DefaultDraw(x1, y1, x2, y2));
+);
+
+function TButtonMenu_Draw(x1, y1, x2, y2, text)
+global(Mouse*)
+(
+  this.TToggleButton_Draw1(x1, y1, x2, y2, text);
+  this.TWidget_GetValue() ? (
+    this.Menu.TMenu_Draw(x1, y2, x1 + 200);
+    this.TWidget_SetValue(
+      !this.Menu.Buttons.L.Clicked.Get() && 
+      Mouse.Point.TPoint_Inside(x1, y1, x1 + 200, this.Menu.Rect.y2));
+  );
+);
+
+// TComboBox Object
+
+function TComboBox_Draw(x1, y1, x2, y2)
+global(clWindow, clWindowText, Mouse*)
+local(h)
+(
+  this.TWidget_DrawFastClick(x1, y1, x2, y2);
+  GfxSetColor(clWindow);
+  GfxFillRect3D(x1, y1, x2, y2, 1);
+  GfxSetColor(clWindowText);
+  GfxDrawStr(x1 + 2, y1, x2, y2, this.Menu.Strings[this.Menu.TWidget_GetValue()], -1, 0);
+  h = y2 - y1;
+  this.Button.TToggleButton_Draw0(x2 - h, y1 + 1, x2 - 1, y2 - 1, "v");
+  this.Button.TWidget_GetValue() ?
+  (
+    this.Menu.TMenu_Draw(x1, y2, x2);
+    this.Button.TWidget_SetValue(
+      !this.Menu.Buttons.L.Clicked.Get() && 
+      Mouse.Point.TPoint_Inside(x1, y1, x2, this.Menu.Rect.y2));
+  );
+);
+
+function TComboBox_Draw(x1, y1, x2, y2, ALabel)
+global(clWindowText)
+(
+  this.TComboBox_Draw(x1, y1, x2, y2);
+  GfxSetColor(clWindowText);
+  GfxDrawStr(0, y1, x1 - 4, y2, ALabel, 1, 0);
+);
+
+// TControl2D Object
+
+function TControl2D_Draw1(x1, y1, x2, y2, sz) global()
+(
+  this.TWidget2D_Draw(x1, y1, x2, y2);
+  this.0.IsCaptured.Get() ? (
+    this.0.TWidget_SetMouseX(x1, x2, sz);
+    this.1.TWidget_SetMouseY(y1, y2, sz);
+  );
+  GfxDrawGrip(
+    this.0.TWidget_GetNormal(), this.1.TWidget_GetNormal(),
+    sz, sz, x1, y1, x2, y2, this.TWidget_GetValue());
+);
+
+function TControl2D_Draw(x1, y1, x2, y2)
+global(clBtnShadow)
+(
+  GfxSetColor(clBtnShadow);
+  GfxFillRect3D(x1, y1, x2, y2, 1);
+  this.TControl2D_Draw1(x1, y1, x2, y2, 16);
+);
+
+// TScrollBar - Base drawing for all scrollbars.
+
+function TScrollBar_Draw(x1, y1, x2, y2)
+(
+  this.TWidget_DrawFastClick(x1, y1, x2, y2);
+);
+
+// TScrollBarHorz Grip Objects
+
+function TScrollBarHorz_DrawGrip1(x1, y1, x2, y2, sz) global()
+(
+  this.IsCaptured.Get() ? this.TWidget_SetMouseX(x1, x2, sz);
+  GfxDrawGrip(this.TWidget_GetNormal(), 0, sz, y2 - y1, x1, y1, x2, y2, 1);
+);
+
+function TScrollBarHorz_DrawGrip2(x1, y1, x2, y2, sz) global()
+(
+  this.IsCaptured.Get() ? this.TWidget_SetMouseX(x1, x2, sz);
+  GfxDrawGripRoundRect(this.TWidget_GetNormal(), 0, sz, y2 - y1, x1, y1, x2, y2, 8,
+    this.TWidget_GetValue());
+);
+
+// TScrollBarHorz Objects
+
+function TScrollBarHorz_Draw1(x1, y1, x2, y2)
+global(clBtnShadow)
+(
+  this.TScrollBar_Draw(x1, y1, x2, y2);
+  GfxSetColor(clBtnShadow);
+  GfxFillRect3D(x1, y1, x2, y2, 1);
+  this.TScrollBarHorz_DrawGrip1(x1 + 1, y1 + 1, x2 - 1, y2 - 1, 18);
+);
+
+function TScrollBarHorz_Draw2(x1, y1, x2, y2) global()
+(
+  this.TScrollBar_Draw(x1, y1, x2, y2);
+  GfxDrawSlider(x1, (y1 + y2) * 0.5 - 5, x2, (y1 + y2) * 0.5 + 5, this.IsCaptured.Get());
+  this.TScrollBarHorz_DrawGrip1(x1, y1, x2, y2, 10);
+);
+
+function TScrollBarHorz_Draw3(x1, y1, x2, y2)
+global(clBtnFace, clBtnShadow)
+(
+  this.TScrollBar_Draw(x1, y1, x2, y2);
+  GfxSetColor(clBtnFace);
+  GfxFillRoundRect(x1, y1, x2, y2, 8);
+  GfxSetColor(clBtnShadow);
+  GfxDrawRoundRect(x1, y1, x2, y2, 8);
+  this.TScrollBarHorz_DrawGrip2(x1 + 2, y1 + 2, x2 - 2, y2 - 2, 60);
+);
+
+// TScrollBarVert Grip Objects
+
+function TScrollBarVert_DrawGrip(x1, y1, x2, y2, sz) global()
+(
+  this.IsCaptured.Get() ? this.TWidget_SetMouseY(y1, y2, sz);
+  GfxDrawGrip(0, this.TWidget_GetNormal(), x2 - x1, sz, x1, y1, x2, y2, 0);
+);
+
+function TScrollBarVert_Draw1(x1, y1, x2, y2)
+global(clBtnShadow)
+(
+  this.TScrollBar_Draw(x1, y1, x2, y2);
+  GfxSetColor(clBtnShadow);
+  GfxFillRect3D(x1, y1, x2, y2, 1);
+  this.TScrollBarVert_DrawGrip(x1 + 1, y1 + 1, x2 - 1, y2 - 1, 18);
+);
+
+function TScrollBarVert_Draw2(x1, y1, x2, y2) global()
+(
+  this.TScrollBar_Draw(x1, y1, x2, y2);
+  GfxDrawSlider((x1 + x2) * 0.5 - 6, y1, (x1 + x2) * 0.5 + 6, y2, this.IsCaptured.Get());
+  this.TScrollBarVert_DrawGrip(x1, y1, x2, y2, 10);
+);
+
+function TScrollBarVert_Draw3(x1, y1, x2, y2) global()
+(
+  this.TScrollBar_Draw(x1, y1, x2, y2);
+  GfxDrawRulerVert(x1 + 3, y1 + 3, x2 - 3, y2 - 3);
+  this.TScrollBarVert_DrawGrip(x1, y1, x2, y2, 10);
+);
+
+function TScrollBarVert_Draw4(x1, y1, x2, y2)
+global(clBtnFace)
+local(x)
+(
+  this.TScrollBar_Draw(x1, y1, x2, y2);
+  GfxSetColor(clBtnFace);
+  x = (x1 + x2) * 0.5;
+  GfxFillRect3D(x - 3, y1, x + 3, y2, 1);
+  this.TScrollBarVert_DrawGrip(x1, y1, x2, y2, 8);
+);
+
+function TScrollBarVert_Draw5(x1, y1, x2, y2) global()
+(
+  GfxDrawRect3D(x1, y1, x2, y2, 0);
+  this.TScrollBarVert_Draw1(x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+);
+
+
+// TSlider Objects (TScrollBar's with labels)
+
+function TSliderHorz_Draw(x1, y1, x2, y2)
+global(SWIPE.Font.Default, clFormText)
+local(s, ts)
+(
+  x1 += 120; x2 -= 80;
+  this.TScrollBarHorz_Draw2(x1, y1, x2, y2);
+  gfx_setfont(SWIPE.Font.Default);
+  GfxSetColor(clFormText);
+  GfxDrawStr(x1 - 120, y1, x1, y2, this.Text.Get());
+  GfxDrawStr(x2, y1, x2 + 80, y2, sprintf(#, "%.2f %s", this.TWidget_GetValue(), this.Label.Get()));
+);
+
+function TSliderVert_Draw(x1, y1, x2, y2)
+global(SWIPE*, clFormText)
+local(ts)
+(
+  y1 += SWIPE.LineHeight;
+  y2 -= SWIPE.LineHeight;
+  this.TScrollBarVert_Draw2(x1, y1, x2, y2);
+  GfxSetColor(clFormText);
+  gfx_setfont(SWIPE.Font.Default);
+  GfxDrawStr(x1, y1 - SWIPE.LineHeight, x2, y1, this.Text.Get());
+  gfx_setfont(SWIPE.Font.4);
+  GfxDrawStr(x1, y2, x2, y2 + SWIPE.LineHeight, sprintf(#, "%.2f%s", this.TWidget_GetValue(), this.Label.Get()));
+);
+
+// TKnob Object
+
+function TKnob_Draw1(x1, y1, x2, y2, image)
+global(Mouse*, SWIPE.LineHeight)
+(
+  this.TWidget_DrawFastClick(x1, y1, x2, y2);
+  this.Buttons.L.Clicked.Get() ? this.Value.Set(this.TWidget_GetNormal());
+  this.IsCaptured.Get() ? this.TWidget_SetNormal(this.Value.Get() + (
+    (Mouse.Buttons.L.Clicked.Point.y - Mouse.Point.y) - 
+    (Mouse.Buttons.L.Clicked.Point.x - Mouse.Point.x)) * 0.008);
+  GfxDrawImageFrame(image, this.TWidget_GetNormal(), x1, y1, x2, y2);
+);
+
+function TKnob_Draw2(x1, y1, x2, y2, image, showlabel, showvalue)
+global(SWIPE.Font*, SWIPE.LineHeight, clFormText)
+(
+  this.TKnob_Draw1(x1, y1, x2, y2, image);
+  y1 += SWIPE.LineHeight;
+  y2 -= SWIPE.LineHeight;
+  GfxSetColor(clFormText);
+  showlabel ? (
+    gfx_setfont(SWIPE.Font.Default);
+    GfxDrawStr(x1, y1 - SWIPE.LineHeight, x2, y1, this.Text.Get());
+  );
+  showvalue ? (
+    gfx_setfont(SWIPE.Font.4);
+    GfxDrawStr(x1, y2, x2, y2 + SWIPE.LineHeight, sprintf(#, "%.2f%s", this.TWidget_GetValue(), this.Label.Get()));
+  );
+);
+
+function TKnob_Draw3(x1, y1, x2, y2, image, showlabel, showvalue)
+global(SWIPE.Font*, SWIPE.LineHeight, clFormText)
+(
+  this.TKnob_Draw1(x1, y1, x2, y2, image);
+  y1 += SWIPE.LineHeight;
+  y2 -= SWIPE.LineHeight;
+  GfxSetColor(clFormText);
+  showlabel ? (
+    gfx_setfont(SWIPE.Font.Default);
+    GfxDrawStr(x1, y2, x2, y2 + SWIPE.LineHeight, this.Text.Get());
+  );
+  showvalue ? (
+    gfx_setfont(SWIPE.Font.4);
+    GfxDrawStr(x1, y1 - SWIPE.LineHeight, x2, y1, sprintf(#, "%.2f%s", this.TWidget_GetValue(), this.Label.Get()));
+  );
+);
+
+function TKnob_Draw(x1, y1, x2, y2, image)
+(
+  this.TKnob_Draw2(x1, y1, x2, y2, image, 1, 1);
+);
+
+// TStringsBox Object
+
+function TStringsBox(ASlider, ACommaText)
+(
+  this.Strings.SetCommaText(ACommaText);
+  this.TWidget(ASlider, 0, this.Strings.Count() - 1, "Selector", "");
+);
+
+function TStringsBox_Draw(x1, y1, x2, y2)
+global(clBtnFace, clBtnText)
+(
+  GfxSetColor(clBtnFace);
+  GfxFillRect(x1, y1, x2, y2);
+  GfxSetColor(clBtnText);
+  gfx_setfont(3);
+  GfxDrawStr(x1, y1, x2, y2, this.Strings[this.TWidget_GetValue()], 0, 0);
+);
+
+// TScope Objects
+
+function TScope(ASize) global()
+(
+  this.TBuffer(ASize);
+);
+
+function TScope_Stream(x) global()
+(
+  this.TBuffer_Stream(x);
+);
+
+function TScope_Draw(x1, y1, x2, y2)
+global(gfx_x, gfx_y)
+global(clBlack, clLime)
+local(i, ii, w, h)
+(
+  GfxSetColor(clBlack);
+  GfxFillRect(x1, y1, x2, y2);
+  GfxDrawRect3D(x1, y1, x2, y2, 1);
+  GfxSetColor(clLime);
+  w = x2 - x1;
+  h = y2 - y1;
+  y1 = (y1 + y2) * 0.5;
+  i = 0;
+  ii = this.size() / w;
+  gfx_x = x1; gfx_y = y1;
+  while (x1 < x2) (
+    gfx_lineto(x1, y1 + this.TBuffer_Get(i) * h * 0.5);
+    x1 += 1;
+    i += ii;
+  );
+);
+
+function TScopeStereo() global()
+(
+  this.TBuffer2(ms2spl(100));
+);
+
+function TScopeStereo_Draw(x1, y1, x2, y2, m, s)
+global(gfx_x, gfx_y, gfx_r, gfx_g, gfx_b)
+global(clGray)
+local(i, x, y, w, h, c1, c2)
+(
+  GfxSetColor(clGray);
+  GfxFillBevel(x1, y1, x2, y2, 0);
+
+  x = (x1 + x2) * 0.5;
+  y = (y1 + y2) * 0.5;
+  w = (x2 - x1) * 0.8;
+  h = (y2 - y1) * 0.8;
+
+  gfx_x = x + this.0.TBuffer_Get(0) * w;
+  gfx_y = y + this.1.TBuffer_Get(0) * h;
+  i = 0;
+  while (i < this.0.size()) (
+    c1 = this.0.TBuffer_Get(i);
+    c2 = this.1.TBuffer_Get(i);
+    gfx_r = gfx_g = gfx_b = i / this.0.size();
+    gfx_r = 1 - gfx_r;
+    gfx_lineto(x + c1 * w, y + c2 * h);
+    i += 1;
+  );
+);
+
+function TScopeStereo_Stream(x, y) global()
+(
+  this.TBuffer2_Stream(x, y);
+);
+
+// TPageControl Object
+
+function TPageControl_Draw(x1, y1, x2, y2)
+global(SWIPE*, clForm, clFormFrame)
+(
+  this.Rect.TRect_SetRect(x1, y1, x2, y2);
+  y1 += SWIPE.LineHeight;
+  GfxDrawShadowSoft(x1 + 8, y1 + 8, x2, y2, 8);
+  GfxSetColor(clForm);
+  GfxFillRect(x1, y1, x2, y2);
+  GfxSetColor(clFormFrame);
+  GfxDrawRect(x1, y1, x2, y2);
+);
+
+function TPageControl_DrawTab(i, x1, y1, x2, y2, s)
+global(Mouse*)
+(
+  Mouse.Buttons.L.Clicked.Get() && Mouse.Point.TPoint_Inside(x1, y1, x2, y2) ? this.TWidget_SetValue(i);
+  GfxDrawTab(x1, y1, x2, y2, s, this.TWidget_GetValue() == i);
+);
+
+function TPageControl_DrawTab(i, s, w)
+global(SWIPE.LineHeight)
+(
+  this.TPageControl_DrawTab(i, this.Rect.x1 + i * w, this.Rect.y1,
+    this.Rect.x1 + ((i + 1) * w) - 3, this.Rect.y1 + SWIPE.LineHeight, s);
+);
+
+function TPageControl_DrawTab(i, s) global()
+(
+  this.TPageControl_DrawTab(i, s, 75);
+);
+
+function TPageControl_Done() global()
+(
+  0;
+);
+
+// TListBox Object
+
+function TListBox_Draw(x1, y1, x2, y2)
+global(gfx_texth, clWindow)
+(
+  GfxSetColor(clWindow);
+  GfxFillRect3D(x1, y1, x2, y2, 1);
+  this.Strings.Draw(x1 + 4, y1 + 4, x2 - 4, y2 - 4, -this.ScrollBar|0);
+  this.ScrollBar.TLimits(-(this.Strings.Count() - (y2 - y1) / gfx_texth), 0);
+  this.ScrollBar.TScrollBarVert_Draw5(x2 - 21, y1 + 1, x2 - 1, y2 - 1);
+);
+

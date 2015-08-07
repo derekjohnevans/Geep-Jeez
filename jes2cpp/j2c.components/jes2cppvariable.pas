@@ -32,20 +32,32 @@ unit Jes2CppVariable;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppEel, Jes2CppIdentifier, Jes2CppStrings, Jes2CppTranslate, Soda, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppIdentifier, Jes2CppIdentString, Jes2CppStrings,
+  Jes2CppTranslate, Soda, SysUtils;
 
 type
+
+  TJes2CppVariableDataType = (vdtDefault, vdtStringLiteral, vdtStringHash, vdtStringNamed);
 
   CJes2CppVariables = class;
 
   CJes2CppVariable = class
     {$DEFINE DItemClass := CJes2CppVariable}
     {$DEFINE DItemSuper := CJes2CppIdentifier}
+    {$DEFINE DItemOwner := CJes2CppVariables}
     {$INCLUDE soda.inc}
   strict private
-    FConstantString: String;
+    FStringLiteral: String;
+    FDefaultValue: Extended;
+    FDataType: TJes2CppVariableDataType;
+  protected
+    procedure DoCreate; override;
   public
-    property ConstantString: String read FConstantString write FConstantString;
+    function EncodeEel: String;
+  public
+    property StringLiteral: String read FStringLiteral write FStringLiteral;
+    property DefaultValue: Extended read FDefaultValue write FDefaultValue;
+    property DataType: TJes2CppVariableDataType read FDataType write FDataType;
   end;
 
   CJes2CppVariables = class
@@ -54,65 +66,100 @@ type
     {$DEFINE DItemItems := CJes2CppVariable}
     {$INCLUDE soda.inc}
   strict private
-    function CreateVariable(const AName: String; const AIdentType: TJes2CppIdentifierType): CJes2CppVariable;
+    FStringNamedIndex, FStringLiteralIndex, FStringHashIndex: Integer;
+  protected
+    procedure DoCreate; override;
   public
-    function CreateVariable(const AName: TComponentName; const AFileSource: TFileName; const AFileCaretY: Integer;
-      const AComment: String): CJes2CppVariable;
-    function FindOrCreateVariable(const AName: TComponentName; const AFileSource: TFileName; const AFileCaretY: Integer;
-      const AComment: String; out AAlreadyCreated: Boolean): CJes2CppVariable;
+    function CreateVariable(const AName: TComponentName; const AFileSource: TFileName;
+      const AFileCaretY: Integer; const AComment: String): CJes2CppVariable;
+    function FindOrCreateVariable(const AName: TComponentName; const AFileSource: TFileName;
+      const AFileCaretY: Integer; const AComment: String;
+      out AAlreadyCreated: Boolean): CJes2CppVariable;
   public
-    function EncodeDefineCpp: String;
-    function EncodeClearCpp: String;
-    function EncodeStringLiteralsCpp: String;
+    function CppDeclare: String;
+    function CppSetValues: String;
+    function CppSetStrings: String;
+  public
+    property StringNamedIndex: Integer read FStringNamedIndex write FStringNamedIndex;
+    property StringLiteralIndex: Integer read FStringLiteralIndex write FStringLiteralIndex;
+    property StringHashIndex: Integer read FStringHashIndex write FStringHashIndex;
   end;
 
 implementation
 
 {$DEFINE DItemClass := CJes2CppVariable} {$INCLUDE soda.inc}
 
+procedure CJes2CppVariable.DoCreate;
+begin
+  inherited DoCreate;
+  if GIdentString.IsStringLiteral(Name) then
+  begin
+    FDataType := vdtStringLiteral;
+    FDefaultValue := Owner.StringLiteralIndex;
+    Owner.StringLiteralIndex := Owner.StringLiteralIndex + 1;
+  end else if GIdentString.IsStringHash(Name) then
+  begin
+    FDataType := vdtStringHash;
+    FDefaultValue := Owner.StringHashIndex;
+    Owner.StringHashIndex := Owner.StringHashIndex + 1;
+  end else if GIdentString.IsStringNamed(Name) then
+  begin
+    FDataType := vdtStringNamed;
+    FDefaultValue := Owner.StringNamedIndex;
+    Owner.StringNamedIndex := Owner.StringNamedIndex + 1;
+  end;
+end;
+
+function CJes2CppVariable.EncodeEel: String;
+begin
+  Result := GIdentString.Clean(Name);
+end;
+
 {$DEFINE DItemClass := CJes2CppVariables} {$INCLUDE soda.inc}
 
-function CJes2CppVariables.CreateVariable(const AName: TComponentName; const AFileSource: TFileName;
-  const AFileCaretY: Integer; const AComment: String): CJes2CppVariable;
+procedure CJes2CppVariables.DoCreate;
+begin
+  inherited DoCreate;
+  // These base indexs match REAPER's
+  FStringLiteralIndex := 10000;
+  FStringNamedIndex := 90000;
+  FStringHashIndex := 190000;
+end;
+
+function CJes2CppVariables.CreateVariable(const AName: TComponentName;
+  const AFileSource: TFileName; const AFileCaretY: Integer;
+  const AComment: String): CJes2CppVariable;
 begin
   Result := CreateComponent(AName);
   Result.Comment := AComment;
   Result.References.CreateReference(AFileSource, AFileCaretY);
 end;
 
-function CJes2CppVariables.FindOrCreateVariable(const AName: TComponentName; const AFileSource: TFileName;
-  const AFileCaretY: Integer; const AComment: String; out AAlreadyCreated: Boolean): CJes2CppVariable;
+function CJes2CppVariables.FindOrCreateVariable(const AName: TComponentName;
+  const AFileSource: TFileName; const AFileCaretY: Integer; const AComment: String;
+  out AAlreadyCreated: Boolean): CJes2CppVariable;
 begin
   Result := FindComponent(AName);
   AAlreadyCreated := Assigned(Result);
-  if not AAlreadyCreated then
+  if AAlreadyCreated then
   begin
-    Result := CreateComponent(AName);
-    Result.Comment := AComment;
+    Result.References.CreateReference(AFileSource, AFileCaretY);
+  end else begin
+    Result := CreateVariable(AName, AFileSource, AFileCaretY, AComment);
   end;
-  Result.References.CreateReference(AFileSource, AFileCaretY);
 end;
 
-function CJes2CppVariables.CreateVariable(const AName: String; const AIdentType: TJes2CppIdentifierType): CJes2CppVariable;
-begin
-  if ComponentExists(AName) then
-  begin
-    raise Exception.Create('Duplicate Variable Name');
-  end;
-  Result := CreateComponent(AName);
-  Result.IdentType := AIdentType;
-end;
-
-function CJes2CppVariables.EncodeDefineCpp: String;
+function CJes2CppVariables.CppDeclare: String;
 var
-  LIdent: CJes2CppIdentifier;
+  LVariable: CJes2CppVariable;
 begin
   Result := EmptyStr;
-  for LIdent in Self do
+  for LVariable in Self do
   begin
-    if LIdent.IdentType = itInternal then
+    if (LVariable.IdentType = itInternal) and (LVariable.DataType in
+      [vdtDefault, vdtStringNamed]) then
     begin
-      J2C_StringAppendCSV(Result, CppEncodeVariable(LIdent.Name));
+      GString.AppendCSV(Result, GCpp.Encode.NameVariable(LVariable.Name));
     end;
   end;
   if Result <> EmptyStr then
@@ -121,31 +168,34 @@ begin
   end;
 end;
 
-function CJes2CppVariables.EncodeClearCpp: String;
-var
-  LIdent: CJes2CppIdentifier;
-begin
-  Result := EmptyStr;
-  for LIdent in Self do
-  begin
-    if LIdent.IdentType = itInternal then
-    begin
-      Result += CppEncodeVariable(LIdent.Name) + GsCppAssign + GsCppZero + GsCppLineEnding;
-    end;
-  end;
-end;
-
-function CJes2CppVariables.EncodeStringLiteralsCpp: String;
+function CJes2CppVariables.CppSetValues: String;
 var
   LVariable: CJes2CppVariable;
 begin
   Result := EmptyStr;
   for LVariable in Self do
   begin
-    if (LVariable.IdentType = itInternal) and (LVariable.ConstantString <> EmptyStr) then
+    if (LVariable.IdentType = itInternal) and (LVariable.DataType in
+      [vdtDefault, vdtStringNamed]) then
     begin
-      Result += CppEncodeVariable(LVariable.Name) + GsCppAssign + GsFnStr + CharOpeningParenthesis +
-        LVariable.ConstantString + CharClosingParenthesis + GsCppLineEnding;
+      Result += GCpp.Encode.NameVariable(LVariable.Name) + GsCppAssign +
+        GCpp.Encode.Float(LVariable.DefaultValue) + GsCppLineEnding;
+    end;
+  end;
+end;
+
+function CJes2CppVariables.CppSetStrings: String;
+var
+  LVariable: CJes2CppVariable;
+begin
+  Result := EmptyStr;
+  for LVariable in Self do
+  begin
+    if (LVariable.IdentType = itInternal) and (LVariable.DataType = vdtStringLiteral) then
+    begin
+      // TODO: Make a constant.
+      Result += Format('SetString(%s, %s)', [GCpp.Encode.Float(LVariable.DefaultValue),
+        LVariable.StringLiteral]) + GsCppLineEnding;
     end;
   end;
 end;

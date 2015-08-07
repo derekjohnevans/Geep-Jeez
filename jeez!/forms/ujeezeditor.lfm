@@ -1,40 +1,37 @@
 object JeezEditor: TJeezEditor
   Left = 0
-  Height = 266
+  Height = 402
   Top = 0
-  Width = 795
-  ClientHeight = 266
-  ClientWidth = 795
-  Color = clNone
-  ParentColor = False
+  Width = 1069
+  ClientHeight = 402
+  ClientWidth = 1069
   TabOrder = 0
-  DesignLeft = 551
-  DesignTop = 377
+  DesignLeft = 376
+  DesignTop = 326
   object SplitterRight: TSplitter
-    Left = 490
-    Height = 243
-    Top = 23
+    Left = 764
+    Height = 378
+    Top = 24
     Width = 5
     Align = alRight
-    Color = clNone
-    ParentColor = False
     ResizeAnchor = akRight
   end
   object PanelClient: TPanel
     Left = 0
-    Height = 243
-    Top = 23
-    Width = 490
+    Height = 378
+    Top = 24
+    Width = 764
     Align = alClient
     BevelOuter = bvLowered
-    ClientHeight = 243
-    ClientWidth = 490
+    ClientHeight = 378
+    ClientWidth = 764
+    ParentBidiMode = False
     TabOrder = 1
     inline SynEdit: TSynEdit
       Left = 1
-      Height = 209
+      Height = 344
       Top = 33
-      Width = 488
+      Width = 762
       Align = alClient
       Color = clWindow
       Font.Height = -13
@@ -49,6 +46,7 @@ object JeezEditor: TJeezEditor
       OnMouseDown = SynEditMouseDown
       OnMouseMove = SynEditMouseMove
       OnMouseLeave = SynEditMouseLeave
+      OnMouseWheel = SynEditMouseWheel
       BorderStyle = bsNone
       Gutter.Width = 47
       Gutter.MouseActions = <>
@@ -263,14 +261,6 @@ object JeezEditor: TJeezEditor
         item
           Command = ecDeleteEOL
           ShortCut = 24665
-        end      
-        item
-          Command = ecUndo
-          ShortCut = 16474
-        end      
-        item
-          Command = ecRedo
-          ShortCut = 24666
         end      
         item
           Command = ecGotoMarker0
@@ -502,18 +492,20 @@ object JeezEditor: TJeezEditor
       LineHighlightColor.Foreground = clNone
       TabWidth = 2
       OnChange = SynEditChange
+      OnSpecialLineMarkup = SynEditSpecialLineMarkup
       OnStatusChange = SynEditStatusChange
       inline SynLeftGutterPartList1: TSynGutterPartList
         object SynGutterMarks: TSynGutterMarks
           Width = 24
+          Visible = False
           MouseActions = <>
         end
         object SynGutterLineNumber: TSynGutterLineNumber
-          Width = 17
+          Width = 41
           MouseActions = <>
           MarkupInfo.Background = clNone
           MarkupInfo.Foreground = clSilver
-          DigitCount = 2
+          DigitCount = 5
           ShowOnlyLineNumbersMultiplesOf = 1
           ZeroStart = False
           LeadingZeros = False
@@ -536,12 +528,12 @@ object JeezEditor: TJeezEditor
       Left = 1
       Height = 32
       Top = 1
-      Width = 488
+      Width = 762
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 2
       ClientHeight = 32
-      ClientWidth = 488
+      ClientWidth = 762
       Color = 145
       ParentColor = False
       TabOrder = 1
@@ -578,7 +570,7 @@ object JeezEditor: TJeezEditor
         Left = 32
         Height = 20
         Top = 6
-        Width = 429
+        Width = 703
         Align = alClient
         BorderSpacing.Around = 4
         Font.Height = -13
@@ -588,6 +580,7 @@ object JeezEditor: TJeezEditor
         ParentColor = False
         ParentFont = False
         TabOrder = 0
+        OnMouseDown = ErrorMessageMouseDown
         BorderStyle = bsNone
         Gutter.Visible = False
         Gutter.Width = 0
@@ -1048,7 +1041,7 @@ object JeezEditor: TJeezEditor
         end
       end
       object ButtonFindError: TSpeedButton
-        Left = 465
+        Left = 739
         Height = 28
         Top = 2
         Width = 21
@@ -1098,23 +1091,26 @@ object JeezEditor: TJeezEditor
   end
   object PanelTop: TPanel
     Left = 0
-    Height = 23
+    Height = 24
     Top = 0
-    Width = 795
+    Width = 1069
     Align = alTop
+    AutoSize = True
     BevelOuter = bvNone
-    ClientHeight = 23
-    ClientWidth = 795
+    ClientHeight = 24
+    ClientWidth = 1069
     TabOrder = 2
     object ToolBar: TToolBar
       Left = 0
-      Height = 23
+      Height = 24
       Top = 0
-      Width = 490
+      Width = 764
       Align = alClient
       ButtonHeight = 24
       ButtonWidth = 24
       EdgeBorders = []
+      EdgeInner = esNone
+      EdgeOuter = esNone
       Images = JeezData.ImageList16
       Indent = 0
       List = True
@@ -1148,7 +1144,7 @@ object JeezEditor: TJeezEditor
         ImageIndex = 30
       end
       object ButtonProperties: TToolButton
-        Left = 106
+        Left = 101
         Hint = 'Effect Properties'
         Top = 0
         Caption = 'Properties'
@@ -1163,26 +1159,66 @@ object JeezEditor: TJeezEditor
         ImageIndex = 7
         OnClick = ButtonSyntaxCheckClick
       end
-      object ToolButton1: TToolButton
+      object EditFuncNames: TComboBox
+        Left = 130
+        Height = 22
+        Top = 0
+        Width = 290
+        AutoComplete = True
+        AutoCompleteText = [cbactEnabled, cbactEndOfLineComplete, cbactSearchAscending]
+        DropDownCount = 32
+        ItemHeight = 16
+        OnChange = EditFuncNamesChange
+        OnDrawItem = EditFuncNamesDrawItem
+        OnKeyDown = EditFuncNamesKeyDown
+        Sorted = True
+        Style = csOwnerDrawFixed
+        TabOrder = 0
+      end
+      object ButtonDiv1: TToolButton
         Left = 72
         Height = 24
         Top = 0
         Width = 5
-        Caption = 'ToolButton1'
+        Caption = 'ButtonDiv1'
         Style = tbsDivider
       end
-      object ToolButton2: TToolButton
-        Left = 101
+      object ButtonDiv2: TToolButton
+        Left = 125
         Height = 24
         Top = 0
         Width = 5
-        Caption = 'ToolButton2'
+        Caption = 'ButtonDiv2'
+        Style = tbsDivider
+      end
+      object EditVariNames: TComboBox
+        Left = 425
+        Height = 22
+        Top = 0
+        Width = 290
+        AutoComplete = True
+        AutoCompleteText = [cbactEnabled, cbactEndOfLineComplete, cbactSearchAscending]
+        DropDownCount = 32
+        ItemHeight = 16
+        OnChange = EditFuncNamesChange
+        OnDrawItem = EditVariNamesDrawItem
+        OnKeyDown = EditFuncNamesKeyDown
+        Sorted = True
+        Style = csOwnerDrawFixed
+        TabOrder = 1
+      end
+      object ButtonDiv3: TToolButton
+        Left = 420
+        Height = 24
+        Top = 0
+        Width = 5
+        Caption = 'ButtonDiv3'
         Style = tbsDivider
       end
     end
-    object EditFolder: TComboBox
+    object EditTreeFolder: TComboBox
       Cursor = crHandPoint
-      Left = 490
+      Left = 764
       Height = 22
       Top = 0
       Width = 305
@@ -1191,27 +1227,27 @@ object JeezEditor: TJeezEditor
       Color = clWindow
       DropDownCount = 15
       ItemHeight = 16
-      OnChange = EditFolderChange
-      OnDrawItem = EditFolderDrawItem
+      OnChange = EditTreeFolderChange
+      OnDrawItem = EditTreeFolderDrawItem
       ReadOnly = True
       Style = csOwnerDrawFixed
       TabOrder = 1
     end
   end
   object PanelRight: TPanel
-    Left = 495
-    Height = 243
-    Top = 23
+    Left = 769
+    Height = 378
+    Top = 24
     Width = 300
     Align = alRight
     BevelOuter = bvLowered
-    ClientHeight = 243
+    ClientHeight = 378
     ClientWidth = 300
     TabOrder = 3
     OnResize = PanelRightResize
     object TreeView: TTreeView
       Left = 1
-      Height = 241
+      Height = 376
       Top = 1
       Width = 298
       Align = alClient
@@ -1220,8 +1256,10 @@ object JeezEditor: TJeezEditor
       HideSelection = False
       Images = JeezData.ImageList16
       Indent = 16
+      ParentShowHint = False
       ReadOnly = True
       RowSelect = True
+      ShowHint = True
       ShowLines = False
       TabOrder = 0
       OnAddition = TreeViewAddition
@@ -1704,7 +1742,7 @@ object JeezEditor: TJeezEditor
     end
   end
   object TimerCodeInsight: TTimer
-    Interval = 700
+    Interval = 800
     OnTimer = TimerCodeInsightTimer
     left = 312
     top = 160

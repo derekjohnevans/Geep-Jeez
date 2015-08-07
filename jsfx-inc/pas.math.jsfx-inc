@@ -1,0 +1,24 @@
+/*
+** Name: Math
+** Desc: This is part of a Pascal style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+@init
+
+// Converts degrees to radians.
+function DegToRad(x) global()
+(
+  x * 180 / $pi;
+);
+
+// Converts radians to degrees.
+function RadToDeg(x) global()
+(
+  x * $pi / 180;
+);
+

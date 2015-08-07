@@ -1,0 +1,209 @@
+/*
+** Name: Graphics
+** Desc: This is part of a Pascal style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import pas.types.jsfx-inc
+
+@init
+
+// Standard Colors
+
+clBlack         = 0x000000;
+clMaroon        = 0x000080;
+clGreen         = 0x008000;
+clOlive         = 0x008080;
+clNavy          = 0x800000;
+clPurple        = 0x800080;
+clTeal          = 0x808000;
+clGray          = 0x808080;
+clSilver        = 0xC0C0C0;
+clRed           = 0x0000FF;
+clLime          = 0x00FF00;
+clYellow        = 0x00FFFF;
+clBlue          = 0xFF0000;
+clFuchsia       = 0xFF00FF;
+clAqua          = 0xFFFF00;
+clLtGray        = 0xC0C0C0; // clSilver alias
+clDkGray        = 0x808080; // clGray alias
+clWhite         = 0xFFFFFF;
+
+// Extended Colors
+
+clMoneyGreen    = 0xC0DCC0;
+clSkyBlue       = 0xF0CAA6;
+clCream         = 0xF0FBFF;
+clMedGray       = 0xA4A0A0;
+
+// Interface Colors (Negitive colors are tinted)
+
+clBtnFace       = -0xE2E2E2;
+clBtnText       = -0x222222;
+clBtnHighlight  = -0xFFFFFF;
+clBtnShadow     = -0xAAAAAA; //-0xB4B4B4;
+
+clMenu          = -0xFFFFFF;
+clMenuText      = -0x222222;
+clMenuBar       = -0x444444;
+clMenuHighlight = -0xEEAAAA;
+
+clWindow        = -0xFFFFFF;
+clWindowText    = -0x222222;
+clWindowFrame   = -0x333333;
+
+clForm          = -0xCCCCCC;
+clFormText      = -0x555555;
+clFormFrame     = -0x666666;
+clFormHighlight = +0x0099EE;
+
+clHotLight      = -0x444444;
+
+// Initializes this color given r, g, b, & a.
+function RGBAQuad.Set(Red, Green, Blue, Alpha) global()
+(
+  this.Red = Red;
+  this.Green = Green;
+  this.Blue = Blue;
+  this.Alpha = Alpha;
+);
+
+// Initializes this color given r, g & b. (a = 1)
+function RGBAQuad.Set(Red, Green, Blue) global()
+(
+  this.RGBAQuad.Set(Red, Green, Blue, 1);
+);
+
+// Set current graphics color to this color.
+function RGBAQuad.Use()
+global(gfx_r, gfx_g, gfx_b, gfx_a)
+(
+  gfx_r = this.Red;
+  gfx_g = this.Green;
+  gfx_b = this.Blue;
+  gfx_a = this.Alpha;
+);
+
+// Multiplies this color given r, g & b multipliers.
+function RGBAQuad.Multiply(Red, Green, Blue) global()
+(
+  this.Red *= Red;
+  this.Green *= Green;
+  this.Blue *= Blue;
+);
+
+function Color.Use() global(gfx_r, gfx_g, gfx_b, gfx_a)
+(
+  this < 0 ? (
+    gfx_r = ((-this >>  0) & 0xFF) / 255; // TODO: Tint
+    gfx_g = ((-this >>  8) & 0xFF) / 255;
+    gfx_b = ((-this >> 16) & 0xFF) / 255;
+    gfx_a = 1;
+  ) : (
+    gfx_r = ((+this >>  0) & 0xFF) / 255;
+    gfx_g = ((+this >>  8) & 0xFF) / 255;
+    gfx_b = ((+this >> 16) & 0xFF) / 255;
+    gfx_a = 1;
+  );
+);
+
+function Pen.Color.Set(color) global()
+(
+  this = color;
+);
+
+function Pen.Color.Set(r, g, b) global()
+(
+  this = (r & 0xFF) << 16 | (g & 0xFF) << 8 | (b & 0xFF) << 0;
+);
+
+function PenPos.Use() global(gfx_x, gfx_y)
+(
+  gfx_x = this.x;
+  gfx_y = this.y;
+);
+
+function Font.Use() global(gfx_texth)
+(
+  this.Color.Use();
+  gfx_setfont(16, this.Name, this.Size);
+  this.Height = gfx_texth;
+);
+
+function Canvas.MoveTo(x, y) global()
+(
+  this.PenPos.x = x;
+  this.PenPos.y = y;
+);
+
+function Canvas.LineTo(x, y) global()
+(
+  this.Pen.Color.Use();
+  gfx_line(this.PenPos.x, this.PenPos.y, x, y);
+  this.PenPos.x = x;
+  this.PenPos.y = y;  
+);
+
+function Canvas.Line(x1, y1, x2, y2) global()
+(
+  this.Pen.Color.Use();
+  this.Canvas.MoveTo(x1, y1);
+  this.Canvas.LineTo(x2, y2);
+);
+
+function Canvas.FillRect(x1, y1, x2, y2) global()
+(
+  (x1 < x2) && (y1 < y2) ? (
+    this.Brush.Color.Use();
+    gfx_rect(x1, y1, x2 - x1, y2 - y1);
+    this.PenPos.x = x2;
+    this.PenPos.y = y2;    
+  );
+);
+
+function Canvas.Rectangle(x1, y1, x2, y2) global()
+(
+  (x1 < x2) && (y1 < y2) ? (
+    x2 -= 1; y2 -= 1;  
+    this.Pen.Color.Use();
+    this.Canvas.MoveTo(x1, y1);
+    this.Canvas.LineTo(x2, y1);
+    this.Canvas.LineTo(x2, y2);
+    this.Canvas.LineTo(x1, y2);
+    this.Canvas.LineTo(x1, y1);
+  );
+);
+
+function Canvas.Frame3D(x1, y1, x2, y2, c1, c2) global()
+(
+  (x1 < x2) && (y1 < y2) ? (
+    x2 -= 1; y2 -= 1;
+    this.Canvas.MoveTo(x2, y2); 
+    this.Pen.Color = c2; this.Canvas.LineTo(x1, y2); 
+    this.Pen.Color = c1; this.Canvas.LineTo(x1, y1); 
+    this.Canvas.LineTo(x2, y1); 
+    this.Pen.Color = c2; this.Canvas.LineTo(x2, y2);
+  );
+);
+
+function Canvas.Frame3D(x1, y1, x2, y2, c1, c2, c3) global()
+(  
+  this.Brush.Color = c3;
+  this.Canvas.FillRect(x1, y1, x2, y2);
+  this.Canvas.Frame3D(x1, y1, x2, y2, c1, c2);
+);
+
+function Canvas.TextOut(x, y, Text) global()
+(
+  this.Font.Use();
+  this.Canvas.MoveTo(x, y);
+  this.PenPos.Use();
+  gfx_drawstr(Text);
+);
+
+
+

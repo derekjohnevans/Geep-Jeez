@@ -32,7 +32,7 @@ interface
 
 uses
   ButtonPanel, ColorBox, ComCtrls, Controls, EditBtn, Forms, Graphics,
-  JeezIniFile, JeezLabels, JeezSynEdit, Jes2CppCompiler, Jes2CppConstants,
+  GraphUtil, JeezIniFile, JeezLabels, JeezSynEdit, Jes2CppCompiler, Jes2CppConstants,
   Jes2CppFileNames, Jes2CppPlatform, Spin, StdCtrls, StrUtils, SynEdit,
   SynEditHighlighter, SynHighlighterAny, SynHighlighterCpp, SysUtils;
 
@@ -49,14 +49,9 @@ type
     ButtonPresetOcean: TButton;
     ButtonPresetClassic: TButton;
     ButtonPresetREAPER: TButton;
+    EditBoldImportant: TCheckBox;
     ColorLineFrame: TColorBox;
-    EditForceGlobals: TCheckBox;
-    EditUseCompression: TCheckBox;
-    EditWarningsAsErrors: TCheckBox;
-    EditUseInlineFunctions: TCheckBox;
-    EditUseFastMath: TCheckBox;
-    EditUseBass: TCheckBox;
-    EditUseSndFile: TCheckBox;
+    EditOptimizeLevel: TComboBox;
     EditFontName: TComboBox;
     EditAntialiased: TCheckBox;
     ColorBackground: TColorBox;
@@ -79,8 +74,16 @@ type
     EditDefVendorVersion: TSpinEdit;
     EditDefVstPath: TDirectoryEdit;
     EditFloatPrecision: TComboBox;
+    EditForceGlobals: TCheckBox;
+    EditHintsAsErrors: TCheckBox;
     EditPluginType: TComboBox;
     EditProcessorType: TComboBox;
+    EditUseBass: TCheckBox;
+    EditUseCompression: TCheckBox;
+    EditUseFastMath: TCheckBox;
+    EditUseInlineFunctions: TCheckBox;
+    EditUseSndFile: TCheckBox;
+    EditWarningsAsErrors: TCheckBox;
     GroupBoxExtraOptions: TGroupBox;
     GroupBoxPresets: TGroupBox;
     GroupBoxFont: TGroupBox;
@@ -90,6 +93,7 @@ type
     EditRecentFiles: TListBox;
     PageControl: TPageControl;
     EditFontSize: TSpinEdit;
+    TabSheetSwitches: TTabSheet;
     TabSheetBuild: TTabSheet;
     TabSheetEditor: TTabSheet;
     TabSheetRecentFiles: TTabSheet;
@@ -103,6 +107,7 @@ type
     procedure ButtonPresetTwilightClick(ASender: TObject);
     procedure EditDefVstPathChange(ASender: TObject);
     procedure FormCreate(ASender: TObject);
+    procedure FormDestroy(ASender: TObject);
     procedure FormShow(ASender: TObject);
     procedure GroupBoxPresetsResize(ASender: TObject);
   private
@@ -111,16 +116,20 @@ type
     procedure SettingsLoad;
   public
     procedure ApplyControl(const AControl: TControl; const AColor: TColor);
+    procedure ApplyComboBox(const AComboBox: TComboBox; const AColor: TColor);
     procedure ApplySynCustomHighlighter(const AHighlighter: TSynCustomHighlighter);
     procedure ApplySynCppSyn(const AHighlighter: TSynCppSyn);
     procedure ApplySynAnySyn(const AHighlighter: TSynAnySyn; const ADetectPreprocessor: Boolean);
     procedure ApplySynEdit(const ASynEdit: TSynEdit; const AColor: TColor);
   public
     function Execute: Boolean;
-    function GetCompiler: TFileName;
-    function GetTypeArchitecture: TJes2CppCompilerArchitecture;
-    function GetTypePrecision: TJes2CppCompilerPrecision;
-    function GetTypePlugin: TJes2CppCompilerPlugin;
+  public
+    function GetComboBoxFontColor: TColor;
+    function GetGccExecutable: TFileName;
+    function GetArchitecture: CJes2CppCompiler.TArchitecture;
+    function GetPrecision: CJes2CppCompiler.TFloatPrecision;
+    function GetPluginType: CJes2CppCompiler.TPluginType;
+    function GetOptimizeLevel: CJes2CppCompiler.TOptimizeLevel;
   public
     procedure AddRecentFile(const AFileName: TFileName);
   end;
@@ -136,28 +145,34 @@ uses UJeezIde;
 
 procedure TJeezOptions.FormCreate(ASender: TObject);
 begin
-  NsPlatform.ScrollingWinControlPrepare(Self);
+  GPlatform.ScrollingWinControlPrepare(Self);
   EditRecentFiles.Font.Size := 8;
   FStorage := TJeezStorage.Create(GetAppConfigFile(False));
   PageControl.ActivePageIndex := 0;
-  EditDefVstPath.Directory := NSFileNames.PathToVstEffects;
+  EditDefVstPath.Directory := GFilePath.VstEffects;
   with EditCompiler.Items do
   begin
     Add('g++ (Default GCC)');
-{$IFDEF WINDOWS}
-    Add('x86_64-w64-mingw32-g++ (LDM-GCC-64)');
-    Add('mingw32-g++ (LDM-GCC-32)');
-    Add('x86_64-pc-cygwin-gcc (cygwin)');
-{$ENDIF}
+    if GPlatform.IsWindows then
+    begin
+      Add('x86_64-w64-mingw32-g++ (LDM-GCC-64)');
+      Add('mingw32-g++ (LDM-GCC-32)');
+      Add('x86_64-pc-cygwin-gcc (cygwin)');
+    end;
   end;
-  EditCompiler.ItemIndex := 0;
-
-{$IFDEF WINDOWS}
-  EditFontName.Caption := 'Courier New';
-{$ENDIF}
-{$IFDEF LINUX}
-  EditFontName.Caption := 'Courier';
-{$ENDIF}
+  // Setup defaults.
+  EditCompiler.ItemIndex := 1; // TODO: Change this for Linux
+  EditProcessorType.ItemIndex := Ord(ca32bit);
+  EditFloatPrecision.ItemIndex := Ord(cfpDouble);
+  EditPluginType.ItemIndex := Ord(cptVST);
+  EditOptimizeLevel.ItemIndex := Ord(colO2);
+  if GPlatform.IsWindows then
+  begin
+    EditFontName.Caption := 'Courier New';
+  end else if GPlatform.IsLinux then
+  begin
+    EditFontName.Caption := 'Courier';
+  end;
   EditFontName.Items := Screen.Fonts;
 
   ButtonPresetDefault.Click;
@@ -166,16 +181,45 @@ begin
   SettingsSave;
 end;
 
+procedure TJeezOptions.FormDestroy(ASender: TObject);
+begin
+  SettingsSave;
+end;
+
 procedure TJeezOptions.FormShow(ASender: TObject);
 begin
   J2C_WinControlCreateLabels(Self);
+end;
+
+procedure TJeezOptions.SettingsLoad;
+begin
+  FStorage.LoadAll(Self);
+end;
+
+procedure TJeezOptions.SettingsSave;
+begin
+  FStorage.SaveAll(Self);
+end;
+
+function TJeezOptions.Execute: Boolean;
+begin
+  SettingsSave;
+  Result := ShowModal = mrOk;
+  if Result then
+  begin
+    SettingsSave;
+    JeezIde.UpdateAllEditors;
+  end else begin
+    SettingsLoad;
+  end;
 end;
 
 procedure TJeezOptions.GroupBoxPresetsResize(ASender: TObject);
 begin
   with ASender as TWinControl do
   begin
-    ChildSizing.LeftRightSpacing := (ClientWidth - ButtonPresetTwilight.BoundsRect.Right + 1) div 2;
+    ChildSizing.LeftRightSpacing :=
+      (ClientWidth - ButtonPresetTwilight.BoundsRect.Right + 1) div 2;
   end;
 end;
 
@@ -192,36 +236,36 @@ begin
   EditRecentFiles.Clear;
 end;
 
-procedure TJeezOptions.ButtonPresetClassicClick(ASender: TObject);
-begin
-  ColorBackground.Selected := clNavy;
-  ColorComments.Selected := clSilver;
-  ColorFunctions.Selected := clYellow;
-  ColorGutter.Selected := clNavy;
-  ColorGutterText.Selected := clYellow;
-  ColorIdentifiers.Selected := clYellow;
-  ColorInfoBlocks.Selected := clNavy;
-  ColorKeywords.Selected := clWhite;
-  ColorLineColor.Selected := clBlue;
-  ColorLineFrame.Selected := ColorLineColor.Selected;
-  ColorNumbers.Selected := clYellow;
-  ColorStrings.Selected := clYellow;
-  ColorSymbols.Selected := clYellow;
-  ColorVariables.Selected := clYellow;
-end;
-
 procedure TJeezOptions.ButtonPresetDefaultClick(ASender: TObject);
 begin
-  ColorBackground.Selected := $0e0e0e;
+  ColorBackground.Selected := $0f0f0f;
   ColorComments.Selected := $C08060;
   ColorFunctions.Selected := clYellow;
-  ColorGutter.Selected := $333333;
+  ColorGutter.Selected := $222222;
   ColorGutterText.Selected := clSilver;
   ColorIdentifiers.Selected := clWhite;
-  ColorInfoBlocks.Selected := $0f0f0f;
+  ColorInfoBlocks.Selected := ColorBackground.Selected;
   ColorKeywords.Selected := clAqua;
   ColorLineColor.Selected := ColorGutter.Selected;
   ColorLineFrame.Selected := $555555;
+  ColorNumbers.Selected := clLime;
+  ColorStrings.Selected := $C0C0FF;
+  ColorSymbols.Selected := clAqua;
+  ColorVariables.Selected := $8080FF;
+end;
+
+procedure TJeezOptions.ButtonPresetREAPERClick(ASender: TObject);
+begin
+  ColorBackground.Selected := clBlack;
+  ColorComments.Selected := $C08060;
+  ColorFunctions.Selected := clYellow;
+  ColorGutter.Selected := clBlack;
+  ColorGutterText.Selected := clBlack;
+  ColorIdentifiers.Selected := clWhite;
+  ColorInfoBlocks.Selected := ColorBackground.Selected;
+  ColorKeywords.Selected := clAqua;
+  ColorLineColor.Selected := $333333;
+  ColorLineFrame.Selected := ColorLineColor.Selected;
   ColorNumbers.Selected := clLime;
   ColorStrings.Selected := $C0C0FF;
   ColorSymbols.Selected := clAqua;
@@ -246,24 +290,6 @@ begin
   ColorVariables.Selected := clFuchsia;
 end;
 
-procedure TJeezOptions.ButtonPresetREAPERClick(ASender: TObject);
-begin
-  ColorBackground.Selected := clBlack;
-  ColorComments.Selected := $C08060;
-  ColorFunctions.Selected := clYellow;
-  ColorGutter.Selected := clBlack;
-  ColorGutterText.Selected := clBlack;
-  ColorIdentifiers.Selected := clWhite;
-  ColorInfoBlocks.Selected := clBlack;
-  ColorKeywords.Selected := clAqua;
-  ColorLineColor.Selected := $333333;
-  ColorLineFrame.Selected := ColorLineColor.Selected;
-  ColorNumbers.Selected := clLime;
-  ColorStrings.Selected := $C0C0FF;
-  ColorSymbols.Selected := clAqua;
-  ColorVariables.Selected := $8080FF;
-end;
-
 procedure TJeezOptions.ButtonPresetOceanClick(ASender: TObject);
 begin
   ColorBackground.Selected := clNavy;
@@ -272,7 +298,7 @@ begin
   ColorGutter.Selected := clNavy;
   ColorGutterText.Selected := clYellow;
   ColorIdentifiers.Selected := clYellow;
-  ColorInfoBlocks.Selected := clNavy;
+  ColorInfoBlocks.Selected := ColorAdjustLuma(ColorBackground.Selected, -16, False);
   ColorKeywords.Selected := clAqua;
   ColorLineColor.Selected := clBlue;
   ColorLineFrame.Selected := ColorLineColor.Selected;
@@ -280,6 +306,24 @@ begin
   ColorStrings.Selected := clYellow;
   ColorSymbols.Selected := clAqua;
   ColorVariables.Selected := clFuchsia;
+end;
+
+procedure TJeezOptions.ButtonPresetClassicClick(ASender: TObject);
+begin
+  ColorBackground.Selected := clNavy;
+  ColorComments.Selected := clSilver;
+  ColorFunctions.Selected := clYellow;
+  ColorGutter.Selected := clNavy;
+  ColorGutterText.Selected := clYellow;
+  ColorIdentifiers.Selected := clYellow;
+  ColorInfoBlocks.Selected := ColorAdjustLuma(ColorBackground.Selected, -16, False);
+  ColorKeywords.Selected := clWhite;
+  ColorLineColor.Selected := clBlue;
+  ColorLineFrame.Selected := ColorLineColor.Selected;
+  ColorNumbers.Selected := clYellow;
+  ColorStrings.Selected := clYellow;
+  ColorSymbols.Selected := clYellow;
+  ColorVariables.Selected := clYellow;
 end;
 
 procedure TJeezOptions.ButtonPresetTwilightClick(ASender: TObject);
@@ -290,7 +334,7 @@ begin
   ColorGutter.Selected := clBlack;
   ColorGutterText.Selected := clWhite;
   ColorIdentifiers.Selected := clWhite;
-  ColorInfoBlocks.Selected := clBlack;
+  ColorInfoBlocks.Selected := ColorBackground.Selected;
   ColorKeywords.Selected := clAqua;
   ColorLineColor.Selected := clNavy;
   ColorLineFrame.Selected := ColorLineColor.Selected;
@@ -298,29 +342,6 @@ begin
   ColorStrings.Selected := clYellow;
   ColorSymbols.Selected := clAqua;
   ColorVariables.Selected := clFuchsia;
-end;
-
-procedure TJeezOptions.SettingsLoad;
-begin
-  FStorage.LoadAll(Self);
-end;
-
-procedure TJeezOptions.SettingsSave;
-begin
-  FStorage.SaveAll(Self);
-end;
-
-function TJeezOptions.Execute: Boolean;
-begin
-  SettingsLoad;
-  Result := ShowModal = mrOk;
-  if Result then
-  begin
-    SettingsSave;
-    JeezIde.UpdateColors;
-  end else begin
-    SettingsLoad;
-  end;
 end;
 
 procedure TJeezOptions.AddRecentFile(const AFileName: TFileName);
@@ -345,24 +366,34 @@ begin
   end;
 end;
 
-function TJeezOptions.GetCompiler: TFileName;
+function TJeezOptions.GetGccExecutable: TFileName;
 begin
   Result := ExtractDelimited(1, EditCompiler.Text, [CharSpace]);
 end;
 
-function TJeezOptions.GetTypeArchitecture: TJes2CppCompilerArchitecture;
+function TJeezOptions.GetArchitecture: CJes2CppCompiler.TArchitecture;
 begin
-  Result := TJes2CppCompilerArchitecture(EditProcessorType.ItemIndex);
+  Result := CJes2CppCompiler.TArchitecture(EditProcessorType.ItemIndex);
 end;
 
-function TJeezOptions.GetTypePrecision: TJes2CppCompilerPrecision;
+function TJeezOptions.GetPrecision: CJes2CppCompiler.TFloatPrecision;
 begin
-  Result := TJes2CppCompilerPrecision(EditFloatPrecision.ItemIndex);
+  Result := CJes2CppCompiler.TFloatPrecision(EditFloatPrecision.ItemIndex);
 end;
 
-function TJeezOptions.GetTypePlugin: TJes2CppCompilerPlugin;
+function TJeezOptions.GetPluginType: CJes2CppCompiler.TPluginType;
 begin
-  Result := TJes2CppCompilerPlugin(EditPluginType.ItemIndex);
+  Result := CJes2CppCompiler.TPluginType(EditPluginType.ItemIndex);
+end;
+
+function TJeezOptions.GetOptimizeLevel: CJes2CppCompiler.TOptimizeLevel;
+begin
+  Result := CJes2CppCompiler.TOptimizeLevel(EditOptimizeLevel.ItemIndex);
+end;
+
+function TJeezOptions.GetComboBoxFontColor: TColor;
+begin
+  Result := ColorVariables.Selected;
 end;
 
 procedure TJeezOptions.ApplyControl(const AControl: TControl; const AColor: TColor);
@@ -375,42 +406,58 @@ begin
     AControl.Font.Quality := fqNonAntialiased;
   end;
   AControl.Font.Name := EditFontName.Text;
-  AControl.Font.Size := EditFontSize.Value;
-  AControl.Font.Color := ColorIdentifiers.Selected;
+  if AControl is TComboBox then
+  begin
+    AControl.Font.Height := TComboBox(AControl).ItemHeight;
+    AControl.Font.Color := GetComboBoxFontColor;
+  end else begin
+    AControl.Font.Size := EditFontSize.Value;
+    AControl.Font.Color := ColorIdentifiers.Selected;
+  end;
   if AControl is TTreeView then
   begin
     TTreeView(AControl).BackgroundColor := AControl.Color;
   end;
 end;
 
+procedure TJeezOptions.ApplyComboBox(const AComboBox: TComboBox; const AColor: TColor);
+begin
+  ApplyControl(AComboBox, AColor);
+  AComboBox.Invalidate;
+end;
+
 procedure TJeezOptions.ApplySynCustomHighlighter(const AHighlighter: TSynCustomHighlighter);
 begin
-  SetHighlighterAttri(AHighlighter.CommentAttribute, ColorComments.Selected);
-  SetHighlighterAttri(AHighlighter.KeywordAttribute, ColorKeywords.Selected);
-  SetHighlighterAttri(AHighlighter.StringAttribute, ColorStrings.Selected);
-  SetHighlighterAttri(AHighlighter.IdentifierAttribute, ColorIdentifiers.Selected);
+  GSynHighlighter.SetAttribute(AHighlighter.CommentAttribute, ColorComments.Selected);
+  GSynHighlighter.SetAttribute(AHighlighter.KeywordAttribute, ColorKeywords.Selected,
+    EditBoldImportant.Checked);
+  GSynHighlighter.SetAttribute(AHighlighter.StringAttribute, ColorStrings.Selected);
+  GSynHighlighter.SetAttribute(AHighlighter.IdentifierAttribute, ColorIdentifiers.Selected);
 end;
 
 procedure TJeezOptions.ApplySynCppSyn(const AHighlighter: TSynCppSyn);
 begin
   ApplySynCustomHighlighter(AHighlighter);
-  SetHighlighterAttri(AHighlighter.DirecAttri, AHighlighter.CommentAttribute.Foreground);
-  SetHighlighterAttri(AHighlighter.NumberAttri, AHighlighter.StringAttribute.Foreground);
-  SetHighlighterAttri(AHighlighter.SymbolAttri, ColorSymbols.Selected);
-  SetHighlighterAttri(AHighlighter.InvalidAttri, ColorSymbols.Selected);
+  GSynHighlighter.SetAttribute(AHighlighter.DirecAttri, AHighlighter.CommentAttribute.Foreground);
+  GSynHighlighter.SetAttribute(AHighlighter.NumberAttri, AHighlighter.StringAttribute.Foreground);
+  GSynHighlighter.SetAttribute(AHighlighter.SymbolAttri, ColorSymbols.Selected);
+  GSynHighlighter.SetAttribute(AHighlighter.InvalidAttri, ColorSymbols.Selected);
 end;
 
-procedure TJeezOptions.ApplySynAnySyn(const AHighlighter: TSynAnySyn; const ADetectPreprocessor: Boolean);
+procedure TJeezOptions.ApplySynAnySyn(const AHighlighter: TSynAnySyn;
+  const ADetectPreprocessor: Boolean);
 begin
   ApplySynCustomHighlighter(AHighlighter);
   AHighlighter.DetectPreprocessor := ADetectPreprocessor;
-  SetHighlighterAttri(AHighlighter.PreprocessorAttri, clGreen);
-  SetHighlighterAttri(AHighlighter.NumberAttri, ColorNumbers.Selected);
-  SetHighlighterAttri(AHighlighter.ConstantAttri, ColorVariables.Selected);
-  SetHighlighterAttri(AHighlighter.ObjectAttri, ColorFunctions.Selected);
-  SetHighlighterAttri(AHighlighter.IdentifierAttri, ColorIdentifiers.Selected);
-  SetHighlighterAttri(AHighlighter.SymbolAttribute, ColorSymbols.Selected);
-  SetHighlighterAttri(AHighlighter.VariableAttri, ColorNumbers.Selected);
+  GSynHighlighter.SetAttribute(AHighlighter.PreprocessorAttri, clGreen);
+  GSynHighlighter.SetAttribute(AHighlighter.NumberAttri, ColorNumbers.Selected);
+  GSynHighlighter.SetAttribute(AHighlighter.ConstantAttri, ColorVariables.Selected,
+    EditBoldImportant.Checked);
+  GSynHighlighter.SetAttribute(AHighlighter.ObjectAttri, ColorFunctions.Selected,
+    EditBoldImportant.Checked);
+  GSynHighlighter.SetAttribute(AHighlighter.IdentifierAttri, ColorIdentifiers.Selected);
+  GSynHighlighter.SetAttribute(AHighlighter.SymbolAttribute, ColorSymbols.Selected);
+  GSynHighlighter.SetAttribute(AHighlighter.VariableAttri, ColorNumbers.Selected);
   if ADetectPreprocessor then
   begin
     AHighlighter.KeywordAttribute.Foreground := ColorGutterText.Selected;

@@ -1,0 +1,61 @@
+/*
+** Name: string
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import std.cnew.jsfx-inc
+import std.array.jsfx-inc
+
+@init
+
+function c_str() global(new*)
+(
+  this == 0 ? this = salloc() : this;
+);
+
+function string(str) global()
+(
+  strcpy(this.c_str(), str);  
+);
+
+function string(str, pos) global()
+(
+  strcpy_substr(this.c_str(), str, pos);
+);
+
+function string(str, pos, len) global()
+(
+  strcpy_substr(this.c_str(), str, pos, len);
+);
+
+function length() global()
+( 
+  strlen(this.c_str());
+);
+
+function substr(pos) global()
+(
+  strcpy_substr(#, this.c_str(), pos);
+);
+
+function substr(pos, len) global()
+(
+  strcpy_substr(#, this.c_str(), pos, len);
+);
+
+function upper()
+(
+  strupr(this.c_str());
+);
+
+function lower()
+(
+  strlwr(this.c_str());
+);
+
+

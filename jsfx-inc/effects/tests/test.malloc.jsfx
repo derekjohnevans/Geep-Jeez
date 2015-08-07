@@ -1,0 +1,71 @@
+
+import test.jsfx-inc
+
+@init
+
+function PrintMem(name, m) global()
+(
+  printf("name=%5s  ptr=0x%X  size=%4d  state=%s\n",
+    name, m, _msize(m), mcheck(m) ? "ok" : "ERROR!");
+);
+
+function PrintMem(i)
+(
+  H2(sprintf(#, "Test #%d", i));
+  PrintMem("m1", m1);
+  PrintMem("m2", m2);
+  PrintMem("m3", m3);
+);
+
+clrscr();
+
+H1("Memory Allocation Testing");
+
+m1 = calloc(10);
+m2 = calloc(20);
+m3 = calloc(500);
+
+PrintMem(1);
+
+free(m1); 
+free(m2); 
+m1 = calloc(20);
+m2 = calloc(0);
+
+PrintMem(2);
+
+free(m1); 
+free(m2); 
+m1 = calloc(30);
+m2 = calloc(5);
+
+PrintMem(3);
+
+free(m1); 
+free(m2); 
+m1 = calloc(3);
+m2 = calloc(400);
+
+PrintMem(4);
+
+free(m1); m1 = calloc(300);
+free(m2); m2 = calloc(1);
+
+PrintMem(5);
+
+free(m1); m1 = calloc(10);
+free(m2); m2 = calloc(20);
+
+PrintMem(6);
+
+free(m1);
+free(m2); 
+
+m1 = calloc(10);
+m2 = calloc(20);
+ 
+PrintMem(7);
+
+H2("The aim of this test is to restore the original m1, m2, m3 state");
+H2("DONE");
+

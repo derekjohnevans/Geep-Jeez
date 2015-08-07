@@ -70,7 +70,7 @@ begin
     LLoop.FPreCondition := LLoop.FBlock;
     LLoop.FBlock := ParseBlock;
   end;
-  Result := LLoop.EncodeCallCpp;
+  Result := LLoop.CppFunctionMacro;
 end;
 
 function CJes2CppParserLoops.ParseLoopBlock: String;
@@ -98,7 +98,7 @@ begin
   ExpectToken(CharComma);
   LLoop.FBlock := ParseLoopBlock;
   ExpectToken(CharClosingParenthesis);
-  Result := LLoop.EncodeCallCpp;
+  Result := LLoop.CppFunctionMacro;
 end;
 
 end.

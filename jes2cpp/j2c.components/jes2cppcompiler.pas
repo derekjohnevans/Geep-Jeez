@@ -31,22 +31,27 @@ unit Jes2CppCompiler;
 interface
 
 uses
-  Classes, Jes2CppConstants, Jes2CppFileNames, Jes2CppProcess, Jes2CppTranslate, SysUtils;
+  Classes, Jes2CppConstants, Jes2CppFileNames, Jes2CppPlatform, Jes2CppProcess,
+  Jes2CppTranslate, SysUtils;
 
 type
 
-  TJes2CppCompilerArchitecture = (pa32bit, pa64bit);
-  TJes2CppCompilerPrecision = (ptSingle, ptDouble, ptLongDouble);
-  TJes2CppCompilerPlugin = (ptVST, ptLV1, ptLV2, ptDX, ptAU, ptVAMP);
-  TJes2CppCompilerOption = (coUseLibBass, coUseLibSndFile, coUseFastMath, coUseInline, coUseCompression);
-  TJes2CppCompilerOptions = set of TJes2CppCompilerOption;
-
   CJes2CppCompiler = class(CJes2CppProcess)
+  public
+    type TOptimizeLevel = (colNone, colO, colO2, colO3, colOs);
+    type TArchitecture = (ca32bit, ca64bit);
+    type TFloatPrecision = (cfpSingle, cfpDouble, cfpLongDouble);
+    type TPluginType = (cptVST, cptLV1, cptLV2, cptDX, cptAU, cptVAMP);
+    type TCompilerOption = (coUseLibBass, coUseLibSndFile, coUseFastMath,
+      coUseInline, coUseCompression);
+    type TCompilerOptions = set of TCompilerOption;
+  private // Here to make source formater happy.
   strict private
-    FTypeArchitecture: TJes2CppCompilerArchitecture;
-    FTypePrecision: TJes2CppCompilerPrecision;
-    FTypePlugin: TJes2CppCompilerPlugin;
-    FCompilerOptions: TJes2CppCompilerOptions;
+    FOptimizeLevel: TOptimizeLevel;
+    FArchitecture: TArchitecture;
+    FPrecision: TFloatPrecision;
+    FPluginType: TPluginType;
+    FCompilerOptions: TCompilerOptions;
   strict private
     procedure AddOptionFlags;
     procedure AddInputFiles(const AFileName: TFileName);
@@ -55,71 +60,75 @@ type
     procedure DoOnLine(const AString: String); override;
     procedure Compile(const AExecutable, AFilenameSrc, AFilenameDst: TFileName); overload;
   public
-    procedure SetCompilerOption(const AOption: TJes2CppCompilerOption; const AState: Boolean);
+    procedure SetCompilerOption(const AOption: TCompilerOption; const AState: Boolean);
     function Compile(const AExecutable, AFileNameSrc: TFileName): TFileName; overload;
     function Compile(const AExecutable: TFileName; const AStrings: TStrings): TFileName; overload;
   public
-    property CompilerOptions: TJes2CppCompilerOptions read FCompilerOptions write FCompilerOptions;
-    property TypeArchitecture: TJes2CppCompilerArchitecture read FTypeArchitecture write FTypeArchitecture;
-    property TypePrecision: TJes2CppCompilerPrecision read FTypePrecision write FTypePrecision;
-    property TypePlugin: TJes2CppCompilerPlugin read FTypePlugin write FTypePlugin;
+    class function FileNameOutputDll(const AFileName: TFileName;
+      const AProcessor: TArchitecture; const APrecision: TFloatPrecision;
+      const APlugin: TPluginType): TFileName;
+    class function TypePrecisionAsString(const AType: TFloatPrecision): String;
+    class function TypeArchitectureAsString(const AType: TArchitecture): String;
+    class function TypePluginAsString(const AType: TPluginType): String;
+  public
+    property CompilerOptions: TCompilerOptions read FCompilerOptions write FCompilerOptions;
+    property Architecture: TArchitecture read FArchitecture write FArchitecture;
+    property Precision: TFloatPrecision read FPrecision write FPrecision;
+    property PluginType: TPluginType read FPluginType write FPluginType;
+    property OptimizeLevel: TOptimizeLevel read FOptimizeLevel write FOptimizeLevel;
   end;
-
-function TypePrecisionAsString(const AType: TJes2CppCompilerPrecision): String;
-function TypeArchitectureAsString(const AType: TJes2CppCompilerArchitecture): String;
-function TypePluginAsString(const AType: TJes2CppCompilerPlugin): String;
-
-function FileNameOutputDll(const AFileName: TFileName; const AProcessor: TJes2CppCompilerArchitecture;
-  const APrecision: TJes2CppCompilerPrecision; const APlugin: TJes2CppCompilerPlugin): TFileName;
 
 implementation
 
-function TypePrecisionAsString(const AType: TJes2CppCompilerPrecision): String;
+class function CJes2CppCompiler.TypePrecisionAsString(const AType: TFloatPrecision): String;
 begin
   case AType of
-    ptSingle: begin
+    cfpSingle: begin
       Result := 'f32';
     end;
-    ptDouble: begin
+    cfpDouble: begin
       Result := 'f64';
     end;
   end;
 end;
 
-function TypeArchitectureAsString(const AType: TJes2CppCompilerArchitecture): String;
+class function CJes2CppCompiler.TypeArchitectureAsString(const AType: TArchitecture): String;
 begin
   case AType of
-    pa32bit: begin
+    ca32bit: begin
       Result := 'm32';
     end;
-    pa64bit: begin
+    ca64bit: begin
       Result := 'm64';
     end;
   end;
 end;
 
-function TypePluginAsString(const AType: TJes2CppCompilerPlugin): String;
+class function CJes2CppCompiler.TypePluginAsString(const AType: TPluginType): String;
 begin
   // TODO: Complete these.
   case AType of
-    ptVST: begin
+    cptVST: begin
       Result := 'vst';
     end;
-    ptLV1: begin
+    cptLV1: begin
       Result := 'lv1';
     end;
   end;
 end;
 
-function FileNameOutputDll(const AFileName: TFileName; const AProcessor: TJes2CppCompilerArchitecture;
-  const APrecision: TJes2CppCompilerPrecision; const APlugin: TJes2CppCompilerPlugin): TFileName;
+class function CJes2CppCompiler.FileNameOutputDll(const AFileName: TFileName;
+  const AProcessor: TArchitecture; const APrecision: TFloatPrecision;
+  const APlugin: TPluginType): TFileName;
 begin
   Result := ChangeFileExt(AFileName, EmptyStr);
-  Result += ExtensionSeparator + TypeArchitectureAsString(AProcessor) + ExtensionSeparator +
-    TypePrecisionAsString(APrecision) + ExtensionSeparator + TypePluginAsString(APlugin) + GsFileExtDll;
+  Result += ExtensionSeparator + TypeArchitectureAsString(AProcessor) +
+    ExtensionSeparator + TypePrecisionAsString(APrecision) + ExtensionSeparator +
+    TypePluginAsString(APlugin) + GsFileExtDll;
 end;
 
-procedure CJes2CppCompiler.SetCompilerOption(const AOption: TJes2CppCompilerOption; const AState: Boolean);
+procedure CJes2CppCompiler.SetCompilerOption(const AOption: TCompilerOption;
+  const AState: Boolean);
 begin
   if AState then
   begin
@@ -135,30 +144,45 @@ begin
   AddOption('v');
   AddOption('s');
   AddOption('shared');
-  AddOption('W', 'all');
-  AddOption('W', 'no-reorder');
-  AddOption('W', 'no-unused-value');
-  AddOption('W', 'no-unused-variable');
-  AddOption('W', 'no-unused-but-set-variable');
-  AddOption('O', '2');
+  AddOptionWarning('all');
+  AddOptionWarning('no-reorder');
+  AddOptionWarning('no-unused-value');
+  AddOptionWarning('no-unused-variable');
+  AddOptionWarning('no-unused-but-set-variable');
   //AddOption('mmmx'); // Does this even do anything?
-  AddOption('f', 'PIC');
-  AddOption('f', 'message-length=0');
-  AddOption('f', 'no-exceptions');
-  AddOption('f', 'permissive');
+  AddOptionF('PIC');
+  AddOptionF('message-length=0');
+  AddOptionF('no-exceptions');
+  AddOptionF('permissive');
   if coUseInline in FCompilerOptions then
   begin
-    AddOption('f', 'inline-functions');
+    AddOptionF('inline-functions');
   end;
   if coUseFastMath in FCompilerOptions then
   begin
-    AddOption('f', 'fast-math');
+    AddOptionF('fast-math');
   end;
-  case FTypeArchitecture of
-    pa32bit: begin
+  case FOptimizeLevel of
+    colNone: begin
+    end;
+    colO: begin
+      AddOption('O');
+    end;
+    colO2: begin
+      AddOption('O', '2');
+    end;
+    colO3: begin
+      AddOption('O', '3');
+    end;
+    colOs: begin
+      AddOption('O', 's');
+    end;
+  end;
+  case FArchitecture of
+    ca32bit: begin
       AddOption('m', '32');
     end;
-    pa64bit: begin
+    ca64bit: begin
       AddOption('m', '64');
     end;
   end;
@@ -166,30 +190,31 @@ end;
 
 procedure CJes2CppCompiler.AddInputFiles(const AFileName: TFileName);
 begin
-  AddInputFile(NSFileNames.PathToSdkJes2Cpp + GsFilePartJes2Cpp + GsFileExtCpp);
+  AddInputFile(GFilePath.SdkJes2Cpp + GsFilePartJes2Cpp + GsFileExtCpp);
   AddInputFile(AFileName);
   if coUseLibBass in FCompilerOptions then
   begin
-    AddInputFile(NSFileNames.FileNameBassLib(FTypeArchitecture = pa64bit));
+    AddInputFile(GFileName.FileNameBassLib(FArchitecture = ca64bit));
   end;
   if coUseLibSndFile in FCompilerOptions then
   begin
-    AddInputFile(NSFileNames.FileNameSndFileLib(FTypeArchitecture = pa64bit));
+    AddInputFile(GFileName.FileNameSndFileLib(FArchitecture = ca64bit));
   end;
-  case FTypePlugin of
-    ptVST: begin
-      case FTypeArchitecture of
-        pa32bit: begin
-          AddInputFile(NSFileNames.FileNameVeSTLib32);//, 'fab1c842d13a2f5842174ad4edea348cb4c37adb');
+  case FPluginType of
+    cptVST: begin
+      case FArchitecture of
+        ca32bit: begin
+          AddInputFile(GFileName.FileNameVeSTLib32);
+          //, 'fab1c842d13a2f5842174ad4edea348cb4c37adb');
         end;
-        pa64bit: begin
-          AddInputFile(NSFileNames.FileNameVeSTLib64);
+        ca64bit: begin
+          AddInputFile(GFileName.FileNameVeSTLib64);
         end;
       end;
-      AddInputFile(NSFileNames.PathToSdkJes2Cpp + GsFilePartExports + GsFileExtDef);
+      AddInputFile(GFilePath.SdkJes2Cpp + GsFilePartExports + GsFileExtDef);
     end;
-    ptLV1: begin
-      AddInputFile(NSFileNames.PathToSdkVeST + GsFilePartVeST + GsFileExtCpp);
+    cptLV1: begin
+      AddInputFile(GFilePath.SdkVeST + GsFilePartVeST + GsFileExtCpp);
     end;
   end;
 end;
@@ -206,20 +231,20 @@ begin
 
   AddOptionFlags;
 
-  case FTypePlugin of
-    ptVST: begin
+  case FPluginType of
+    cptVST: begin
       AddDefine(GsCppVestVst, True);
     end;
-    ptLV1: begin
+    cptLV1: begin
       AddDefine(GsCppVestLv1, True);
     end;
-    ptLV2: begin
+    cptLV2: begin
       AddDefine(GsCppVestLv2, True);
     end;
-    ptDX: begin
+    cptDX: begin
       AddDefine(GsCppVestDx, True);
     end;
-    ptAU: begin
+    cptAU: begin
       AddDefine(GsCppVestAu, True);
     end;
   end;
@@ -229,11 +254,11 @@ begin
   end else begin
     AddDefine(GsCppJes2CppInline, EmptyStr);
   end;
-  case FTypePrecision of
-    ptSingle: begin
+  case FPrecision of
+    cfpSingle: begin
       AddDefine(GsCppWdlFftRealSize, '4');
     end;
-    ptDouble: begin
+    cfpDouble: begin
       AddDefine(GsCppWdlFftRealSize, '8');
     end;
   end;
@@ -245,12 +270,14 @@ begin
   begin
     AddDefine(GsCppJes2CppSndFile, True);
   end;
-  AddIncludePath(NSFileNames.PathToSdkJes2Cpp);
-  AddIncludePath(NSFileNames.PathToSdkVeST);
+  AddIncludePath(GFilePath.SdkJes2Cpp);
+  AddIncludePath(GFilePath.SdkVeST);
   AddInputFiles(AFilenameSrc);
-{$IFDEF WINDOWS}
-  AddLibraries(['user32', 'kernel32', 'ole32', 'oleaut32', 'uuid', 'comdlg32', 'gdi32', 'gdiplus']);
-{$ENDIF}
+  if GPlatform.IsWindows then
+  begin
+    AddLibraries(['user32', 'kernel32', 'ole32', 'oleaut32', 'uuid', 'comdlg32',
+      'gdi32', 'gdiplus']);
+  end;
   AddOutputFile(AFilenameDst);
 end;
 
@@ -272,7 +299,7 @@ begin
       if (coUseCompression in FCompilerOptions) and FileExists(AFilenameDst) then
       begin
         LogMessage(SMsgCompressing + CharSpace + QuotedStr(AFilenameDst) + CharDot);
-        Executable := NSFileNames.FileNameUpX;
+        Executable := GFileName.FileNameUpX;
         Parameters.Clear;
         AddInputFile(AFilenameDst);
         ExecuteAndWait;
@@ -300,13 +327,14 @@ end;
 
 function CJes2CppCompiler.Compile(const AExecutable, AFileNameSrc: TFileName): TFileName;
 begin
-  Result := NSFileNames.FileNameOutputDll;
+  Result := GFileName.FileNameOutputDll;
   Compile(AExecutable, AFileNameSrc, Result);
 end;
 
-function CJes2CppCompiler.Compile(const AExecutable: TFileName; const AStrings: TStrings): TFileName;
+function CJes2CppCompiler.Compile(const AExecutable: TFileName;
+  const AStrings: TStrings): TFileName;
 begin
-  Result := NSFileNames.FileNameOutputCpp;
+  Result := GFileName.FileNameOutputCpp;
   AStrings.SaveToFile(Result);
   Result := Compile(AExecutable, Result);
 end;

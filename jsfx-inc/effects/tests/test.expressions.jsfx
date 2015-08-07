@@ -1,0 +1,31 @@
+
+import test.jsfx-inc
+
+@init
+
+clrscr();
+
+H1("Expression Tests");
+
+function Test(f, value, expected) global()
+(
+  printf("%20s = %8.2f -> %s\n", f, value, value == expected ? "GOOD" : "ERROR!");
+);
+
+Test("2 | 2 == 2"        , 2 | 2 == 2           ,   1);
+Test("1 & 3 + 2"         , 1 & 3 + 2            ,   1);
+Test("2 ^ 3 / 2"         , 2 ^ 3 / 2            ,   4);
+Test("2 ^ 3 ^ 3"         , 2 ^ 3 ^ 3            , 512);
+Test("5 - 2 * 5"         , 5 - 2 * 5            ,  -5);
+Test("10 == 2 * 5"       , 10 == 2 * 5          ,   1);
+Test("6 << 2 * 4"        , 6 << 2 * 4           ,  96);
+Test("100 / 1 << 2"      , 100 / 1 << 2         ,  25);
+Test("2 & 2 << 2"        , 2 & 2 << 2           ,   0);
+Test("2 + 2 & 1"         , 2 + 2 & 1            ,   0);
+Test("1 & 1 + 4"         , 1 & 1 + 4            ,   1);
+
+x = (x =  1; 4 + x *= 1); Test("x = 1; 4 + x *= 1" , x,  5);
+x = (x = 10; 4 + x /= 2); Test("x = 10; 4 + x /= 2", x,  9);
+x = (x = 10; 4 * x += 2); Test("x = 10; 4 * x += 2", x, 48);
+x = (x = 10; x += 2 * 4); Test("x = 10; x += 2 * 4", x, 18);
+

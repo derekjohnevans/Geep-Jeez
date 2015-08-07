@@ -1,0 +1,72 @@
+/*
+** Name: conio.h
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import std.cstdio.jsfx-inc
+import std.cmath.jsfx-inc
+
+import pas.graphics.jsfx-inc
+
+@init
+
+// clrscr function clears the screen amd move the cursor to upper left hand corner of screen.
+function clrscr() global(stdout)
+(
+  strcpy(stdout, "");
+);
+
+// Draws a very basic console window with scrollbar. Nothing fancy.
+function Console.Draw(x1, y1, x2, y2, str) 
+global(gfx_texth, mouse_cap, mouse_y)
+global(clBtnFace, clBtnShadow, clBtnHighlight, Canvas*)
+local(min, max, count, pos, end)
+(   
+  Canvas.Frame3D(x1, y1, x2, y2, clBtnShadow, clBtnHighlight, 0x332222);
+  x1 += 4; y1 += 4;
+  x2 -= 4; y2 -= 4;
+  Canvas.Font.Name = "Courier New";
+  Canvas.Font.Size = 14;
+  Canvas.Font.Color = 0xFFFF00;  
+  Canvas.PenPos.y = y1 - (this.pos * gfx_texth);
+  count = pos = 0;
+  while(pos < strlen(str)) (
+    (end = strchr(str, '\n', pos)) < 0 ? end = strlen(str);
+    Canvas.PenPos.y >= y1 && Canvas.PenPos.y < y2 - gfx_texth ? (
+      Canvas.TextOut(x1,Canvas.PenPos.y, strcpy_substr(#, str, pos, end - pos));
+    );
+    Canvas.PenPos.y += gfx_texth;
+    count += 1;
+    pos = end + 1;
+  );
+  min = 0;
+  max = max(min, floor(count - (y2 - y1) / gfx_texth));  
+  
+  mouse_cap & 1 ? this.pos = floor((mouse_y / (y2 - y1)) * (max - min + 1));
+  
+  this.pos = minmax(this.pos, min, max);
+  Canvas.Frame3D(x2 - 16, y1, x2, y2, clBtnFace, clBtnHighlight, clBtnShadow); 
+  Canvas.Frame3D(
+    x2 - 16, y1 + (y2 - y1) * this.pos / (max - min + 1),
+    x2, y1 + (y2 - y1) * (this.pos + 1) / (max - min + 1), clBtnHighlight, clBtnShadow, clBtnFace);
+);
+
+function Console.Draw(x1, y1, x2, y2) global(stdout) 
+(
+  this.Console.Draw(x1, y1, x2, y2, stdout);  
+);
+
+function Console.Draw() global(gfx_w, gfx_h)
+(
+  this.Console.Draw(0, 0, gfx_w, gfx_h); 
+);
+
+@gfx 600 400
+
+Console.Draw();
+

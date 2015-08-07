@@ -61,6 +61,7 @@ const
   GsFilePartData = 'Data';
   GsFilePartEffects = 'Effects';
   GsFilePartJes2Cpp = 'jes2cpp';
+  GsFilePartJsFxInc = 'jsfx-inc';
   GsFilePartExports = 'exports';
   GsFilePartLibSndFile = 'libsndfile';
   GsFilePartLibSndFile1 = GsFilePartLibSndFile + '-1';
@@ -75,7 +76,7 @@ const
 
 type
 
-  NSUrls = object
+  GUrls = object
   const
     GeepJeez = GsJes2CppWebsite;
     FatCow = 'http://www.fatcow.com/free-icons';
@@ -84,15 +85,18 @@ type
     SAVIHost = 'http://www.hermannseib.com/english/savihost.htm';
   end;
 
-  NSFileNames = object
-  public
-    class function PathToReaperFiles: TFileName;
-    class function PathToReaperData: TFileName;
-    class function PathToReaperEffects: TFileName;
-    class function PathToVstEffects: TFileName;
-    class function PathToTempBuild: TFileName;
-    class function PathToSdkJes2Cpp: TFileName;
-    class function PathToSdkVeST: TFileName;
+  GFilePath = object
+    class function ReaperFiles: TFileName;
+    class function ReaperData: TFileName;
+    class function ReaperEffects: TFileName;
+    class function VstEffects: TFileName;
+    class function TempBuild: TFileName;
+    class function SdkJes2Cpp: TFileName;
+    class function SdkJsFxInc: TFileName;
+    class function SdkVeST: TFileName;
+  end;
+
+  GFileName = object
   public
     class function FileName32x64(const AFileName: TFileName; const AUse64: Boolean): TFileName;
     class function FileNameJes2CppJsFx: TFileName;
@@ -112,27 +116,27 @@ implementation
 
 function PathToApplicationData: TFileName;
 begin
-  Result := NsPlatform.GetSpecialDir(CSIDL_APPDATA);
+  Result := GPlatform.GetSpecialDir(CSIDL_APPDATA);
 end;
 
 function PathToProgramFiles: TFileName;
 begin
-  Result := NsPlatform.GetSpecialDir(CSIDL_PROGRAM_FILES);
+  Result := GPlatform.GetSpecialDir(CSIDL_PROGRAM_FILES);
 end;
 
 function PathToWindows: TFileName;
 begin
-  Result := NsPlatform.GetSpecialDir(CSIDL_WINDOWS);
+  Result := GPlatform.GetSpecialDir(CSIDL_WINDOWS);
 end;
 
 function PathToProfiles: TFileName;
 begin
-  Result := NsPlatform.GetSpecialDir(CSIDL_PROFILES);
+  Result := GPlatform.GetSpecialDir(CSIDL_PROFILES);
 end;
 
 function PathToProfile: TFileName;
 begin
-  Result := NsPlatform.GetSpecialDir(CSIDL_PROFILE);
+  Result := GPlatform.GetSpecialDir(CSIDL_PROFILE);
 end;
 
 function PathToTemp: TFileName;
@@ -140,27 +144,27 @@ begin
   Result := GetTempDir;
 end;
 
-class function NSFileNames.PathToReaperFiles: TFileName;
+class function GFilePath.ReaperFiles: TFileName;
 begin
   Result := PathToApplicationData + GsFilePartREAPER + DirectorySeparator;
 end;
 
-class function NSFileNames.PathToReaperData: TFileName;
+class function GFilePath.ReaperData: TFileName;
 begin
-  Result := PathToReaperFiles + GsFilePartData + DirectorySeparator;
+  Result := ReaperFiles + GsFilePartData + DirectorySeparator;
 end;
 
-class function NSFileNames.PathToReaperEffects: TFileName;
+class function GFilePath.ReaperEffects: TFileName;
 begin
-  Result := PathToReaperFiles + GsFilePartEffects + DirectorySeparator;
+  Result := ReaperFiles + GsFilePartEffects + DirectorySeparator;
 end;
 
-class function NSFileNames.PathToVstEffects: TFileName;
+class function GFilePath.VstEffects: TFileName;
 begin
   Result := PathToProgramFiles + GsFilePartVST + DirectorySeparator;
 end;
 
-class function NSFileNames.PathToTempBuild: TFileName;
+class function GFilePath.TempBuild: TFileName;
 begin
   Result := PathToTemp + GsJes2CppName + DirectorySeparator;
   if not ForceDirectory(Result) then
@@ -169,17 +173,23 @@ begin
   end;
 end;
 
-class function NSFileNames.PathToSdkJes2Cpp: TFileName;
+class function GFilePath.SdkJes2Cpp: TFileName;
 begin
   Result := ProgramDirectory + GsFilePartJes2Cpp + DirectorySeparator;
 end;
 
-class function NSFileNames.PathToSdkVeST: TFileName;
+class function GFilePath.SdkJsFxInc: TFileName;
 begin
-  Result := PathToSdkJes2Cpp + GsFilePartVeST + DirectorySeparator;
+  Result := ProgramDirectory + GsFilePartJsFxInc + DirectorySeparator;
 end;
 
-class function NSFileNames.FileName32x64(const AFileName: TFileName; const AUse64: Boolean): TFileName;
+class function GFilePath.SdkVeST: TFileName;
+begin
+  Result := SdkJes2Cpp + GsFilePartVeST + DirectorySeparator;
+end;
+
+class function GFileName.FileName32x64(const AFileName: TFileName;
+  const AUse64: Boolean): TFileName;
 begin
   Result := AFileName;
   if AUse64 then
@@ -188,52 +198,55 @@ begin
   end;
 end;
 
-class function NSFileNames.FileNameJes2CppJsFx: TFileName;
+class function GFileName.FileNameJes2CppJsFx: TFileName;
 begin
-  Result := PathToSdkJes2Cpp + GsFilePartJes2Cpp + GsFileExtJsFxInc;
+  Result := GFilePath.SdkJes2Cpp + GsFilePartJes2Cpp + GsFileExtJsFxInc;
 end;
 
-class function NSFileNames.FileNameBassLib(const AUse64: Boolean): TFileName;
+class function GFileName.FileNameBassLib(const AUse64: Boolean): TFileName;
 begin
-  Result := FileName32x64(PathToSdkJes2Cpp + GsFilePartBass + DirectorySeparator + GsFilePartBass + GsFileExtLib, AUse64);
+  Result := FileName32x64(GFilePath.SdkJes2Cpp + GsFilePartBass + DirectorySeparator +
+    GsFilePartBass + GsFileExtLib, AUse64);
 end;
 
-class function NSFileNames.FileNameSndFileLib(const AUse64: Boolean): TFileName;
+class function GFileName.FileNameSndFileLib(const AUse64: Boolean): TFileName;
 begin
-  Result := FileName32x64(PathToSdkJes2Cpp + GsFilePartLibSndFile + DirectorySeparator + GsFilePartLibSndFile1 + GsFileExtLib, AUse64);
+  Result := FileName32x64(GFilePath.SdkJes2Cpp + GsFilePartLibSndFile +
+    DirectorySeparator + GsFilePartLibSndFile1 + GsFileExtLib, AUse64);
 end;
 
-class function NSFileNames.FileNameVeSTLib32: TFileName;
+class function GFileName.FileNameVeSTLib32: TFileName;
 begin
-  Result := PathToSdkVeST + GsFilePartLib + GsFilePartVeST + GsFilePart32 + GsFileExtA;
+  Result := GFilePath.SdkVeST + GsFilePartLib + GsFilePartVeST + GsFilePart32 + GsFileExtA;
 end;
 
-class function NSFileNames.FileNameVeSTLib64: TFileName;
+class function GFileName.FileNameVeSTLib64: TFileName;
 begin
-  Result := PathToSdkVeST + GsFilePartLib + GsFilePartVeST + GsFilePart64 + GsFileExtA;
+  Result := GFilePath.SdkVeST + GsFilePartLib + GsFilePartVeST + GsFilePart64 + GsFileExtA;
 end;
 
-class function NSFileNames.FileNameOutputCpp: TFileName;
+class function GFileName.FileNameOutputCpp: TFileName;
 begin
-  Result := PathToTempBuild + GsFilePartOutput + GsFileExtCpp;
+  Result := GFilePath.TempBuild + GsFilePartOutput + GsFileExtCpp;
 end;
 
-class function NSFileNames.FileNameOutputDll: TFileName;
+class function GFileName.FileNameOutputDll: TFileName;
 begin
-  Result := PathToTempBuild + GsFilePartOutput + GsFileExtDll;
+  Result := GFilePath.TempBuild + GsFilePartOutput + GsFileExtDll;
 end;
 
-class function NSFileNames.FileNameUpX: TFileName;
+class function GFileName.FileNameUpX: TFileName;
 begin
   Result := ProgramDirectory + GsFilePartUpX + DirectorySeparator + GsFilePartUpX + GsFileExtExe;
 end;
 
-class function NSFileNames.FileNameSaviHost(const AUse64: Boolean): TFileName;
+class function GFileName.FileNameSaviHost(const AUse64: Boolean): TFileName;
 begin
-  Result := FileName32x64(ProgramDirectory + GsFilePartSaviHost + DirectorySeparator + GsFilePartSaviHost + GsFileExtExe, AUse64);
+  Result := FileName32x64(ProgramDirectory + GsFilePartSaviHost + DirectorySeparator +
+    GsFilePartSaviHost + GsFileExtExe, AUse64);
 end;
 
-class function NSFileNames.DecodeMeta(const AString: String): String;
+class function GFileName.DecodeMeta(const AString: String): String;
 const
   GsMetaHead = CharPercent;
   GsMetaFoot = CharPercent;
@@ -254,7 +267,8 @@ begin
   Result := LDecodeMeta(Result, GsMetaSystemRoot, ExcludeTrailingPathDelimiter(PathToWindows));
   Result := LDecodeMeta(Result, GsMetaProfilePath, ExcludeTrailingPathDelimiter(PathToProfiles));
   Result := LDecodeMeta(Result, GsMetaUserProfile, ExcludeTrailingPathDelimiter(PathToProfile));
-  Result := LDecodeMeta(Result, GsMetaProgramFiles, ExcludeTrailingPathDelimiter(PathToProgramFiles));
+  Result := LDecodeMeta(Result, GsMetaProgramFiles, ExcludeTrailingPathDelimiter(
+    PathToProgramFiles));
 end;
 
 end.

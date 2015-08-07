@@ -36,6 +36,8 @@ uses
 type
 
   CJes2CppParserExpression = class(CJes2CppParser)
+  strict private
+    FIsNoOutput: Boolean;
   protected
     function ParseElement(const AIsExpected: Boolean): String; virtual; abstract;
     function ParseExpression(const AIsExpected: Boolean): String; virtual; abstract;
@@ -43,6 +45,8 @@ type
     function ParseParenthesis: String;
     function ParseBlock(out ALastExpression: String): String; overload;
     function ParseBlock: String; overload;
+  public
+    property IsNoOutput: Boolean read FIsNoOutput write FIsNoOutput;
   end;
 
 implementation
@@ -54,7 +58,7 @@ begin
   repeat
     if not (IsToken(CharSemiColon) or IsToken(CharClosingParenthesis)) then
     begin
-      J2C_StringAppendCSV(Result, ParseExpression(True));
+      GString.AppendCSV(Result, ParseExpression(True));
     end;
   until not IsTokenThenPull(CharSemiColon);
   ExpectToken(CharClosingParenthesis);

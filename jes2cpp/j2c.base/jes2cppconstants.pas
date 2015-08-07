@@ -34,8 +34,6 @@ interface
 
 const
 
-  M_ZERO = 0;
-
   GiColWidth = 100;
   GiTabSize = 2;
 
@@ -44,14 +42,12 @@ const
   GsJes2CppName = 'Jes2Cpp';
   GsJes2CppSlogan = 'The Easy Way to Create Audio Plugins (VST/LADSPA)';
   GsJes2CppDescription = 'Jesusonic to C++ Transpiler';
-  GsJes2CppVersion = '2.1';
-  GsJes2CppBuildDate = 'BUILD:27thJune2015';
+  GsJes2CppVersion = '2.5';
+  GsJes2CppBuildDate = 'BUILD:8thAugustJuly2015';
   GsJes2CppTitle = GsJes2CppName + ' (v' + GsJes2CppVersion + ') - ' + GsJes2CppDescription;
   GsJes2CppWebsite = 'http://www.wascal.net/music/';
   GsJes2CppCopyright = 'Copyright (C) 2015 Derek John Evans';
-  GsJes2CppLicense = 'License: ' + GsJes2CppName + ' source code has been released under LGPL' + LineEnding +
-    LineEnding + 'You should have received a copy of the GNU/LGPL General Public License' + LineEnding +
-    'along with this program.  If not, see <http://www.gnu.org/licenses/>.';
+  GsJes2CppLicense = GsJes2CppName + ' has been released under LGPL';
 
 const
 
@@ -68,7 +64,9 @@ const
   CharDot = Char('.');
   CharEqualSign = Char('=');
   CharExclamation = Char('!');
+  CharGreaterThan = Char('>');
   CharHash = Char('#');
+  CharLessThan = Char('<');
   CharLF = Char(#10);
   CharMinusSign = Char('-');
   CharNull = Char(#0);
@@ -107,6 +105,7 @@ const
   GsDoOpen = 'DoOpen';
   GsDoResume = 'DoResume';
   GsDoSample = 'DoSample';
+  GsDoProcess = 'DoProcess';
   GsDoSerialize = 'DoSerialize';
   GsDoSlider = 'DoSlider';
   GsDoSuspend = 'DoSuspend';
@@ -180,21 +179,26 @@ resourcestring
   SMsgAssignmentsInStatements = 'Assignments in statements are not portable.';
   SMsgCompilationAborted = 'User selected to abort.';
   SMsgCompilationFailed = 'Compilation failed. (Please check message log)';
-  SMsgCompilerNotSelected = 'No compiler selected. Note: C++ file has been saved to output folder.';
+  SMsgCompilerNotSelected =
+    'No compiler selected. Note: C++ file has been saved to output folder.';
   SMsgCompilerTerminatedBecause1 = 'Compilation terminated because ''%s''.';
+  SMsgCompiling = 'Compiling';
   SMsgCompressing = 'Compressing';
   SMsgConvertedWith = 'Converted with ';
   SMsgCreateAudioEffectInstance = 'Create Audio Effect Instance.';
-  SMsgDefineGlobalVariables = 'Define Global Variables.';
+  SMsgDeclareGlobalVariables = 'Declare Global Variables.';
   SMsgDefineInnerLoops = 'Define Inner Loops.';
   SMsgDefineInternalFunctions = 'Define Internal Functions.';
   SMsgDescription = 'Description';
   SMsgEffectDescription = 'Effect Description.';
   SMsgElement = 'Element';
-  SMsgEllipsesNotSupported = 'Variable names with ellipses are not supported.';
+  SMsgIdentifierEllipsesNotSupported = 'Identifier names with ellipses are not supported.';
   SMsgEndOfCode = 'End of Code Section.';
   SMsgExpectedButFound2 = 'Expected ''%s'' but found ''%s''.';
   SMsgExpression = 'Expression';
+  SMsgFileDoesNotExist = 'File does not exist.';
+  SMsgFileIsNotATextFile = 'File is not a text file.';
+  SMsgFileNameMustBeAbsolute = 'Filename must be absolute.';
   SMsgFinished = 'Finished';
   SMsgFunctionasDuplicateOverloads1 = '''%s'' has duplicate overloads.';
   SMsgFunctionDefinedInsideFunction = 'Unable to define a function inside a function.';
@@ -215,35 +219,38 @@ resourcestring
   SMsgLiteralString = 'Literal String';
   SMsgModified = 'Modified';
   SMsgNamespaceNotAccessible1 = 'The namespace ''%s'' is not accessible.';
-  SMsgVariableUsedBeforeAssignment1 = 'The variable ''%s'' is used before assignment.';
   SMsgNotRequiredForThisEffect = 'Not required for this effect.';
   SMsgNumberOfParametersFound1 = '%d Parameter(s) Found.';
   SMsgParenthesisBlock = 'Parenthesis Block';
   SMsgPrecision = 'Precision';
   SMsgStarted = 'Started';
+  SMsgTranspile = 'Transpile';
   SMsgTypeBuilding = 'Building';
   SMsgTypeError = 'Error';
   SMsgTypeException = 'Exception!';
   SMsgTypeGeneral = 'General';
+  SMsgTypeHint = 'Hint';
   SMsgTypeImporting = 'Importing';
   SMsgTypeLoaded = 'Loaded';
   SMsgTypeParsing = 'Parsing';
   SMsgTypeSaving = 'Saving';
   SMsgTypeSyntaxChecking = 'SyntaxChecking';
   SMsgTypeWarning = 'Warning';
-  SMsgTypeNotice = 'Notice';
   SMsgUnableToCompileIncludeFile = 'Unable to build jsfx-inc file.';
   SMsgUnableToCreateOuputDirectory = 'Unable to create output directory.';
   SMsgUnableToDeleteOutputFile = 'Unable to delete output file.';
   SMsgUnableToFindFunction1 = 'Unable to find the function ''%s''.';
-  SMsgUnableToFindImportFile1 = 'Unable to import ''%s''. (Make sure script is saved and import file is in the same path)';
+  SMsgUnableToFindImportFile = 'Unable to find import file.';
+  SMsgUnableToFindImportFile1 =
+    'Unable to import ''%s''. (Make sure script is saved and import file is in the same path)';
   SMsgUnableToFindSelectedCompiler1 = 'Unable to find selected compiler. ''%s''';
   SMsgUnchanged = 'Unchanged';
+  SMsgVariableUsedBeforeAssignment1 = 'The variable ''%s'' is used before assignment.';
   SMsgVariadicEllipsisHasAlreadyBeenUsed = 'Variadic ellipsis has already been used.';
   SMsgVariadicEllipsisMustBeTheLastParameter = 'Variadic ellipsis must be the last parameter.';
-  SMsgVariadicFunctionsMustHaveAtLeastOneParameter = 'Variadic functions must have at least one parameter.';
+  SMsgVariadicFunctionsMustHaveAtLeastOneParameter =
+    'Variadic functions must have at least one parameter.';
 
 implementation
 
 end.
-

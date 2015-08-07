@@ -131,25 +131,25 @@ mouse_y = 0;
 // Returns the absolute value of the parameter.
 function abs(x) global()
 (
-  x < 0 ? -x : x;
+  !"fabs(x$)";
 );
 
 // Returns the square of the parameter (similar to x*x, though only evaluating x once).
 function sqr(x) global()
 (
-  x * x;
+  x*x;
 );
 
 // Returns the maximum value of the two parameters.
 function max(x, y) global()
 (
-  x > y ? x : y;
+  !"fmax(x$, y$)";
 );
 
 // Returns the minimum value of the two parameters.
 function min(x, y) global()
 (
-  x < y ? x : y;
+  !"fmin(x$, y$)";
 );
 
 // Returns the sign of the parameter (-1, 0, or 1).
@@ -286,19 +286,19 @@ UNTESTED
 */
 function time_precise() global()
 (
-  !"#ifdef __GNUC__ //";
-  !"struct timeval tm = {0,}";
-  !"gettimeofday(&tm, nullptr)";
-  !"return tm.tv_sec + tm.tv_usec * 0.000001";
-  !"#endif //";
-
-  !"#ifdef _WIN32 //";
-  !"LARGE_INTEGER freq, now";
-  !"QueryPerformanceFrequency(&freq)";
-  !"QueryPerformanceCounter(&now)";
-  !"return (EEL_F)now.QuadPart / (EEL_F)freq.QuadPart";
-  !"#endif //";
-
+  ! // C++
+  "#ifdef __GNUC__"
+  "struct timeval tm = {0,};"
+  "gettimeofday(&tm, nullptr);"
+  "return tm.tv_sec + tm.tv_usec * 0.000001;"
+  "#endif"
+  "#ifdef _WIN32"
+  "LARGE_INTEGER freq, now;"
+  "QueryPerformanceFrequency(&freq);"
+  "QueryPerformanceCounter(&now);"
+  "return (EEL_F)now.QuadPart / (EEL_F)freq.QuadPart;"
+  "#endif"
+  "//"; // So that we dont get a warning for extra char after #endif
   0;
 );
 
@@ -660,7 +660,7 @@ function midisyx(offset, buf, len) global()
 
 /*
 If only three parameters are passed to midirecv, the third parameter will receive both the second and third bytes of a MIDI message
-(second byte + (third byte * 256)). Returns 'msg1'.
+(second byte + (third byte * 256)). Returns (msg1).
 */
 function midirecv(offset*, msg1*, msg2*, msg3*) global()
 (
@@ -697,7 +697,7 @@ function file_close(handle*) global()
   handle = -1;
 );
 
-// Use this to rewind the current file to the beginning, to re-read the file etc. Returns 'handle'.
+// Use this to rewind the current file to the beginning, to re-read the file etc. Returns (handle).
 function file_rewind(handle) global()
 (
   !"GetFile(handle$)->Rewind()";
@@ -717,12 +717,12 @@ function file_mem(handle, idx, len) global()
 );
 
 /*
-Returns the number of items remaining in the file, if it is in read mode. Returns < 0 if in write mode. If the file is in text mode (file_text(handle) returns TRUE),
-then the return value is simply 0 if EOF, 1 if not EOF.
+Reads or writes a string from/to the file handle. If operating on a normal file, the string will be a line of text (possibly including newline or other characters).
+If in @serialize, the string will be encoded as a blob with length, which means that it is binary-safe (you can include NULL characters within the string etc).
 */
-function file_avail(handle) global()
+function file_string(handle, string) global()
 (
-  !"GetFile(handle$)->FMode == fmWrite" ? -1 : !"GetFile(handle$)->DataAvaliable()";
+  !"GetFile(handle$)->StreamString(*GetString(string$))";
 );
 
 // If the file was a RIFF WAV file, or a valid .OGG Vorbis file, this will set the first parameter to the number of channels, and the second to the samplerate.
@@ -744,12 +744,13 @@ function file_text(handle) global()
 );
 
 /*
-Reads or writes a string from/to the file handle. If operating on a normal file, the string will be a line of text (possibly including newline or other characters).
-If in @serialize, the string will be encoded as a blob with length, which means that it is binary-safe (you can include NUL characters within the string etc).
+Returns the number of items remaining in the file, if it is in read mode. Returns < 0 if in write mode. If the file is in text mode (file_text(handle) returns TRUE),
+then the return value is simply 0 if EOF, 1 if not EOF.
 */
-function file_string(handle, string) global()
+function file_avail(handle) global() local(return)
 (
-  !"GetFile(handle$)->ReadString(*GetString(string$))";
+  return = !"GetFile(handle$)->FMode == fmWrite" ? -1 : !"GetFile(handle$)->DataAvaliable()";
+  file_text(handle) ? sign(return) : return;
 );
 
 // EXPERIMENTAL
@@ -1083,6 +1084,7 @@ Fills a gradient rectangle with the color and alpha specified. drdx-dadx reflect
 the adjustment applied for each pixel moved toward the bottom. Normally drdx=adjustamount/w, drdy=adjustamount/h.
 */
 function gfx_gradrect(x, y, w, h, r, g, b, a, rr, gg, bb, aa)
+global(gfx_r, gfx_g, gfx_b, gfx_a)
 (
   gfx_r = r;
   gfx_g = g;
@@ -1204,10 +1206,19 @@ function slider_automate(x) global()
 );
 
 /*
+Takes the slider number as input, returns the number of samples until the next envelope value change, and fills in the value of the envelope at the next value change.
+NOT IMPLEMENT.
+*/
+function slider_next_chg(slider, value) global()
+(
+  0;
+);
+
+/*
 If you wish to programmatically choose which slider to access, use this function (rather than sliderX).
 This is slightly slower than sliderX, however has the advantage that you can do slider(variable) (enabling easily configurable slider mappings).
 */
-function "EEL_F&" slider(x) global()
+function !"EEL_F&" slider(x) global()
 (
   !"FSliders[EEL_F2I(x$) & (JES2CPP_SLIDER_COUNT - 1)]";
 );
@@ -1233,7 +1244,7 @@ spl56 extern; spl57 extern; spl58 extern; spl59 extern; spl60 extern; spl61 exte
 If you wish to programmatically choose which sample to access, use this function (rather than splX).
 This is slightly slower than splX, however has the advantage that you can do spl(variable) (enabling easily configurable channel mappings).
 */
-function "EEL_F&" spl(x) global()
+function !"EEL_F&" spl(x) global()
 (
   !"FSamples[EEL_F2I(x$) & (JES2CPP_SAMPLE_COUNT - 1)]";
 );
@@ -1250,7 +1261,8 @@ function "EEL_F&" spl(x) global()
   gfx_r = gfx_g = gfx_b = 0;
   gfx_a = 1;
 
-  gfx_setfont(0, "verdana", 18);
+  // Courier New is the only fixed size font I can get working in VSTGUI atm.
+  gfx_setfont(0, "Courier New", 13);
 
 //==============================================================================
 // End of File

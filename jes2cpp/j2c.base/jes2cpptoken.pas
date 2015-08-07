@@ -52,37 +52,40 @@ const
   CharSetIdentFull = CharSetIdentHead + CharSetIdentBody;
 
   CharSetNumberHead = CharSetDigit + ['.', '$'];
-  CharSetNumberBody = CharSetDigit + CharSetAlpha + ['~', '.', 'x', 'X', 'e', 'E', ''''];
+  CharSetNumberBody = CharSetDigit + CharSetAlpha + ['~', '.', ''''];
 
   CharSetOperator1 = ['=', '*', '/', '%', '^', '+', '-', '|', '&', '!', '<', '>', '~'];
   CharSetOperator2 = ['<', '>', '&', '|', '='];
 
-function J2C_TokenIsSame(const AToken1, AToken2: PChar): Boolean;
-function J2C_TokenIsNumberAsc(const AToken: PChar): Boolean;
-function J2C_TokenIsNumberHex(const AToken: PChar): Boolean;
-function J2C_TokenIsNumberMask(const AToken: PChar): Boolean;
+type
+
+  GToken = object
+    class function IsSame(const AToken1, AToken2: PChar): Boolean;
+    class function IsNumberAsc(const AToken: PChar): Boolean;
+    class function IsNumberHex(const AToken: PChar): Boolean;
+    class function IsNumberMask(const AToken: PChar): Boolean;
+  end;
 
 implementation
 
-function J2C_TokenIsSame(const AToken1, AToken2: PChar): Boolean;
+class function GToken.IsSame(const AToken1, AToken2: PChar): Boolean;
 begin
   Result := StrIComp(AToken1, AToken2) = 0;
 end;
 
-function J2C_TokenIsNumberAsc(const AToken: PChar): Boolean;
+class function GToken.IsNumberAsc(const AToken: PChar): Boolean;
 begin
   Result := (AToken[0] = '$') and (AToken[1] = '''') and (AToken[2] <> #0) and (AToken[3] = '''');
 end;
 
-function J2C_TokenIsNumberHex(const AToken: PChar): Boolean;
+class function GToken.IsNumberHex(const AToken: PChar): Boolean;
 begin
   Result := (AToken[0] in ['$', '0']) and (AToken[1] in ['x', 'X']);
 end;
 
-function J2C_TokenIsNumberMask(const AToken: PChar): Boolean;
+class function GToken.IsNumberMask(const AToken: PChar): Boolean;
 begin
   Result := (AToken[0] = '$') and (AToken[1] = '~');
 end;
 
 end.
-

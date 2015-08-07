@@ -1,25 +1,25 @@
 object JeezIde: TJeezIde
-  Left = 537
-  Height = 411
-  Top = 283
-  Width = 668
+  Left = 349
+  Height = 406
+  Top = 156
+  Width = 662
   AllowDropFiles = True
-  ClientHeight = 391
-  ClientWidth = 668
+  ClientHeight = 386
+  ClientWidth = 662
   Constraints.MinHeight = 400
-  Constraints.MinWidth = 450
+  Constraints.MinWidth = 318
   Menu = MainMenu
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnShow = FormShow
   ParentFont = True
   Position = poScreenCenter
-  LCLVersion = '1.4.0.4'
+  LCLVersion = '1.4.2.0'
   object StatusBar: TStatusBar
     Left = 0
     Height = 23
-    Top = 368
-    Width = 668
+    Top = 363
+    Width = 662
     Panels = <    
       item
         Width = 100
@@ -36,7 +36,7 @@ object JeezIde: TJeezIde
     Left = 0
     Height = 40
     Top = 0
-    Width = 668
+    Width = 662
     AutoSize = True
     ButtonHeight = 40
     ButtonWidth = 5
@@ -86,15 +86,15 @@ object JeezIde: TJeezIde
       ImageIndex = 3
       OnClick = MenuToolsOptionsClick
     end
-    object ButtonShowOutput: TToolButton
+    object ButtonExploreOutput: TToolButton
       Left = 386
       Top = 0
-      Caption = 'Show Output'
+      Caption = 'Explore Output'
       ImageIndex = 5
-      OnClick = MenuToolsShowOutputFolderClick
+      OnClick = MenuToolsExploreOutputFolderClick
     end
     object ButtonBuildAndInstallPlugin: TToolButton
-      Left = 490
+      Left = 498
       Top = 0
       Caption = 'Build and Install'
       ImageIndex = 6
@@ -103,33 +103,33 @@ object JeezIde: TJeezIde
   end
   object PanelBody: TPanel
     Left = 0
-    Height = 328
+    Height = 323
     Top = 40
-    Width = 668
+    Width = 662
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 6
-    ClientHeight = 328
-    ClientWidth = 668
+    ClientHeight = 323
+    ClientWidth = 662
     Color = clBtnFace
     ParentColor = False
     TabOrder = 2
     object PanelBottom: TPanel
       Left = 6
       Height = 200
-      Top = 122
-      Width = 656
+      Top = 117
+      Width = 650
       Align = alBottom
       BevelOuter = bvNone
       ClientHeight = 200
-      ClientWidth = 656
+      ClientWidth = 650
       Constraints.MinHeight = 32
       TabOrder = 0
       object PageControlSystem: TPageControl
         Left = 0
         Height = 200
         Top = 0
-        Width = 656
+        Width = 650
         TabStop = False
         ActivePage = TabSheetMessages
         Align = alClient
@@ -147,28 +147,29 @@ object JeezIde: TJeezIde
       Cursor = crVSplit
       Left = 6
       Height = 4
-      Top = 118
-      Width = 656
+      Top = 113
+      Width = 650
       Align = alBottom
       ResizeAnchor = akBottom
     end
     object PanelClient: TPanel
       Left = 6
-      Height = 112
+      Height = 107
       Top = 6
-      Width = 656
+      Width = 650
       Align = alClient
       BevelOuter = bvNone
-      ClientHeight = 112
-      ClientWidth = 656
+      ChildSizing.VerticalSpacing = 2
+      ClientHeight = 107
+      ClientWidth = 650
       TabOrder = 2
       object PageControl: TPageControl
         Left = 0
-        Height = 112
+        Height = 52
         Top = 0
-        Width = 656
+        Width = 650
         TabStop = False
-        Align = alClient
+        Align = alTop
         Images = JeezData.ImageListTabSheet
         PopupMenu = MenuPageControl
         TabOrder = 0
@@ -199,10 +200,18 @@ object JeezIde: TJeezIde
         ShortCut = 16463
         OnClick = MenuFileOpenClick
       end
+      object MenuFileSep7: TMenuItem
+        Caption = '-'
+      end
       object MenuFileOpenReaper: TMenuItem
-        Caption = 'Open Effect ... (From Reaper Effects)'
+        Caption = 'Open Effect ... (From REAPER Effects)'
         ImageIndex = 41
         OnClick = MenuFileOpenReaperClick
+      end
+      object MenuFileExploreReaperEffectsFolder: TMenuItem
+        Caption = 'Expore REAPER Effects Folder ...'
+        ImageIndex = 27
+        OnClick = MenuFileExploreReaperEffectsFolderClick
       end
       object MenuFileSep5: TMenuItem
         Caption = '-'
@@ -303,6 +312,7 @@ object JeezIde: TJeezIde
         Caption = '&Delete'
         ImageIndex = 6
         ShortCut = 46
+        OnClick = MenuEditDeleteClick
       end
       object MenuEditSep1: TMenuItem
         Caption = '-'
@@ -365,10 +375,10 @@ object JeezIde: TJeezIde
       object MenuToolsSep1: TMenuItem
         Caption = '-'
       end
-      object MenuToolsShowOutputFolder: TMenuItem
-        Caption = 'Show Output &Folder ...'
+      object MenuToolsExploreOutputFolder: TMenuItem
+        Caption = 'Explore Output &Folder ...'
         ImageIndex = 10
-        OnClick = MenuToolsShowOutputFolderClick
+        OnClick = MenuToolsExploreOutputFolderClick
       end
       object MenuToolsOpenCppOutputFile: TMenuItem
         Caption = 'Open Last C++ Output File'

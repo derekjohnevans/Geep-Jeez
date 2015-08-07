@@ -1,0 +1,245 @@
+/*
+** Name: SWIPE (Simple Widget Interface for Programing Effects)
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+**
+** NOTE: This library is being developed, and WILL change. Therefore, if you
+** use it, copy the code to your own effect (or library). The code will become more
+** stable as I implement new features.
+**
+*/
+
+desc: SWIPE (Simple Widget Interface for Programing Effects)
+
+// Import ANSI C Libraries.
+
+import std.cmath.jsfx-inc
+import std.ctype.jsfx-inc
+import std.cstdlib.jsfx-inc
+import std.cstring.jsfx-inc
+
+// Import C++ Libraries.
+
+import std.string.jsfx-inc
+import std.vector.jsfx-inc
+
+// Pascal Style Libraries
+
+import pas.math.jsfx-inc
+import pas.sysutils.jsfx-inc
+import pas.graphics.jsfx-inc
+import pas.graphutil.jsfx-inc
+import pas.classes.jsfx-inc
+import pas.fileutil.jsfx-inc
+import pas.strutils.jsfx-inc
+import pas.controls.jsfx-inc
+
+
+// Import 3rd Party Libraries.
+
+import interpolate.jsfx-inc
+import anomaly.jsfx-inc
+import axonlib.math.jsfx-inc
+
+// Import FreePascal Style Libraries.
+
+import swipe.system.jsfx-inc
+import swipe.math.jsfx-inc
+
+// Import SWIPE Libraries.
+
+import swipe.file.jsfx-inc
+import swipe.graphics.jsfx-inc
+import swipe.array.jsfx-inc
+import swipe.image.jsfx-inc
+import swipe.limits.jsfx-inc
+import swipe.widgets.jsfx-inc
+
+@init
+
+// This is the prefered method of detecting slider changes since it works even if there is no default slider for a widget.
+
+function SliderChanged()
+global(SWIPE.WidgetChanged)
+(
+  SWIPE.WidgetChanged ? (
+    SWIPE.WidgetChanged = 0;
+    1;
+  ) : (
+    0;
+  );  
+);
+
+// Font Initialization
+// -------------------
+
+// Initialize this objects fonts.
+function TSharedFonts() global()
+(
+  this.TObject() ? (
+    this.1 = 1;
+    this.2 = 2;
+    this.3 = 3;
+    this.4 = 4;
+    this.5 = 5;
+    gfx_setfont(this.1, "verdana", 17);
+    gfx_setfont(this.2, "verdana", 15);
+    gfx_setfont(this.3, "verdana", 13);
+    gfx_setfont(this.4, "verdana", 12, 'b');
+    gfx_setfont(this.5, "verdana", 32);  
+    this.Default = 3;
+    this.Title = 5;      
+    this.Window.Title = 1;
+    this.StatusBar = this.Default;
+    this.TabSheet = this.Default;            
+  );
+);
+
+// Strings Initialization
+// ----------------------
+
+// Initialize this objects strings.
+function TSharedStrings() global()
+(
+  this.TObject() ? (
+    this.Name.string("SWIPE");
+    this.Slogan.string("\"Simple Widget Interface for Programing Effects\"");
+    this.Version.string("2.0 (1st July 2015)");
+    this.Author.string("Derek John Evans");
+    this.Copyright.string("Copyright (C) 2015 Derek John Evans");
+    this.Website.string("http://www.wascal.net/music/");
+  );
+);
+
+// Image Initialization
+// --------------------
+
+// Initialize this objects images.
+function TSharedImages() global()
+(
+  this.TObject() ? (
+    this.Background.TImage_LoadFromFile("data/backgrounds/1.jpg");
+  );
+);
+
+// Effect Object
+
+function TEffect(AHeader, AFooter) 
+global(SWIPE.Font.2, SWIPE.Image*)
+(
+  this.Header = AHeader;
+  this.Footer = AFooter;   
+  SWIPE.Image.Background.TImage_Draw(0, 0);
+  gfx_setfont(SWIPE.Font.2);  
+);
+
+function TEffect_Foot(ATitle, AStatus, x1, y1, x2, y2, r, g, b)
+global(gfx_w, SWIPE*)
+(
+  GfxDrawWindowTitle(x1, y2 - 24, x2, y2, AStatus, 1);
+  GfxDrawWindowTitle(x1, y1, x2, y1 + 24, ATitle);
+  SWIPE.ButtonAbout.TToolButton_Draw(gfx_w - 24, 3, gfx_w - 3, 22, SWIPE.ShowAbout ? "X" : "?");
+);
+
+function TEffect_Done()
+global(gfx_w, gfx_h, spl0, spl1)
+(
+  this.TEffect_Foot(this.Header, this.Footer, 0, 0, gfx_w, gfx_h, 0.8, 0.8, 0.8);  
+  GfxDrawLevelHorz(gfx_w - 150, 6, gfx_w - 40, 19, abs(spl0), abs(spl1));  
+);
+
+// Basic Effect used for Demos
+
+function TEffectBasic(AHeader, AFooter, ATabText)
+global(gfx_w, gfx_h)
+(
+  this.TEffect(AHeader, AFooter);
+  this.PageControl.TPageControl_Draw(10, 35, gfx_w - 10, gfx_h - 35);
+  this.PageControl.TPageControl_DrawTab(0, ATabText); 
+  this.PageControl.TPageControl_Done();
+);
+
+function TEffectBasic(AHeader, AFooter) global()
+(
+  this.TEffectBasic(AHeader, AFooter, "Effect");
+);
+
+// SWIPE Object
+
+function SWIPE()
+global(gfx_clear, Mouse*)
+(
+  this.Font.TSharedFonts();
+  this.String.TSharedStrings();
+  this.Image.TSharedImages();
+  Mouse.Set();
+  this.LineHeight = 21;  
+  gfx_clear = 0x444444;  
+);
+
+function SWIPE(AMinWidth, AMinHeight, AGfxRate)
+global(gfx_w, gfx_h, jes2cpp.gfx_rate)
+(
+  this.SWIPE();
+  // Apply graphics size constrants. This prevents widgets from overlaping
+  // themselves, since REAPER doesn't support rectangle clipping.
+  gfx_w = max(gfx_w, AMinWidth);
+  gfx_h = max(gfx_h, AMinHeight);
+  // gfx_rate is a VST variable to control the graphics refresh rate. You can throttle the refresh
+  // by setting it to a low value (ie 4 fps), and then increasing it to 30 for gfx updates.
+  // VST effects automaticlly increase this to 30 when receiving mouse events.
+  // Basiclly, if you leave it at 30, then the processor load goes up when running multiple
+  // effects, all trying to refresh at 30 fps.
+  jes2cpp.gfx_rate = AGfxRate;      
+);
+
+/*
+NOTE: This function should only be used in demo effects. I use this
+because it supports an "about page" which gives me system information.
+For you own efects, you should call the above SWIPE overloads.
+*/
+function SWIPE(AMinWidth, AMinHeight)
+global(gfx_w, gfx_h, play_state, ts_num, ts_denom, tempo, beat_position, num_ch, srate, samplesblock)
+global(jes2cpp*, heap*)
+local(y, yy, h, x2)
+(
+  this.SWIPE(AMinWidth, AMinHeight, 4);
+  this.ButtonAbout.Buttons.L.Clicked.Get() ? this.ShowAbout = !this.ShowAbout;
+  this.ShowAbout ? (  
+    this.TEffect(sprintf(#, "%s - Version: %s", this.String.Name, this.String.Version), this.String.Slogan);
+    GfxDrawPanel3D(10, 35, gfx_w - 10, gfx_h - 35, 8);
+    x2 = gfx_w - 30;
+    y = 50; h = 18; yy = h + 2;   
+    GfxDrawNameNumber(30, y, x2, y + h, "Play State", play_state); y += yy;
+    GfxDrawNameString(30, y, x2, y + h, "Tempo", sprintf(#, "%d/%d @ %d bpm", ts_num, ts_denom, tempo)); y += yy;
+    GfxDrawNameNumber(30, y, x2, y + h, "Beat Position", beat_position); y += yy;
+    GfxDrawNameString(30, y, x2, y + h, "Channels", sprintf(#, "%d audio channels @ %dhz", num_ch, srate)); y += yy;
+    GfxDrawNameNumber(30, y, x2, y + h, "Block Size", samplesblock); y += yy;
+    GfxDrawNameNumber(30, y, x2, y + h, "System Strings", scount()); y += yy;
+    GfxDrawNameNumber(30, y, x2, y + h, "Images", icount()); y += yy;
+    GfxDrawNameNumber(30, y, x2, y + h, "Files", jes2cpp.file_count); y += yy;
+    GfxDrawNameString(30, y, x2, y + h, "Memory (aprox.)", 
+      sprintf(#, "%d slots (System managed memory)", heap.size())); y += yy;
+    this.TEffect_Done();
+  );
+  !this.ShowAbout;
+);
+
+@slider
+
+// NOTE: REAPER ignores this section if you have a @slider section defined.
+// So, you will need to set SWIPE.WidgetChanged in the main @slider section.
+// But, its easier to not use a @slider section and catch changes using this
+// variable, as it allows SWIPE code to register variable changes from
+// graphical interfaces.
+
+SWIPE.WidgetChanged = 1;
+
+@init
+
+SWIPE.WidgetChanged = 1;
+
+  

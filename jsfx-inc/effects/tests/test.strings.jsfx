@@ -1,0 +1,47 @@
+import test.jsfx-inc
+
+@init
+
+function TestStr(name, result) global()
+(
+  printf("%-18s -> \"%s\"\n", name, result);
+);
+
+function TestInt(name, result) global()
+(
+  printf("%-18s ->  %2d\n", name, result);
+);
+
+clrscr();
+
+H1("String Functions");
+
+str = "Jesusonic ANSI String Functions";
+
+H2(sprintf(#, "INPUT: \"%s\"", str));
+
+#s = str;
+TestStr("strrev (str)", strrev(#s));
+
+#s = str;
+TestStr("strupr (str)", strupr(#s));
+
+#s = str;
+TestStr("strlwr (str)", strlwr(#s));
+
+#s = str;
+TestStr("strset (str, '^')", strset(#s, '^'));
+
+H2("Other Functions");
+
+TestInt("strchr (str, 'F')", strchr (str, 'F'));
+TestInt("strchr (str, 'e')", strchr (str, 'e'));
+TestInt("strchr (str, 'Z')", strchr (str, 'z'));
+
+TestInt("strrchr(str, 'i')", strrchr(str, 'i'));
+TestInt("strchr (str, 'i')", strchr (str, 'i'));
+
+TestInt("strccnt(str, 'i')", strccnt(str, 'i'));
+
+
+

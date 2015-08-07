@@ -162,7 +162,7 @@ typedef TPagedArray<EEL_F, 16> CMemory;
 
 extern void GetFileNames(std::string APath, std::vector<std::string>& AFileNames);
 extern std::string GetModuleName(VEST_HANDLE AModule);
-extern std::string GetCurrentModulePath();
+extern std::string ProgramDirectory();
 extern bool SameText(const std::string& A, const std::string& B);
 extern bool SameStr(const std::string& A, const std::string& B);
 extern bool AnsiEndsStr(const std::string& ASubStr, const std::string& AString);
@@ -191,32 +191,49 @@ extern std::string FileNameResolve(const std::string& AFileName);
 #define M_ERROR (-M_ONE)
 #define M_EPSILON ((EEL_F)0.00001)
 
+#ifndef FPU_ERROR
 #ifdef __GNUC__
 #define FPU_ERROR(x) (isnan(x) || isinf(x))
 #else
 #define FPU_ERROR(x) (_isnan(x) || !_finite(x))
 #endif
+#endif // FPU_ERROR
+
+// NOTE: These standard operators can now be overrided by macros which may provide
+// a speed increase, but also may not be compatible with REAPER. Your choise.
 
 // Expand safe operators to C++ operators
 
+#ifndef OR
 #define OR(AX, AY) (EEL_F)((int32_t)(AX) | (int32_t)(AY))
+#endif // OR
+
+#ifndef AND
 #define AND(AX, AY) (EEL_F)((int32_t)(AX) & (int32_t)(AY))
+#endif // AND
+
+#ifndef XOR
 #define XOR(AX, AY) (EEL_F)((int32_t)(AX) ^ (int32_t)(AY))
+#endif // XOR
+
+#ifndef SHL
 #define SHL(AX, AY) (EEL_F)((int32_t)(AX) << (int32_t)(AY))
+#endif // SHL
+
+#ifndef SHR
 #define SHR(AX, AY) (EEL_F)((int32_t)(AX) >> (int32_t)(AY))
+#endif // SHR
 
 // Unsafe operators are implemented as inline functions.
 
-inline EEL_F VAL(int AX)
-{
-return (EEL_F)AX;
-}
-
+#ifndef VAL
 inline EEL_F VAL(EEL_F AX)
 {
 return FPU_ERROR(AX) ? M_ZERO : AX;
 }
+#endif // VAL
 
+#ifndef IF
 inline bool IF(int AX)
 {
 return AX ? true : false;
@@ -231,21 +248,28 @@ inline bool IF(EEL_F AX)
 {
 return AX < M_EPSILON && AX > -M_EPSILON ? false : true;
 }
+#endif // IF
 
+#ifndef NOT
 inline EEL_F NOT(EEL_F AX)
 {
 return AX < M_EPSILON && AX > -M_EPSILON ? M_TRUE : M_FALSE;
 }
+#endif // NOT
 
+#ifndef EQU
 inline EEL_F EQU(EEL_F AX, EEL_F AY)
 {
 return AX -= AY, AX < M_EPSILON && AX > -M_EPSILON ? M_TRUE : M_FALSE;
 }
+#endif // EQU
 
+#ifndef NEQ
 inline EEL_F NEQ(EEL_F AX, EEL_F AY)
 {
 return AX -= AY, AX < M_EPSILON && AX > -M_EPSILON ? M_FALSE : M_TRUE;
 }
+#endif // NEQ
 
 #ifndef GFX_RATE
 #define GFX_RATE 30
@@ -431,7 +455,40 @@ public:
   virtual void DoBlock() { };
   virtual void DoSample() { };
 
-  virtual void DoSample(float** AInputs, float** AOutputs, int ASampleFrames)
+  // Process a block of samples. Handles both float and doubles.
+  template<class FLOAT_TYPE> inline void DoProcess(FLOAT_TYPE** AInputs, FLOAT_TYPE** AOutputs, int ASampleFrames)
+  {
+    // We should only need to get this value once, so make it static.
+    static int LNumInputs = VeST_GetNumInputs(FVeST);
+    DoBlock();
+    // Optimized 2 channel process. Doesn't do much for complex effects, since the
+    // bottle neck is not the sample transfer.
+    if (LNumInputs == 2) {
+      FLOAT_TYPE* LSrc0 = AInputs[0];
+      FLOAT_TYPE* LSrc1 = AInputs[1];
+      FLOAT_TYPE* LDst0 = AOutputs[0];
+      FLOAT_TYPE* LDst1 = AOutputs[1];
+      for (int LFrame = ASampleFrames; LFrame-- > 0; ) {
+        FSamples[0] = *LSrc0++;
+        FSamples[1] = *LSrc1++;
+        DoSample();
+        *LDst0++ = FSamples[0];
+        *LDst1++ = FSamples[1];
+      }
+    } else {
+      for (int LSampleFrame = 0; LSampleFrame < ASampleFrames; LSampleFrame++) {
+        for (int LChannel = LNumInputs; LChannel-- > 0;) {
+          FSamples[LChannel] = AInputs[LChannel][LSampleFrame];
+        }
+        DoSample();
+        for (int LChannel = LNumInputs; LChannel-- > 0;) {
+          AOutputs[LChannel][LSampleFrame] = (FLOAT_TYPE)FSamples[LChannel];
+        }
+      }
+    }
+  }
+  /*
+  inline void DoProcess(float** AInputs, float** AOutputs, int ASampleFrames)
   {
     DoBlock();
     int LInputs = VeST_GetNumInputs(FVeST);
@@ -445,8 +502,7 @@ public:
       }
     }
   }
-
-  virtual void DoSample(double** AInputs, double** AOutputs, int ASampleFrames)
+  inline void DoProcess(double** AInputs, double** AOutputs, int ASampleFrames)
   {
     DoBlock();
     int LInputs = VeST_GetNumInputs(FVeST);
@@ -456,10 +512,11 @@ public:
       }
       DoSample();
       for (int LChannel = LInputs; LChannel-- > 0;) {
-        AOutputs[LChannel][LSampleFrame] = FSamples[LChannel];
+        AOutputs[LChannel][LSampleFrame] = (double)FSamples[LChannel];
       }
     }
   }
+  */
 };
 
 class CJes2CppDescription : public CJes2CppSamples
@@ -574,29 +631,23 @@ public:
   }
 };
 
-// The maximium number of user strings allowed. Includes named and temp (#) strings.
-// Literal strings will be stored from this index.
-#define JES2CPP_STRING_MAX 20000
-
 class CJes2CppStrings : public CJes2CppDescription
 {
 private:
 
   TStringMap FStringMap, FFileNames;
-  int FLiteralString;
 
 public:
 
   EEL_F jes2cpp$str_count$;
 
-  CJes2CppStrings() : jes2cpp$str_count$(0), FLiteralString(JES2CPP_STRING_MAX)
+  CJes2CppStrings() : jes2cpp$str_count$(0)
   {
     ClearStrings();
   }
   void ClearStrings()
   {
     FStringMap.Clear();
-    FLiteralString = JES2CPP_STRING_MAX;
     jes2cpp$str_count$ = (EEL_F)FStringMap.Count();
   }
   void VPrintF(char* AString, const char* AFormat, va_list AArgs)
@@ -610,16 +661,25 @@ public:
         } while (LChar && !isalpha(LChar));
         *LFormat = 0;
         switch (LChar) {
+        case 'e':
+        case 'E':
         case 'f':
+        case 'g':
+        case 'G':
           sprintf(AString, LBuffer, va_arg(AArgs, double));
           AString = strchr(AString, 0);
           break;
+        case 'c':
         case 'd':
+        case 'i':
+        case 'o':
+        case 'x':
+        case 'X':
           sprintf(AString, LBuffer, EEL_F2I(va_arg(AArgs, double)));
           AString = strchr(AString, 0);
           break;
         case 's':
-          sprintf(AString, LBuffer, GetString(va_arg(AArgs, double))->c_str());
+          sprintf(AString, LBuffer, GetString((EEL_F)va_arg(AArgs, double))->c_str());
           AString = strchr(AString, 0);
           break;
         }
@@ -646,12 +706,6 @@ public:
   {
     *GetString(AStringIndex) = AString;
     return AStringIndex;
-  }
-  // Creates a new literal string. Literal strings are stored as standard strings,
-  // with string indexes starting from JES2CPP_STRING_MAX.
-  inline EEL_F STR(const std::string& AString)
-  {
-    return SetString(FLiteralString++, AString);
   }
   // Sets a filename string given a filename index and string value.
   inline void SetFileName(int AFileNameIndex, const std::string& AFileName)
@@ -750,7 +804,7 @@ public:
     FBuffer[FPosition++] = (STREAM_F)AValue;
     return true;
   }
-  // Reads a value from the current position and increments. Returns false on error (ie: end of stream).
+  // Reads a value from the current position and increments. Returns false on error (eg: end of stream).
   bool Read(EEL_F& AValue)
   {
     if (FPosition >= (int)FBuffer.size()) {
@@ -761,30 +815,49 @@ public:
   }
   // Reads a single string from the stream buffer. Increments the stream position.
   // Returns false on error (eg: end of stream).
-  bool ReadString(std::string& AString)
+  bool ReadString(std::string& AString, bool AIsSystem)
   {
     AString.clear();
     if (DataAvaliable() <= 0) {
       return false;
     }
     EEL_F LValue;
-    while (Read(LValue)) {
-      char LChar = EEL_F2I(LValue);
-      if (LChar == '\n') {
-        break;
+    if (AIsSystem) {
+      if (!Read(LValue) || LValue != STREAM_IDENT_STRING || !Read(LValue)) {
+        return false;
       }
-      AString += LChar;
+      AString.resize(EEL_F2I(LValue));
+      for (int LIndex = 0; LIndex < (int)AString.size(); LIndex ++) {
+        if (!Read(LValue)) {
+          AString.clear();
+          return false;
+        }
+        AString[LIndex] = EEL_F2I(LValue);
+      }
+    } else {
+      while (Read(LValue)) {
+        char LChar = EEL_F2I(LValue);
+        if (LChar == '\n') {
+          break;
+        }
+        AString += LChar;
+      }
     }
     return true;
   }
   // Writes a sting to the stream buffer. Increments the stream position.
   // Returns false on error. (Which should not happen)
-  bool WriteString(const std::string& AString)
+  bool WriteString(const std::string& AString, bool AIsSystem)
   {
+    if (AIsSystem) {
+      Write(STREAM_IDENT_STRING);
+      Write(AString.size());
+    }
     for (int LIndex = 0; LIndex < (int)AString.length(); LIndex++) {
-      if (!Write(AString[LIndex])) {
-        return false;
-      }
+      Write(AString[LIndex]);
+    }
+    if (!AIsSystem) {
+      Write('\n');
     }
     return true;
   }
@@ -794,98 +867,6 @@ public:
     while (!feof(AFile)) {
       Write((EEL_F)fgetc(AFile));
     }
-  }
-  // Simple wav loader. Needs more testing. Use sndfile for better audio file support.
-  // TODO: Doesn't support portable endianness. Unsure what needs to be done.
-  // Note: This code may end up in VeST, if it gets good enough.
-  bool LoadFromFileWav(const std::string& AFileName, int& AChannelCount, int& ASampleRate)
-  {
-    bool LSuccess = false;
-    int16_t LFormatTag = 0, LBlockAlign = 0, LBitsPerSample = 0, LExtSize = 0, LValidBitsPerSample = 0, LChannelCount = 0;
-    int32_t LDataRate = 0, LChannelMask = 0, LSampleRate = 0;
-    FBuffer.resize(0);
-    FILE* LFile = fopen(AFileName.c_str(), "rb");
-    if (LFile) {
-      CVeST_RIFF LRiff;
-      if (LRiff.Open(LFile), WAVE_RIFF) {
-        int32_t LWave;
-        if (LRiff.Read(LWave) && LWave == WAVE_WAVE) {
-          CVeST_RIFF LChunk;
-          while (LChunk.Open(LFile)) {
-            if (LChunk.IsName(WAVE_FMT)) {
-              LChunk.Read(LFormatTag);
-              LChunk.Read(LChannelCount);
-              LChunk.Read(LSampleRate);
-              LChunk.Read(LDataRate);
-              LChunk.Read(LBlockAlign);
-              LChunk.Read(LBitsPerSample);
-              LChunk.Read(LExtSize);
-              LChunk.Read(LValidBitsPerSample);
-              LChunk.Read(LChannelMask);
-              AChannelCount = LChannelCount;
-              ASampleRate = LSampleRate;
-            } else if (LChunk.IsName(WAVE_FACT)) {
-            } else if (LChunk.IsName(WAVE_CUE)) {
-            } else if (LChunk.IsName(WAVE_DATA)) {
-              std::vector<uint8_t> LData;
-              if (LChannelCount > 0 && LBlockAlign > 0 && LChunk.ReadChunk(LData)) {
-                int LSampleSize = LBlockAlign / LChannelCount;
-                if (LSampleSize > 0) {
-                  LSuccess = true; // Good enough!
-                  FBuffer.resize(LData.size() / LSampleSize);
-                  uint8_t* LSrc = &LData[0];
-                  STREAM_F* LDst = &FBuffer[0];
-                  for (int LIndex = FBuffer.size(); LIndex-- > 0; LSrc += LSampleSize) {
-                    switch (LFormatTag) {
-                    // PCM TYPES
-                    case 1: {
-                      switch(LBitsPerSample) {
-                      case 8: {
-                        *LDst++ = (LSrc[0] + INT8_MIN) / (STREAM_F)INT8_MAX;
-                        break;
-                      }
-                      case 16: {
-                        *LDst++ = EndianInt(LSrc[0], LSrc[1], true) / (STREAM_F)INT16_MAX;
-                        break;
-                      }
-                      case 24: {
-                        *LDst++ = EndianInt(LSrc[0], LSrc[1], LSrc[2], true) / (STREAM_F)(INT32_MAX >> 8);
-                        break;
-                      }
-                      case 32: {
-                        *LDst++ = EndianInt(LSrc[0], LSrc[1], LSrc[2], LSrc[3], true) / (STREAM_F)INT32_MAX;
-                        break;
-                      }
-                      }
-                      break;
-                    }
-                    // FLOAT TYPES
-                    case 3: {
-                      switch (LBitsPerSample) {
-                      case 32: {
-                        *LDst++ = (STREAM_F)((float*)LSrc)[0];
-                        break;
-                      }
-                      case 64: {
-                        *LDst++ = (STREAM_F)((double*)LSrc)[0];
-                        break;
-                      }
-                      }
-                      break;
-                    }
-                    }
-                  }
-                }
-              }
-            } else if (LChunk.IsName(WAVE_LIST)) { }
-            LChunk.Close();
-          }
-        }
-        LRiff.Close();
-      }
-      fclose(LFile);
-    }
-    return LSuccess;
   }
   // Clears the stream buffer, and loads a text file. Returns false on error.
   // Rewinds stream position.
@@ -982,7 +963,7 @@ public:
       return FBuffer.size() > 0;
     }
 #endif
-    if(LoadFromFileWav(AFileName, AChannelCount, ASampleRate)) {
+    if (VeST_LoadWavFromFile(FBuffer, AFileName, AChannelCount, ASampleRate)) {
       return true;
     }
     GeepError("Unable to load: " + AFileName);
@@ -1026,11 +1007,11 @@ private:
 
 public:
 
-  bool FIsText;
+  bool FIsText, FIsSystem;
   TFileMode FMode;
   int FChannelCount, FSampleRate;
 
-  CJes2CppFile() : FIsText(false), FChannelCount(0), FSampleRate(0), FMode(fmClosed) { }
+  CJes2CppFile() : FIsText(false), FIsSystem(false), FChannelCount(0), FSampleRate(0), FMode(fmClosed) { }
 
   ~CJes2CppFile()
   {
@@ -1105,11 +1086,6 @@ public:
   {
     FStream.Rewind();
   }
-  // Reads a string from the file stream.
-  EEL_F ReadString(std::string& AString)
-  {
-    return FStream.ReadString(AString);
-  }
   // Returns the number of stream values avaliable. (Not bytes)
   EEL_F DataAvaliable()
   {
@@ -1120,7 +1096,7 @@ public:
   {
     return FStream.GetByteSize();
   }
-  // Writes a value to stream. Returns false on error.
+  // Writes a value to stream. Always returns true.
   bool Write(EEL_F AValue)
   {
     return FStream.Write(AValue);
@@ -1137,7 +1113,8 @@ public:
   }
   bool StreamString(std::string& AString)
   {
-    return FMode == fmWrite ? FStream.WriteString(AString) : FMode == fmRead  ? ReadString(AString) : false;
+    return FMode == fmWrite ? FStream.WriteString(AString, FIsSystem) : FMode == fmRead  ? FStream.ReadString(AString,
+           FIsSystem) : false;
   }
   // Streams memory values to or from the file stream based on file mode. Returns number of
   // values written or read.
@@ -1182,12 +1159,16 @@ private:
     jes2cpp$file_count$ = FFiles.size();
     return &FFiles[FFiles.size() - 1];
   }
+
 public:
 
   EEL_F jes2cpp$file_count$;
 
   // Create files. FFiles[0] is the default system file.
-  CJes2CppFiles() : FFiles(1), jes2cpp$file_count$(1) { }
+  CJes2CppFiles() : FFiles(1), jes2cpp$file_count$(1)
+  {
+    FFiles[0].FIsSystem = true;
+  }
 
   // Returns true if given a valid file index.
   inline bool IsFileIndex(int AFileIndex)
@@ -1332,14 +1313,28 @@ public:
     gfx_h$(0) { }
 
   // Draws a string to the current graphics (x, y) and using the current font/color setup.
-  // TODO: Currently, this function does not handle newlines.
-  void DrawString(const char* AString)
+  // Split the string into lines if newlines are found.
+  void DrawString(const std::string AString)
   {
     VeST_SetFontColor(FVeST, EEL_F2PEN(gfx_r$), EEL_F2PEN(gfx_g$), EEL_F2PEN(gfx_b$), EEL_F2PEN(gfx_a$));
-    VEST_F LWidth = VeST_GetStringWidth(FVeST, AString);
-    // NOTE: We add 2 pixels to the rectangle height, which fixes a text alignment issue.
-    VeST_DrawString(FVeST, AString, gfx_x$, gfx_y$, gfx_x$ + LWidth, gfx_y$ + gfx_texth$ + 2, false, 0);
-    gfx_x$ += LWidth;
+    int LPos = 0;
+    while (true) {
+      int LEnd = AString.find('\n', LPos);
+      if (LEnd < 0) {
+        LEnd = AString.length();
+      }
+      std::string LLine = AString.substr(LPos, LEnd - LPos);
+      VEST_F LWidth = VeST_GetStringWidth(FVeST, LLine.c_str());
+      // NOTE: We add 2 pixels to the rectangle height to fix a text alignment issue.
+      VeST_DrawString(FVeST, LLine.c_str(), gfx_x$, gfx_y$, gfx_x$ + LWidth, gfx_y$ + gfx_texth$ + 2, false, 0);
+      if (LEnd < (int)AString.length()) {
+        gfx_y$ += gfx_texth$;
+      } else {
+        gfx_x$ += LWidth;
+        break;
+      }
+      LPos = LEnd + 1;
+    }
   }
   // Returns a image given a image index. If image index also maps to a valid filename index, then
   // the image will be loaded from the filename index.
@@ -1385,6 +1380,7 @@ public:
     // instead of aways updating at 30 FPS's.
     jes2cpp$gfx_rate$ = std::max<EEL_F>(jes2cpp$gfx_rate$, GFX_RATE);
   }
+  // Handle mouse down events.
   void DoMouseDown(VEST_F AX, VEST_F AY, int AButtons)
   {
     // Mouse/Key states are only set for mouse down events, and cleared on any mouse up event.
@@ -1397,6 +1393,7 @@ public:
                            ((AButtons & 64) >> 2) ); // Alt (16)
     DoMouseMoved(AX, AY, AButtons);
   }
+  // Handle mouse up events.
   void DoMouseUp(VEST_F AX, VEST_F AY, int AButtons)
   {
     // REAPER clears all mouse states on a mouse button up events.
@@ -1421,14 +1418,14 @@ public:
     EEL_fft_register();
 #ifdef BASS_H
     BASS_Init(0, 44100, 0, nullptr, nullptr);
-#endif
+#endif // BASS_H
     DoOpen();
   }
   virtual ~TJes2Cpp()
   {
 #ifdef BASS_H
     BASS_Free();
-#endif
+#endif // BASS_H
   }
 
 public:
@@ -1455,9 +1452,7 @@ public:
   virtual void DoSuspend() { }
   virtual void DoResume()
   {
-    if (srate$ != VeST_GetSampleRate(FVeST)) {
-      DoOpen();
-    }
+    DoOpen();
     DoInit();
     DoSlider();
     VeST_SetInitialDelay(FVeST, EEL_F2I(pdc_delay$));
@@ -1472,7 +1467,8 @@ public:
   virtual void DoBlock()
   {
     VEST_F tempo, ts_num, ts_denom;
-    // We must copy to locals to support 32bit float VST's.
+    // We must copy to local VEST_F's to support 32bit float VST's.
+    // ie: VEST_F is always double, but EEL_F may be float or double.
     VeST_GetTimeInfo3(FVeST, &tempo, &ts_num,  &ts_denom);
     tempo$ = tempo;
     ts_num$ = ts_num;
@@ -1513,6 +1509,7 @@ public:
   }
   virtual int DoSetChunk(void* AData, int ASize, bool AIsPreset)
   {
+    // Unsure if we need to support presets?
     if (AIsPreset) {
       return 0;
     }
@@ -1527,6 +1524,7 @@ public:
   }
   virtual int DoGetChunk(void** AData, bool AIsPreset)
   {
+    // Unsure if we need to support presets?
     if (AIsPreset) {
       return 0;
     }
@@ -1539,6 +1537,7 @@ public:
     int LByteSize = LFile->GetByteSize();
     DoSerialize();
     // If no more data is written in DoSerialize(), then return zero bytes.
+    // This prevents the standard slider serialization from being disabled.
     if (LByteSize == LFile->GetByteSize()) {
       return 0;
     }

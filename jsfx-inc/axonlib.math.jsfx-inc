@@ -1,0 +1,598 @@
+/*
+ * This file is part of Axonlib.
+ *
+ * Axonlib is free software: you can redistribute it and/or modify
+ * it under the terms of the Axonlib License, either version 1.0
+ * of the License, or (at your option) any later version.
+ *
+ * Axonlib is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE_AX for more details.
+ *
+ * You should have received a copy of the Axonlib License
+ * If not, see <http://axonlib.googlecode.com/>.
+ */
+
+/*
+  NOTE:
+    some of the methods are not compatible with big endian systems or x64.
+*/
+
+@init
+
+// This might have to change for non-PC machines.
+!"#define LITTLE_ENDIAN" "";
+
+// NOTE: This is the start of a translation of axMath.h to Jesusonic.
+// If you want to contribute some work, email me. DJE
+// https://code.google.com/p/axonlib/source/browse/trunk/ax/core/axMath.h
+
+/**
+ * invert of x: (1/x)
+ */
+function axInv(x) global()
+(
+  1/x;
+);
+
+
+/**
+ * square of x: (x^2)
+ */
+function axSqr(x) global()
+(
+  x*x;
+);
+
+/**
+ * cube of x: (x^3)
+ */
+function axCube(x) global()
+(
+  x*x*x;
+);
+
+/**
+ * convert radians to degrees <br>
+ * \code
+ * deg = rad*(180/pi);
+ * \endcode
+ */
+function axRad2Deg(x) global()
+(
+  x*57.2957795130823;
+);
+
+/**
+ * convert degrees to radians
+ * \code
+ * rad = deg*(pi/180);
+ * \endcode
+ */
+function axDeg2Rad(x) global()
+(
+  x*0.01745329251994;
+);
+
+/**
+ * returns the absolute value of a floating point number
+ * @param[in] value float
+ * @return value float
+*/
+function axAbs(/*!register const float*/ value) global()
+(
+  ! // C++
+  "// alt: fpu fabs is slower"
+  "register union"
+  "{"
+  "  int i;"
+  "  float j;"
+  "} u;"
+  "u.j = value$;"
+  "u.i &= 0x7fffffff;"
+  "return u.j;";
+  abs(value);
+);
+
+/**
+ * returns the sign (-1 or 1) of a floating point number
+ * @param[in] value float
+ * @return value float
+*/
+function axSign(/*!register const float*/ v) global()
+(
+  ! // C++
+  "register union"
+  "{"
+  "  signed int i;"
+  "  float f;"
+  "} u;"
+  "u.f = v$;"
+  "return (1 | (u.i >> 31));";
+  sign(v);
+);
+
+/**
+ * returns the smaller of two floating point numbers
+ * @param[in] a float
+ * @param[in] b float
+ * @return result float
+ */
+function axMin(a, b) global()
+(
+  a < b ? a : b;
+);
+
+/**
+ * returns the larger of two floating point numbers
+ * @param[in] a float
+ * @param[in] b float
+ * @return result float
+ */
+function axMax(a, b) global()
+(
+  a > b ? a : b;
+);
+
+/**
+ * calculates the logarithm base 2 of a floating point number (fpu)
+ * @param[in] value float
+ * @return value float
+ */
+function axLog2f(/*!register float*/ value) global()
+(
+  ! // C++
+  "__asm__"
+  "("
+  "  \"fld1;\"   \"fxch;\"  \"fyl2x;\""
+  "  : \"=t\" (value$)    : \"0\" (value$)"
+  ");"
+  "return value$;";
+  0; // TODO: What is the Jesusonic function?
+);
+
+/**
+ * fast approximation of the logarithm base 2 function
+ * based on code from http://www.flipcode.com/archives/Fast_log_Function.shtml
+ * @param[in] val float
+ * @return result float
+ */
+function axLog2(/*!register const float*/ val) global()
+(
+  ! // C++
+  "if (val$ > 0.f)"
+  "{"
+  "  register union"
+  "  {"
+  "    int i;"
+  "    float j;"
+  "  } u;"
+  "  u.j = val$;"
+  "  register const int log_2 = ((u.i >> 23) & 255) - 128;"
+  "  u.i &= ~(255 << 23);"
+  "  u.i += 127 << 23;"
+  "  return (0.05f + u.j + (float)log_2);"
+  "}"
+  "else"
+  "  return 0.f;";
+  0; // TODO: What is the Jesusonic function?
+);
+
+/**
+ * calculates the natural logarithm (base e) of a floating point number
+ * @param[in] value float
+ * @return value float
+ */
+function axLogf(/*!register float*/ value) global()
+(
+  ! // C++
+  "__asm__"
+  "("
+  "  \"fld %0;\"    \"fldln2;\"    \"fxch;\"    \"fyl2x;\""
+  "  : \"=t\" (value$)"
+  "  : \"0\" (value$)"
+  ");"
+  "return value$;";
+  log(value);
+);
+
+/**
+ * fast approximation of the natural logarithm function
+ * based on code from http://www.flipcode.com/archives/Fast_log_Function.shtml
+ * @param[in] val float
+ * @return result float
+ */
+function axLog(/*!register const float&*/ val) global()
+(
+  ! // C++
+  "return (axlog2_(val$)*0.69314718f);";
+  log(val);
+);
+
+/**
+ * calculates the logarithm base 10 of a floating point number (fpu)
+ * @param[in] value float
+ * @return value float
+ */
+function axLog10f(/*!register float*/ value) global()
+(
+  ! // C++
+  "__asm__"
+  "("
+  "  \"fldlg2;\"    \"fxch;\"    \"fyl2x;\""
+  "  : \"=t\" (value$): \"0\" (value$)"
+  ");"
+  "return value$;";
+  log10(value);
+);
+
+/**
+ * calculates the logarithm base 10 of a floating point number
+ * @param[in] x float
+ * @return value float
+ */
+function axLog10(/*!register const float*/ x) global()
+(
+  ! // C++
+  "// log10(e) = 0.4342945239647"
+  "// also: log10(x) = log2(x) - ln(x)"
+  "register const float y = (x$ - 1)/(x$ + 1);"
+  "register const float y2 = y*y;"
+  "return (2.f*y*(1 + y2*0.3333333333f + y2*y2*0.2f))*0.4342945239647f;";
+  log10(x);
+);
+
+/**
+ * performs fast and accurate powf(float, float) approximation (fpu)
+ * optimized for fractional exponent. <br>
+ * for (long) integer exponent use axPow() <br>
+ * \code
+ * axPow(3.5f, 2);
+ * axPowf(3.5f, 2.5f);
+ * \endcode
+ * @param[in] x float - base
+ * @param[in] y float - exponent
+ * @return float
+ */
+function axPowf(/*!register const float*/ x, /*!register const float*/ y) global()
+(
+  ! // C++
+  "register float value, exponent;"
+  "__asm__"
+  "("
+  "  \"fld1;\"                       // |"
+  "  \"fxch;\"                       // |"
+  "  \"fyl2x;\"                      // log2(x)"
+  "  \"fmul %%st(1);\"               // y*log2(x)"
+  "  \"fst %%st(1);\"                // |"
+  "  \"frndint;\"                    // int(y*log2(x))"
+  "  \"fxch;\"                       // |"
+  "  \"fsub %%st(1);\"               // fract(y*log2(x))"
+  "  \"f2xm1;\"                      // 2^(fract(y*log2(x))) - 1"
+  "  \"fld1;\"                       // |"
+  "  \"faddp;\"                      // += 1"
+  "  \"fscale;\"                     // x*(2^exp)"
+  "  : \"=t\" (value), \"=u\" (exponent)   :\"0\" (x$), \"1\" (y$)"
+  ");"
+  "return value;";
+  pow(x, y);
+);
+
+/**
+ * approximation of [e] to the power of a number (fpu)
+ * @param[in] x float input value
+ * @return value float
+ */
+function axExpf(/*!register const float*/ x) global()
+(
+  ! // C++
+  "register float value, exponent;"
+  "__asm__"
+  "("
+  "  \"fldl2e;\"               // e^x = 2^(x*log2(e))"
+  "  \"fmul %%st(1);\"         // x * log2(e)"
+  "  \"fst %%st(1);\"          // |"
+  "  \"frndint;\"              // int(x*log2(e))"
+  "  \"fxch;\"                 // |"
+  "  \"fsub %%st(1);\"         // fract(x*log2(e))"
+  "  \"f2xm1;\"                // 2^(fract(x*log2(e)))"
+  "  \"fld1;\"                 // |"
+  "  \"faddp;\"                // += 1"
+  "  \"fscale;\"               // x*(2^exp)"
+  "  : \"=t\" (value), \"=u\" (exponent) : \"0\" (x$)"
+  ");"
+  "return value;";
+  exp(x);
+);
+
+/**
+ * fast approximation of [e] to the power of a number <br>
+ * based on http://theoval.sys.uea.ac.uk/publications/pdf/nc2000a.pdf <br>
+ * note: original is for double precision (has a double to float cast)
+ * @param[in] exponent float
+ * @return result float
+ */
+function axExp(/*!register const float*/ v) global()
+(
+  ! // C++
+  "register union"
+  "{"
+  "  double d;"
+  "  struct"
+  "  {"
+  "    #ifdef LITTLE_ENDIAN"  // TODO: Define LITTLE_ENDIAN or similar
+  "      int i, j;"
+  "    #else"
+  "      int j, i;"
+  "    #endif"
+  "  } s;"
+  "} u;"
+  "u.s.i = (int)(1512775*(double)v$) + 1072632447;"
+  "u.s.j = 0;"
+  "return (float)u.d;";
+  exp(v);
+);
+
+/**
+ * returns the square root of a floating point number (fpu)
+ * @param[in] value float
+ * @return value float
+ */
+function axSqrtf(/*!register float*/ value) global()
+(
+  ! // C++
+  "__asm__"
+  "("
+  "  \"fsqrt;\"    : \"=t\" (value$)    : \"0\" (value$)"
+  ");"
+  "return value$;";
+  sqrt(value);
+);
+
+/**
+ * fast approximation of the squre root function <br>
+ * based on: http://www.azillionmonkeys.com/qed/sqroot.html
+ * @param[in] x float
+ * @return value float
+ */
+function axSqrt(/*!register const float*/ x) global()
+(
+  ! // C++
+  "register const float halfx = x$*0.5;"
+  "register union"
+  "{"
+  "  int i;"
+  "  float j;"
+  "} u;"
+  "u.j = x$;"
+  "u.i = (0xbe6ec85f - u.i) >> 1;   // good initial guess"
+  "return x$*u.j*(1.5f - u.j*u.j*halfx) + 0.001f; // newton iteration";
+  sqrt(x);
+);
+
+/**
+ * returns the invert squre root of a floating point number (fpu)
+ * @param[in] value float
+ * @return value float
+ */
+function axInvSqrtf(/*!register float*/ value) global()
+(
+  ! // C++
+  "__asm__"
+  "("
+  "  \"fsqrt;\"  \"fld1;\"   \"fdivp;\""
+  "  : \"=t\" (value$)    : \"0\" (value$)"
+  ");"
+  "return value$;";
+  invsqrt(value);
+);
+
+/**
+ * fast approximation of the invert squre root function
+ * based on code found in 'quake 3 arena' by 'id software'
+ * @param[in] x float
+ * @return result float
+ */
+function axInvSqrt(/*!register const float*/ x) global()
+(
+  ! // C++
+  "register const float halfx = 0.5f*x$;"
+  "register union"
+  "{"
+  "  float j;"
+  "  int i;"
+  "} u;"
+  "u.j = x$;"
+  "u.i = 0x5f3759df - (u.i >> 1); // good initial guess"
+  "return u.j*(1.5f - u.j*u.j*halfx) + 0.001f; // newton iteration";
+  invsqrt(x);
+);
+
+/**
+ * calculates the sine of a floating point number (fpu)
+ * @param[in] value float
+ * @return value float
+ */
+function axSinf(/*!register float*/ value) global()
+(
+  ! // C++
+  "__asm__"
+  "("
+  "  \"fsin;\"    : \"=t\" (value$)    : \"0\" (value$)"
+  ");"
+  "return value$;";
+  sin(value);
+);
+
+/**
+ * fast approximation of the sine function for range [-pi, pi]
+ * @param[in] x float
+ * @return result float
+ */
+function axSin(x) global()
+(
+  x *= (1.2732395447 - 0.4052847345 * axAbs(x));
+  0.225 * (x * axAbs(x) - x) + x;
+);
+
+/**
+ * calculates the cosine of a floating point number (fpu)
+ * @param[in] value float
+ * @return value float
+ */
+function axCosf(/*!register float*/ value) global()
+(
+  ! // C++
+  "__asm__"
+  "("
+  "  \"fcos;\"    : \"=t\" (value$)    : \"0\" (value$)"
+  ");"
+  "return value$;";
+  cos(value);
+);
+
+/**
+ * fast approximation of the cosine function for range [-pi, pi]
+ * @param[in] x float
+ * @return result float
+ */
+function axCos(x) global() local(x2)
+(
+  x2 = x*x;
+  (15120 + x2*(-6900 + 313*x2)) / (15120 + x2*(660 + 13*x2));
+);
+
+/**
+ * calculates the tangens of a floating point number (fpu)
+ * @param[in] value float
+ * @return value float
+ */
+function axTanf(/*!register float*/ value) global()
+(
+  ! // C++
+  "__asm__"
+  "("
+  "  \"fptan;\"  \"fstp %1;\""
+  "  : \"=t\" (value$)    : \"0\" (value$)"
+  ");"
+  "return value$;";
+  tan(value);
+);
+
+/**
+ * fast approximation of the tangens function for range [-pi, pi]
+ * @param[in] x float
+ * @return result float
+ */
+function axTan(x) global() local(x2)
+(
+  x2 = x*x;
+  (x*(105 - 10*x2)) / (105 - x2*(45 - x2));
+);
+
+/**
+ * calculates the arc-tangens of a floating point number (fpu)
+ * @param[in] value float
+ * @return value float
+ */
+function axAtanf(/*!register float*/ value)
+(
+  ! // C++
+  "// from partial tangens"
+  "__asm__"
+  "("
+  "  \"fld1;\"    \"fpatan;\"    : \"=t\" (value$)    : \"0\" (value$)"
+  ");"
+  "return value$;";
+  atan(value);
+);
+
+/**
+ * fast approximation of the arc-tangens function for range [-2, 2]
+ * @param[in] x float
+ * @return result float
+ */
+function axAtan(x) global() local(x2)
+(
+  x2 = x*x;
+  (x*(105 + 55*x2)) / (105 + x2*(90 + 9*x2));
+);
+
+/**
+ * approximation of the hyperbolic-sine function for range (fpu)
+ * @param[in] x float
+ * @return result float
+ */
+function axSinhf(x) global() local(_e, _eneg)
+(
+  x >= 0 ? (
+    _e = axExpf(x);
+    (_e - 1.0/_e)*0.5;
+  ) : (
+    _eneg = axExpf(-x);
+    (1.0/_eneg - _eneg)*0.5;
+  );
+);
+
+/**
+ * fast approximation of the hyperbolic-sine function for range [-3.5, 3.5]
+ * @param[in] x float
+ * @return result float
+ */
+function axSinh(x) global() local(x2)
+(
+  x2 = x*x;
+  x*(x2*(0.012*x2 + 0.156) + 1.004);
+);
+
+/**
+ * approximation of the hyperbolic-cosine function (fpu)
+ * @param[in] x float
+ * @return result float
+ */
+function axCoshf(x) global() local(_e)
+(
+  _e = axExpf(axAbs(x));
+  (_e + 1.0/_e)*0.5;
+);
+
+/**
+ * fast approximation of the hyperbolic-cosine function for range [-3.5, 3.5]
+ * @param[in] x float
+ * @return result float
+ */
+function axCosh(x) global() local(x2)
+(
+  x2 = x*x;
+  x2*(0.065*x2 + 0.428) + 1.025;
+);
+
+/**
+ * approximation of the hyperbolic-tangens function for range [-50, 50] (fpu)
+ * @param[in] value const float
+ * @return result float
+ */
+function axTanhf(value) global() local(_e, _er)
+(
+  value > 50 ? 1 : value < -50 ? -1 : (
+    _e = axExpf(value);
+    _er = 1 / _e;
+    (_e - _er) / (_e + _er);
+  );
+);
+
+/**
+ * fast approximation of the hyperbolic-tangens function for range [-4.2, 4.2]
+ * @param[in] x float
+ * @return result float
+ */
+// http://musicdsp.org/showArchiveComment.php?ArchiveID=238
+function axTanh(x) global() local(x2)
+(
+  x2 = x*x;
+  x*(27 + x2) / (27 + 9*x2);
+);
+
+
+

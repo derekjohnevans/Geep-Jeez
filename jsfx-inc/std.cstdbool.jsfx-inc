@@ -1,0 +1,17 @@
+/*
+** Name: stdbool.h
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+@init
+
+true = 1;
+false = 0;
+
+__bool_true_false_are_defined = true;
+

@@ -1,0 +1,150 @@
+/*
+** Name: string.h
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+import std.ctype.jsfx-inc
+import std.array.jsfx-inc
+
+@init
+
+// Compares the two strings s1 and s2, ignoring the case of the characters.
+function strcasecmp(s1, s2) global()
+(
+  stricmp(s1, s2);
+);
+
+/*
+Compares the two strings s1 and s2, ignoring the case of the characters.
+Same as strcasecmp, except it only compares the first n bytes of s1.
+*/
+function strncasecmp(s1, s2, n) global()
+(
+  strnicmp(s1, s2, n);
+);
+
+// Returns the position of a char in a string starting at pos. (-1 if not found)
+function strchr(str, chr, pos) global() 
+(
+  this = str;
+  this.find(chr, pos);
+);
+
+// Returns the position of a char in a string starting at 0. (-1 of not found)
+function strchr(str, chr) global()
+(
+  strchr(str, chr, 0);
+); 
+
+// Returns the position to the last occurrence of character in the string str. (-1 of not found)
+function strrchr(str, chr, pos) global() 
+(
+  this = str;
+  this.rfind(chr, 0, pos);
+);  
+
+// Returns the position to the last occurrence of character in the C string str. (-1 of not found)
+function strrchr(str, chr) global()
+(
+  strrchr(str, chr, strlen(str) - 1);
+);
+
+// Converts a string to lowercase.
+function strlwr(str) global() local(pos)
+(
+  pos = strlen(str);
+  while (pos > 0) (
+    pos -= 1;
+    str_setchar(str, pos, tolower(str_getchar(str, pos)));
+  );
+  str;
+);
+
+// Converts a string to uppercase.
+function strupr(str) global() local(pos)
+(
+  pos = strlen(str);
+  while (pos > 0) (
+    pos -= 1;
+    str_setchar(str, pos, toupper(str_getchar(str, pos)));
+  );
+  str;
+);
+
+// Sets characters of a string to a character.
+function strset(str, chr) global() 
+(
+  this = str;
+  this.fill(chr);
+);
+
+// Reverses the characters of a string.
+function strrev(str) global() local(pos, end, chr)
+(
+  this = str;
+  this.reverse(this.begin(), this.end());
+);
+
+/*
+Duplicates strings. This copies a string to a temp (#) string, which is
+useful for converting a literal (constant) string to a variable string.
+*/
+function strdup(str) global()
+(
+  strcpy(#, str);
+);
+
+// Count the number of (chr) in the string (str). Not standard, but very useful.
+function strccnt(str, chr) global() 
+(
+  this = str;
+  this.count(chr);
+);
+
+// NON-STANDARD STRING FUNCTIONS
+
+/*
+Splits a string 'src' at char 'chr' to a string array 'dst'. (Returns string count)
+Note: Always returns at least one string.
+*/
+function strsplit(src, dst, chr) global() local(return, pos, end)
+(
+  return = pos = 0;
+  while ((end = strchr(src, chr, pos)) >= 0) (
+    strcpy_substr(dst + return, src, pos, end - pos);
+    return += 1; pos = end + 1;
+  );
+  strcpy_substr(dst + return, src, pos);
+  return += 1;
+);
+
+// strextract
+function strextract(d, s, index) global() local(i, e, l)
+(
+  e = -1;
+  l = strlen(s);
+  while (
+    i = e + 1;
+    (e = strchr(s, ',', i)) < 0 ? e = l;
+    (index -= 1) >= 0;
+  );
+  strcpy_substr(d, s, i, e - i);
+);
+
+// strskip
+function strskip(s, i, c) global() local(return, len)
+(
+  return = 0;
+  len = strlen(s);
+  while (i && return < len) (
+    (return = strchr(s, c, return) + 1) <= 0 ? return = len;
+    i -= 1;
+  );
+  return;
+);
+

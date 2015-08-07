@@ -47,7 +47,8 @@ type
     {$DEFINE DItemItems := CJes2CppFunctionIdentifier}
     {$INCLUDE soda.inc}
   public
-    function ExistsIdent(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+    function ExistsIdent(const AIdent: TIdentString;
+      const AMessageLog: CJes2CppMessageLog): Boolean;
     function IndexOfIdent(AIdent: TIdentString): Integer;
     function IsCountMatch(const ACount: Integer): Boolean;
     function IsNameSpaceMatch(const AIdent: TIdentString): Boolean;
@@ -80,10 +81,10 @@ end;
 
 function CJes2CppFunctionIdentifiers.IndexOfIdent(AIdent: TIdentString): Integer;
 begin
-  AIdent := J2C_IdentRemoveRef(AIdent);
+  AIdent := GIdentString.RemoveRef(AIdent);
   for Result := 0 to ComponentCount - 1 do
   begin
-    if SameText(AIdent, J2C_IdentRemoveRef(Self[Result].Name)) then
+    if SameText(AIdent, GIdentString.RemoveRef(Self[Result].Name)) then
     begin
       Exit;
     end;
@@ -91,7 +92,8 @@ begin
   Result := -1;
 end;
 
-function CJes2CppFunctionIdentifiers.ExistsIdent(const AIdent: TIdentString; const AMessageLog: CJes2CppMessageLog): Boolean;
+function CJes2CppFunctionIdentifiers.ExistsIdent(const AIdent: TIdentString;
+  const AMessageLog: CJes2CppMessageLog): Boolean;
 var
   LIndex: Integer;
 begin
@@ -115,7 +117,7 @@ var
 begin
   for LComponent in Self do
   begin
-    if J2C_IdentIsNameSpace(AIdent, LComponent.Name) then
+    if GIdentString.IsNameSpace(AIdent, LComponent.Name) then
     begin
       Exit(True);
     end;
@@ -123,7 +125,8 @@ begin
   Result := False;
 end;
 
-procedure CJes2CppFunctionIdentifiers.AppendParams(var AResult: String; const AIsDefine, AIsInstance: Boolean);
+procedure CJes2CppFunctionIdentifiers.AppendParams(var AResult: String;
+  const AIsDefine, AIsInstance: Boolean);
 var
   LComponent: TComponent;
 begin
@@ -139,9 +142,9 @@ begin
     end;
     if AIsInstance then
     begin
-      AResult += CppEncodeVariable(GsEelSpaceThis + LComponent.Name);
+      AResult += GCpp.Encode.NameVariable(GsEelSpaceThis + LComponent.Name);
     end else begin
-      AResult += CppEncodeVariable(LComponent.Name);
+      AResult += GCpp.Encode.NameVariable(LComponent.Name);
     end;
   end;
 end;

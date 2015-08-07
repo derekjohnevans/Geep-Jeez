@@ -49,6 +49,8 @@ type
     procedure AddDefine(const AName: String; const AValue: Boolean); overload;
     procedure AddOption(const AName: String); overload;
     procedure AddOption(const AName: String; const AValue: String); overload;
+    procedure AddOptionWarning(const AValue: String);
+    procedure AddOptionF(const AValue: String);
     procedure AddInputFile(const AFileName: TFileName); overload;
     procedure AddInputFile(const AFileName: TFileName; const ASHA1String: String); overload;
     procedure AddOutputFile(const AFileName: TFileName);
@@ -96,13 +98,24 @@ begin
   Parameters.Add(CharMinusSign + AName + AValue);
 end;
 
+procedure CJes2CppProcess.AddOptionWarning(const AValue: String);
+begin
+  AddOption('W', AValue);
+end;
+
+// TODO: What is a 'f' option?
+procedure CJes2CppProcess.AddOptionF(const AValue: String);
+begin
+  AddOption('f', AValue);
+end;
+
 procedure CJes2CppProcess.LogMessage(const AMessage: String);
 begin
 end;
 
 procedure CJes2CppProcess.LogMessage(const AType, AMessage: String);
 begin
-  LogMessage(NSLog.TypeMessage(AType, AMessage));
+  LogMessage(GMessageLog.TypeMessage(AType, AMessage));
 end;
 
 procedure CJes2CppProcess.LogException(const AMessage: String);
@@ -138,7 +151,8 @@ begin
   end;
   if not SHA1Match(A, B) then
   begin
-    LogException(Format('Invalid checksum for %s.' + LineEnding + 'SHA1=%s', [QuotedStr(AFileName), QuotedStr(SHA1Print(A))]));
+    LogException(Format('Invalid checksum for %s.' + LineEnding + 'SHA1=%s',
+      [QuotedStr(AFileName), QuotedStr(SHA1Print(A))]));
   end;
   AddInputFile(AFileName);
 end;

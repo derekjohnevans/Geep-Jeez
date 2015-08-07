@@ -1,0 +1,92 @@
+import test.jsfx-inc
+
+@init
+
+function VectorVerbose() global() local(i)
+(  
+  printf("[");
+  i = 0;
+  while (i < this.size()) ( 
+    i > 0 ? printf(", ");
+    printf("%d", this[i]); 
+    i += 1;
+  );
+  printf("]\n");
+);
+
+function VectorResize(name, size) global() local(i)
+(  
+  i = 0;
+  while (i < this.size()) (
+    this[i] != i ? puts("ERROR");
+    i += 1;
+  );
+  this.resize(size);
+  i = 0;
+  while (i < size) (
+    this[i] = i;
+    i += 1;
+  );
+  printf("Vector='%s' Resize='%d' -> ", name, this.size());
+  this.VectorVerbose();
+);
+
+clrscr();
+
+H1("C++ Style Vector Tests");
+
+a.VectorResize("a", 20);
+
+H2("Create the vector 'b' test vector via pushing.");
+b.clear();
+b.push_back(5);
+b.push_back(4);
+b.push_back(3);
+b.push_back(2);
+b.push_back(1);
+b.VectorVerbose();
+
+a.VectorResize("a", 5);
+a.VectorResize("a", 0);
+a.VectorResize("a", 2);
+a.VectorResize("a", 4);
+
+H2("Original test vector. Should be the same as what was written above.");
+b.VectorVerbose();
+
+H2("Push some more values.");
+b.push_back(11);
+b.push_back(12);
+b.push_back(13);
+b.push_back(14);
+b.push_back(15);
+b.VectorVerbose();
+
+H2("Resize vector 'a' some more times.");
+
+a.VectorResize("a", 0);
+a.VectorResize("a", 2);
+a.VectorResize("a", 4);
+a.VectorResize("a", 1000);
+a.VectorResize("a", 30);
+a.VectorResize("a", 89);
+
+H2("Verbose vector 'b'. Should be the same as what was written above.");
+b.VectorVerbose();
+
+H2("Now clear both 'a' and 'b' vectors.");
+
+a = free(a);
+b = free(b);
+
+printf("Both should be zero -> a='%d' b='%d'\n", a, b);
+
+H2("Allocate some new memory using malloc.");
+
+a = malloc(100);
+b = malloc(100);
+
+printf("New memory pointers -> a=0x%x b=0x%x\n", a, b);
+
+puts("\ndone.");
+

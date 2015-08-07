@@ -35,7 +35,7 @@ uses
   SynHighlighterAny, SysUtils;
 
 type
-  NsSynEdit = object
+  GJeezSynEdit = object
   const
 {$IF DEFINED(WINDOWS)}
     FontName = 'Courier New';
@@ -45,70 +45,78 @@ type
 {$ERROR}
 {$ENDIF}
   public
-    class procedure SynJsFxInit(const ASynAnySyn: TSynAnySyn);
+    class procedure SetCaretYCentered(const ASynEdit: TSynEdit; const ACaretY: Integer);
     class procedure SectionPrev(const ASynEdit: TSynEdit);
     class procedure SectionNext(const ASynEdit: TSynEdit);
-    class procedure ExportHtml(const ASynEdit: TSynEdit; const AStrings: TStrings; const AFileName: TFileName);
+    class procedure ExportHtml(const ASynEdit: TSynEdit; const AStrings: TStrings;
+      const AFileName: TFileName);
   end;
 
-procedure SetHighlighterAttri(const A: TSynHighlighterAttributes; const AForeground: TColor);
+  GJeezSynAnySyn = object
+    class procedure Setup(const ASynAnySyn: TSynAnySyn);
+  end;
+
+  GSynHighlighter = object
+    class procedure SetAttribute(const A: TSynHighlighterAttributes; const AForeground: TColor;
+      const ABold: Boolean = False);
+  end;
 
 implementation
 
-procedure SetHighlighterAttri(const A: TSynHighlighterAttributes; const AForeground: TColor);
+class procedure GSynHighlighter.SetAttribute(const A: TSynHighlighterAttributes;
+  const AForeground: TColor; const ABold: Boolean);
 begin
   A.Foreground := AForeground;
-  A.Style := [];
-end;
-
-class procedure NsSynEdit.SynJsFxInit(const ASynAnySyn: TSynAnySyn);
-var
-  LString: String;
-begin
-  ASynAnySyn.DefaultFilter := 'Jesusonic Scripts (*.*)|*.*';
-  for LString in GaEelKeywords do
+  if ABold then
   begin
-    ASynAnySyn.KeyWords.Add(UpperCase(LString));
-  end;
-  for LString in GaEelSpecial do
-  begin
-    ASynAnySyn.KeyWords.Add(UpperCase(LString));
+    A.Style := [fsBold];
+  end else begin
+    A.Style := [];
   end;
 end;
 
-class procedure NsSynEdit.SectionPrev(const ASynEdit: TSynEdit);
-var
-  LIndex: Integer;
+class procedure GJeezSynEdit.SetCaretYCentered(const ASynEdit: TSynEdit; const ACaretY: Integer);
 begin
-  LIndex := ASynEdit.CaretY;
-  repeat
-    Dec(LIndex);
-    if LIndex < 1 then
-    begin
-      LIndex := ASynEdit.Lines.Count;
-    end;
-  until EelIsSection(ASynEdit.Lines[LIndex - 1]) or (LIndex = ASynEdit.CaretY);
-  ASynEdit.CaretY := LIndex;
+  ASynEdit.CaretY := ACaretY - (ASynEdit.LinesInWindow div 2) + 1;
+  ASynEdit.CaretY := ACaretY + (ASynEdit.LinesInWindow div 2) - 1;
+  ASynEdit.CaretY := ACaretY;
 end;
 
-class procedure NsSynEdit.SectionNext(const ASynEdit: TSynEdit);
+class procedure GJeezSynEdit.SectionPrev(const ASynEdit: TSynEdit);
 var
-  LIndex: Integer;
+  LCaretY: Integer;
 begin
-  LIndex := ASynEdit.CaretY;
+  LCaretY := ASynEdit.CaretY;
   repeat
-    Inc(LIndex);
-    if LIndex > ASynEdit.Lines.Count then
+    Dec(LCaretY);
+    if LCaretY < 1 then
     begin
-      LIndex := 1;
+      LCaretY := ASynEdit.Lines.Count;
     end;
-  until EelIsSection(ASynEdit.Lines[LIndex - 1]) or (LIndex = ASynEdit.CaretY);
-  ASynEdit.CaretY := LIndex;
+  until GEelSectionHeader.IsMaybeSection(ASynEdit.Lines[LCaretY - 1]) or
+    (LCaretY = ASynEdit.CaretY);
+  SetCaretYCentered(ASynEdit, LCaretY);
 end;
 
-class procedure NsSynEdit.ExportHtml(const ASynEdit: TSynEdit; const AStrings: TStrings; const AFileName: TFileName);
+class procedure GJeezSynEdit.SectionNext(const ASynEdit: TSynEdit);
+var
+  LCaretY: Integer;
+begin
+  LCaretY := ASynEdit.CaretY;
+  repeat
+    Inc(LCaretY);
+    if LCaretY > ASynEdit.Lines.Count then
+    begin
+      LCaretY := 1;
+    end;
+  until GEelSectionHeader.IsMaybeSection(ASynEdit.Lines[LCaretY - 1]) or
+    (LCaretY = ASynEdit.CaretY);
+  SetCaretYCentered(ASynEdit, LCaretY);
+end;
+
+class procedure GJeezSynEdit.ExportHtml(const ASynEdit: TSynEdit; const AStrings: TStrings;
+  const AFileName: TFileName);
 const
-
   LHead = '<!--StartFragment-->';
   LFoot = '<!--EndFragment-->';
 var
@@ -129,8 +137,9 @@ begin
         begin
           try
             Text := '<div style="border-style:inset;border-width:2px;background-color:#' +
-              (IntToHex(Red(ASynEdit.Color), 2) + IntToHex(Green(ASynEdit.Color), 2) + IntToHex(Blue(ASynEdit.Color), 2)) +
-              ';padding:6px">' + Copy(LStringStream.DataString, LPos, LEnd - LPos) + '</div>';
+              (IntToHex(Red(ASynEdit.Color), 2) + IntToHex(Green(ASynEdit.Color), 2) +
+              IntToHex(Blue(ASynEdit.Color), 2)) + ';padding:6px">' +
+              Copy(LStringStream.DataString, LPos, LEnd - LPos) + '</div>';
             SaveToFile(AFileName);
           finally
             Free;
@@ -142,6 +151,22 @@ begin
     finally
       Free;
     end;
+  end;
+end;
+
+class procedure GJeezSynAnySyn.Setup(const ASynAnySyn: TSynAnySyn);
+var
+  LKeyword: String;
+begin
+  ASynAnySyn.DefaultFilter := 'Jesusonic Scripts (*.*)|*.*';
+  ASynAnySyn.KeyWords.Clear;
+  for LKeyword in GaEelKeywords do
+  begin
+    ASynAnySyn.KeyWords.Add(UpperCase(LKeyword));
+  end;
+  for LKeyword in GaEelKeywordsExtra do
+  begin
+    ASynAnySyn.KeyWords.Add(UpperCase(LKeyword));
   end;
 end;
 

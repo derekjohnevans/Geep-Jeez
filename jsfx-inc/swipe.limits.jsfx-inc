@@ -1,0 +1,42 @@
+/*
+** Name: limits.jsfx-inc
+** Desc: Limits object for SWIPE.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+*/
+
+import swipe.system.jsfx-inc
+
+@init
+
+// Limits Object
+
+// Sets the limits of this object given min, max and def values.
+function TLimits(AMin, AMax, ADef) global()
+(
+  this.IsLimited.Set(1);
+  this.Min.Set(AMin);
+  this.Max.Set(AMax);
+  this.Def.Set(ADef);
+);
+
+// Sets the limits of this object. Default value = 0.
+function TLimits(AMin, AMax) global()
+(
+  this.TLimits(AMin, AMax, 0);
+);
+
+// Converts a value to a normalized (0..1) value given this objects limits.
+function TLimits_FromNormal(AValue) global()
+(
+  this.Min.Get() + (this.Max.Get() - this.Min.Get()) * AValue;
+);
+
+// Converts a normalized value (0..1) to a limited value given this objects limits.
+function TLimits_ToNormal(AValue) global()
+(
+  (AValue - this.Min.Get()) / (this.Max.Get() - this.Min.Get());
+);
+
+

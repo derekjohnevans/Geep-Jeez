@@ -1,0 +1,81 @@
+// Author: Derek John Evans
+// License: LGPL - http://www.gnu.org/licenses/gpl.html
+
+desc: Geep Spin Delay (SWIPE Version)
+
+EffectName: Geep Spin Delay
+VendorString: Geep
+VendorVersion: 1000
+UniqueId: 0
+InstallPath: C:\Program Files\VST\Geep Effects Pack\
+
+import swipe.jsfx-inc
+
+// To enable graphics, ALL sliders must be hidden by prefixing the labels with a '-'.
+
+slider1:500<30,2000>-Length (ms)
+slider2:0.5<0.01,10>-Rotate Speed (hz)
+slider3:30<-100,100>-Feedback (%)
+
+slider60:-0.3<-1,1>-Dry/Wet (%)
+slider61:0<-24,3>-Output (dB)
+  
+@sample
+
+SliderChanged() ? ( 
+
+  mem = floor(max(slider1, 1) * srate / 1000) * 2;
+  spd = slider2 * M_2PI / srate;
+  fbk = slider3 / 100;
+  
+  lev = 2 ^ (slider61 / 6);
+  wet = (slider60 + 1) * 0.5 * lev;
+  dry = (1 - slider60) * 0.5 * lev;
+);
+
+(ang += spd) >= M_2PI ? ang -= M_2PI;
+
+(pos -= 2) < 0 ? pos += mem;
+
+pos[0] = spl0 + (wet0 = pos[0] * cos(ang)) * fbk;
+pos[1] = spl1 + (wet1 = pos[1] * sin(ang)) * fbk;
+
+spl0 = spl0 * dry + wet0 * wet;
+spl1 = spl1 * dry + wet1 * wet;
+
+@init
+
+// Register memory usage with system.
+heap.max(srate * 2);
+
+// Define SWIPE Interface.
+
+_1.TWidget(1, 30, 2000, "Length", "ms", 500);
+_2.TWidget(2, 0.01, 10, "Rotate Speed", "Hz", 0.5);
+_3.TWidget(3, -100, 100, "Feedback", "%", 30);
+_4.TWidget(60, -1, 1, "Dry <> Wet", "", -0.3);
+_5.TWidget(61, -24, 3, "Output", "dB", 0);
+
+@gfx 480 300
+
+SWIPE(480, 300) ?
+(  
+  Effect.TEffectBasic("Geep Delay (Surround Spin)", "License LGPL / Copyright (C) 2015 Derek J. Evans", "Delay"); 
+  
+  knobs.TObject() ? (
+    knobs.0.TImage_LoadFromFile("data/knobs/knob_64_white1.png");
+    knobs.1.TImage_LoadFromFile("data/knobs/knob_32_white.png");
+  );
+  
+  xx = 90; yy = 100; 
+  x = (gfx_w - (xx * 5)) / 2; 
+  y = (gfx_h - (yy * 1)) / 2; 
+   
+  _1.TKnob_Draw(x, y, x + xx, y + yy, knobs.0); x += xx;
+  _2.TKnob_Draw(x, y, x + xx, y + yy, knobs.0); x += xx;
+  _3.TKnob_Draw(x, y, x + xx, y + yy, knobs.0); x += xx;
+  _4.TKnob_Draw(x, y, x + xx, y + yy, knobs.0); x += xx;
+  _5.TKnob_Draw(x, y, x + xx, y + yy, knobs.0); x += xx;
+        
+  Effect.TEffect_Done();  
+);

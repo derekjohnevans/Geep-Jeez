@@ -32,8 +32,10 @@ unit Jes2CppDescription;
 interface
 
 uses
-  Classes, Dialogs,Jes2CppConstants, Jes2CppEel, Jes2CppIdentString, Jes2CppMessageLog,
-  Jes2CppParameter, Jes2CppParserSimple, Jes2CppSections, Jes2CppStrings, Jes2CppTranslate, Jes2CppUtils, Soda, SysUtils;
+  Classes, Dialogs, Jes2CppConstants, Jes2CppEel, Jes2CppIdentString,
+  Jes2CppMessageLog, Jes2CppParameter,
+  Jes2CppParserSimple, Jes2CppSections, Jes2CppStrings, Jes2CppTranslate, Jes2CppUtils, Math,
+  Soda, SysUtils;
 
 type
 
@@ -41,7 +43,7 @@ type
   public
     FFileName: TFileName;
   public
-    function EncodeCpp: String;
+    function CppSetFileName: String;
   end;
 
   CJes2CppFileNames = class
@@ -68,11 +70,12 @@ type
     procedure DoCreate; override;
   public
     procedure ExtractDescriptionElements(const AScript: TStrings;
-      const AFileName, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String); overload;
+      const AFileName, ADefVendorString, ADefEffectName, ADefProductString,
+      ADefVendorVersion, ADefUniqueId: String); overload;
     procedure ExtractDescriptionElements(const AScript: TStrings); overload;
   public
     function EncodeDescriptionCpp: String;
-    function EncodeFileNamesCpp: String;
+    function CppSetFileNames: String;
   public
     property Parameters: CJes2CppParameters read FParameters;
     property AtDescription: String read FAtDescription;
@@ -86,9 +89,10 @@ implementation
 {$DEFINE DItemClass := CJes2CppFileNames}
 {$INCLUDE soda.inc}
 
-function CJes2CppFileName.EncodeCpp: String;
+function CJes2CppFileName.CppSetFileName: String;
 begin
-  Result := Format(GsCppFunct3, ['SetFileName', Name, CppEncodeString(FFileName)]) + GsCppLineEnding;
+  Result := Format(GsCppFunct3, ['SetFileName', Name, GCpp.Encode.QuotedString(FFileName)]) +
+    GsCppLineEnding;
 end;
 
 procedure CJes2CppDescription.DoCreate;
@@ -105,13 +109,15 @@ var
   LIndex, LSlider: Integer;
   LParameter: CJes2CppParameter;
 begin
-  for LIndex := 0 to EelDescHigh(AScript) do
+  for LIndex := ZeroValue to GEel.DescHigh(AScript) do
   begin
-    if J2C_DecodeNameValue(AScript[LIndex], LName, LValue) and J2C_IdentIsSlider(LName, LSlider) then
+    if GString.DecodeNameValue(AScript[LIndex], LName, LValue) and
+      GIdentString.IsSlider(LName, LSlider) then
     begin
       if FParameters.ComponentExists(IntToStr(LSlider)) then
       begin
-        raise Exception.Create(NSLog.MessageCaretYSource('Slider is already defined.', LIndex + 1, AFileName));
+        raise Exception.Create(GMessageLog.CaretYSource('Slider is already defined.',
+          LIndex + 1, AFileName));
       end;
       // TODO: For some reason, CreateComponent doesn't work here?
       LParameter := CJes2CppParameter.CreateNamed(FParameters, IntToStr(LSlider));
@@ -124,27 +130,31 @@ begin
       except
         on AException: Exception do
         begin
-          raise Exception.Create(NSLog.MessageCaretYSource(AException.Message, LIndex + 1, AFileName));
+          raise Exception.Create(GMessageLog.CaretYSource(AException.Message,
+            LIndex + 1, AFileName));
         end;
       end;
     end;
   end;
   if FParameters.IsEmpty then
   begin
-    GfxEnabled := False;
+    // TODO: Graphics is now the default.
+    //GfxEnabled := False;
   end;
 end;
 
-procedure CJes2CppDescription.ExtractFileNames(const AScript: TStrings; const AFileName: TFileName);
+procedure CJes2CppDescription.ExtractFileNames(const AScript: TStrings;
+  const AFileName: TFileName);
 var
   LIndex, LFile: Integer;
   LName, LValue, LFileName: String;
   LParser: TJes2CppParserSimple;
 begin
   FFileNames.DestroyComponents;
-  for LIndex := 0 to EelDescHigh(AScript) do
+  for LIndex := ZeroValue to GEel.DescHigh(AScript) do
   begin
-    if J2C_DecodeNameValue(AScript[LIndex], LName, LValue) and SameText(LName, GsEelDescFileName) then
+    if GString.DecodeNameValue(AScript[LIndex], LName, LValue) and
+      SameText(LName, GsEelDescFileName) then
     begin
       try
         LParser.SetSource(LValue);
@@ -160,7 +170,8 @@ begin
       except
         on AException: Exception do
         begin
-          raise Exception.Create(NSLog.MessageCaretYSource(AException.Message, LIndex + 1, AFileName));
+          raise Exception.Create(GMessageLog.CaretYSource(AException.Message,
+            LIndex + 1, AFileName));
         end;
       end;
     end;
@@ -168,16 +179,20 @@ begin
 end;
 
 procedure CJes2CppDescription.ExtractDescriptionElements(const AScript: TStrings;
-  const AFileName, ADefVendorString, ADefEffectName, ADefProductString, ADefVendorVersion, ADefUniqueId: String);
+  const AFileName, ADefVendorString, ADefEffectName, ADefProductString,
+  ADefVendorVersion, ADefUniqueId: String);
 var
   LSectionHeader: String;
 begin
-  FAtDescription := J2C_ExtractSection(GsEelSectionDesc, AScript, AFileName, False, LSectionHeader);
-  FVendorString := J2C_StringsGetValue(AScript, GsVendorString, ADefVendorString);
-  FEffectName := J2C_StringsGetValue(AScript, GsEffectName, ADefEffectName);
-  FProductString := J2C_StringsGetValue(AScript, GsProductString, ADefProductString);
-  FVendorVersion := J2C_StrToIntDef(J2C_StringsGetValue(AScript, GsVendorVersion, EmptyStr), J2C_StrToIntDef(ADefVendorVersion, 0));
-  FUniqueId := J2C_StrToIntDef(J2C_StringsGetValue(AScript, GsUniqueId, EmptyStr), J2C_StrToIntDef(ADefUniqueId, 0));
+  FAtDescription := GUtils.ExtractSection(GsEelSectionDesc, AScript, AFileName,
+    False, LSectionHeader);
+  FVendorString := GStrings.GetValue(AScript, GsVendorString, ADefVendorString);
+  FEffectName := GStrings.GetValue(AScript, GsEffectName, ADefEffectName);
+  FProductString := GStrings.GetValue(AScript, GsProductString, ADefProductString);
+  FVendorVersion := GUtils.CodeToIntDef(GStrings.GetValue(AScript, GsVendorVersion, EmptyStr),
+    GUtils.CodeToIntDef(ADefVendorVersion, 0));
+  FUniqueId := GUtils.CodeToIntDef(GStrings.GetValue(AScript, GsUniqueId, EmptyStr),
+    GUtils.CodeToIntDef(ADefUniqueId, 0));
   ExtractSliders(AScript, AFileName);
   ExtractFileNames(AScript, AFileName);
 end;
@@ -191,7 +206,7 @@ function CJes2CppDescription.EncodeDescriptionCpp: String;
 
   procedure LAppendNameValue(const AName, AValue: String); overload;
   begin
-    Result += AName + GsCppAssign + CppEncodeString(AValue) + GsCppLineEnding;
+    Result += AName + GsCppAssign + GCpp.Encode.QuotedString(AValue) + GsCppLineEnding;
   end;
 
   procedure LAppendNameValue(const AName: String; const AValue: Integer); overload;
@@ -216,14 +231,14 @@ begin
   end;
 end;
 
-function CJes2CppDescription.EncodeFileNamesCpp: String;
+function CJes2CppDescription.CppSetFileNames: String;
 var
   LFileName: CJes2CppFileName;
 begin
   Result := EmptyStr;
   for LFileName in FFileNames do
   begin
-    Result += LFileName.EncodeCpp;
+    Result += LFileName.CppSetFileName;
   end;
 end;
 

@@ -1,0 +1,71 @@
+// Author: Derek John Evans
+// License: LGPL - http://www.gnu.org/licenses/gpl.html
+
+desc: Geep Chorus (SWIPE Version)
+
+EffectName: Geep Chorus
+VendorString: Geep
+VendorVersion: 1000
+UniqueId: 0
+InstallPath: C:\Program Files\VST\Geep Effects Pack\
+
+import swipe.jsfx-inc
+import geep.chorus.jsfx-inc
+
+// To enable graphics, ALL sliders must be hidden by prefixing the labels with a '-'.
+
+slider1:15<5,100>-Range (ms)
+slider2:0.1<0.01,10>-Rate (Hz)
+slider3:0<-100,100>-Feedback (%)
+
+slider60:1<-1,1>-Dry/Wet
+slider61:0<-24,3>-Output (dB)
+
+@init
+
+StereoChorus.Init(200);
+
+@sample
+
+SliderChanged() ? StereoChorus.Slider(slider1, slider2, slider3, slider60, slider61);
+StereoChorus.Sample(spl0, spl1);
+
+@init
+
+// Define SWIPE Interface
+
+_1.TWidget(1, 5, 100, "Range", "ms", 15);
+_2.TWidget(2, 0.01, 10, "Rate", "Hz", 0.1);
+_3.TWidget(3, -100, 100, "Feedback", "%", 0);
+_4.TWidget(60, -1, 1, "Dry/Wet", "", 1);
+_5.TWidget(61, -24, 3, "Output", "dB", 0);
+
+@gfx 450 300
+
+SWIPE(450, 260) ?
+(
+  _effect.TEffectBasic(
+    "Geep Chorus (Dual ModDelay)", 
+    "License LGPL / Copyright (C) 2015 Derek J. Evans", 
+    "Chorus");  
+  
+  knobs.TObject() ? (
+    knobs.0.TImage_LoadFromFile("data/knobs/knob_64_white1.png");
+    knobs.1.TImage_LoadFromFile("data/knobs/knob_32_white.png");
+  );
+    
+  xx = 80; 
+  yy = 110;
+  x = (gfx_w - xx * 5) * 0.5; 
+  y = 90; 
+    
+  _1.TKnob_Draw(x, y, x + xx, y + yy, knobs.0); x += xx;
+  _2.TKnob_Draw(x, y, x + xx, y + yy, knobs.0); x += xx;
+  _3.TKnob_Draw(x, y, x + xx, y + yy, knobs.0); x += xx;
+  _4.TKnob_Draw(x, y, x + xx, y + yy, knobs.0); x += xx;
+  _5.TKnob_Draw(x, y, x + xx, y + yy, knobs.0); x += xx;
+  
+  _effect.TEffect_Done();  
+);
+
+

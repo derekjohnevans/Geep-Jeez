@@ -68,7 +68,7 @@ uses UJeezOptions;
 
 procedure TJeezProperties.FormCreate(ASender: TObject);
 begin
-  NsPlatform.ScrollingWinControlPrepare(Self);
+  GPlatform.ScrollingWinControlPrepare(Self);
   PageControl.PageIndex := 0;
 end;
 
@@ -87,21 +87,23 @@ end;
 
 function TJeezProperties.Execute(const AStrings: TStrings): Boolean;
 begin
-  EditEffectName.Text := J2C_StringsGetValue(AStrings, GsEffectName, 'New Effect');
-  EditVendorString.Text := J2C_StringsGetValue(AStrings, GsVendorString, 'Enter Vendor Name');
-  EditVendorVersion.Value := StrToIntDef(J2C_StringsGetValue(AStrings, GsVendorVersion, EmptyStr), 1000);
-  EditUniqueId.Text := J2C_StringsGetValue(AStrings, GsUniqueId, EmptyStr);
-  EditProductString.Text := J2C_StringsGetValue(AStrings, GsProductString, 'Enter Description');
-  EditPluginInstallPath.Text := J2C_StringsGetValue(AStrings, GsInstallPath, JeezOptions.EditDefVstPath.Directory, True);
+  EditEffectName.Text := GStrings.GetValue(AStrings, GsEffectName, 'New Effect');
+  EditVendorString.Text := GStrings.GetValue(AStrings, GsVendorString, 'Enter Vendor Name');
+  EditVendorVersion.Value := StrToIntDef(GStrings.GetValue(AStrings, GsVendorVersion,
+    EmptyStr), 1000);
+  EditUniqueId.Text := GStrings.GetValue(AStrings, GsUniqueId, EmptyStr);
+  EditProductString.Text := GStrings.GetValue(AStrings, GsProductString, 'Enter Description');
+  EditPluginInstallPath.Text := GStrings.GetValue(AStrings, GsInstallPath,
+    JeezOptions.EditDefVstPath.Directory, True);
   Result := ShowModal = mrOk;
   if Result then
   begin
-    J2C_StringsSetValue(AStrings, GsProductString, EditProductString.Text);
-    J2C_StringsSetValue(AStrings, GsEffectName, EditEffectName.Text);
-    J2C_StringsSetValue(AStrings, GsVendorString, EditVendorString.Text);
-    J2C_StringsSetValue(AStrings, GsVendorVersion, EditVendorVersion.Text);
-    J2C_StringsSetValue(AStrings, GsUniqueId, EditUniqueId.Text);
-    J2C_StringsSetValue(AStrings, GsInstallPath, EditPluginInstallPath.Text);
+    GStrings.SetValue(AStrings, GsProductString, EditProductString.Text);
+    GStrings.SetValue(AStrings, GsEffectName, EditEffectName.Text);
+    GStrings.SetValue(AStrings, GsVendorString, EditVendorString.Text);
+    GStrings.SetValue(AStrings, GsVendorVersion, EditVendorVersion.Text);
+    GStrings.SetValue(AStrings, GsUniqueId, EditUniqueId.Text);
+    GStrings.SetValue(AStrings, GsInstallPath, EditPluginInstallPath.Text);
   end;
 end;
 

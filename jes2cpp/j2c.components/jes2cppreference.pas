@@ -50,16 +50,16 @@ type
     {$DEFINE DItemOwner := CJes2CppReferences}
     {$INCLUDE soda.inc}
   strict private
-    FFilePartPath, FFilePartName: TFileName;
+    FFilePath, FFileName: TFileName;
     FFileCaretY: Integer;
   strict private
-    procedure SetFileName(const AFileName: TFileName);
-    function GetFileName: TFileName;
+    procedure SetFullFileName(const AFileName: TFileName);
+    function GetFullFileName: TFileName;
   public
     function EncodeLineFilePath: String;
     function EncodeLineFile: String;
-    property FileSource: TFileName read GetFileName write SetFileName;
-    property FilePartName: TFileName read FFilePartName;
+    property FileSource: TFileName read GetFullFileName write SetFullFileName;
+    property FileNameOnly: TFileName read FFileName;
     property FileCaretY: Integer read FFileCaretY write FFileCaretY;
   end;
 
@@ -69,7 +69,8 @@ type
     {$DEFINE DItemItems := CJes2CppReference}
     {$INCLUDE soda.inc}
   public
-    function CreateReference(const AFileSource: TFileName; const AFileCaretY: Integer): CJes2CppReference;
+    function CreateReference(const AFileSource: TFileName;
+      const AFileCaretY: Integer): CJes2CppReference;
   end;
 
 implementation
@@ -78,29 +79,31 @@ implementation
 
 {$DEFINE DItemClass := CJes2CppReferences} {$INCLUDE soda.inc}
 
-procedure CJes2CppReference.SetFileName(const AFileName: TFileName);
+procedure CJes2CppReference.SetFullFileName(const AFileName: TFileName);
 begin
-  FFilePartPath := ExtractFilePath(AFileName);
-  FFilePartName := ExtractFileName(AFileName);
+  FFilePath := ExtractFilePath(AFileName);
+  FFileName := ExtractFileName(AFileName);
 end;
 
-function CJes2CppReference.GetFileName: TFileName;
+function CJes2CppReference.GetFullFileName: TFileName;
 begin
-  Result := FFilePartPath + FFilePartName;
+  Result := FFilePath + FFileName;
 end;
 
 function CJes2CppReference.EncodeLineFilePath: String;
 begin
-  Result := Format('%s=%s %s=%s %s=%s', [GsLine, QuotedStr(IntToStr(FFileCaretY)), GsFile, QuotedStr(FFilePartName),
-    GsPath, QuotedStr(FFilePartPath)]);
+  Result := Format('%s=%s %s=%s %s=%s', [GsLine, QuotedStr(IntToStr(FFileCaretY)),
+    GsFile, QuotedStr(FFileName), GsPath, QuotedStr(FFilePath)]);
 end;
 
 function CJes2CppReference.EncodeLineFile: String;
 begin
-  Result := Format('%s=%s %s=%s', [GsLine, QuotedStr(IntToStr(FFileCaretY)), GsFile, QuotedStr(FFilePartName)]);
+  Result := Format('%s=%s %s=%s', [GsLine, QuotedStr(IntToStr(FFileCaretY)),
+    GsFile, QuotedStr(FFileName)]);
 end;
 
-function CJes2CppReferences.CreateReference(const AFileSource: TFileName; const AFileCaretY: Integer): CJes2CppReference;
+function CJes2CppReferences.CreateReference(const AFileSource: TFileName;
+  const AFileCaretY: Integer): CJes2CppReference;
 begin
   Result := CreateComponent;
   Result.FileSource := AFileSource;

@@ -1,0 +1,24 @@
+/*
+** Name: stddef.h
+** Desc: This is part of a ANSI C style library for Jesusonic.
+** Auth: Derek John Evans
+**
+** Copyright (C) 2015 Derek John Evans
+**
+** License: LGPL - http://www.gnu.org/licenses/gpl.html
+*/
+
+@init
+
+NULL = 0;
+
+function size_t(x) global()
+(
+  max(floor(x), 0);
+);
+
+function bool_t(x) global()
+(
+  x ? 1 : 0;
+);
+

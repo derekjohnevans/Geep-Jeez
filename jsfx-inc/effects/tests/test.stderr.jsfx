@@ -1,0 +1,23 @@
+
+import test.jsfx-inc
+
+@init
+
+clrscr();
+
+H1("Standard Error/Assert Testing");
+
+loop (5,
+  puts("1) Write to stderr");
+  fputs("This is a test error message.\n", stderr);
+  fputs("Unable to load image.\n", stderr);
+  
+  puts("2) Using the assert functions");
+  assert(a != 0, "Divide by zero");
+  assert(1 == 2, "1 does not equal 2", "test.stderr.jsfx");
+);
+@gfx
+
+a.Console.Draw(0, 0, gfx_w, gfx_h - 100, stdout);
+b.Console.Draw(0, gfx_h - 100, gfx_w, gfx_h, stderr);
+

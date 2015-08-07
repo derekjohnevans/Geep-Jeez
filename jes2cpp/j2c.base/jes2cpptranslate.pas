@@ -59,14 +59,12 @@ const
   GsCppCommentLine = CharSlashForward + CharSlashForward;
   GsCppCommentSpace = GsCppCommentLine + CharSpace;
   GsCppAssign = CharSpace + CharEqualSign + CharSpace;
-  GsCppFmod = 'fmod';
   GsCppFunct1 = '%s()';
   GsCppFunct2 = '%s(%s)';
   GsCppFunct3 = '%s(%s, %s)';
   GsCppInline = 'inline';
   GsCppLineEnding = CharSemiColon + LineEnding;
   GsCppOperator = '(%s %s %s)';
-  GsCppPow = 'pow';
   GsCppReturnSpace = 'return' + CharSpace;
   GsCppSamples1 = 'FSamples[%d]';
   GsCppSliders1 = 'FSliders[%d]';
@@ -90,89 +88,98 @@ const
   GsMarkerHeadFile = GsMarkerHead + 'file[';
   GsMarkerHeadLine = GsMarkerHead + 'line[';
 
-function CppEncodeString(const AString: String; const ACharQuote: Char = CharQuoteDouble): String;
-function CppDecodeString(const AString: String): String;
+type
 
-function CppEncodeFloat(const AExtended: Extended): String; overload;
-function CppEncodeFloat(const AString: String): String; overload;
-function CppEncodeVariable(const AIdent: TIdentString): String;
-function CppEncodeFunction(const AIdent: TIdentString): String;
+  GCpp = object
+    type Encode = object
+      class function Float(const AExtended: Extended): String; overload;
+      class function Float(const AString: String): String; overload;
+      class function NameFunction(const AIdent: TIdentString; const ACount: Integer): String;
+      class function NameIdentifier(const AIdent: TIdentString): String;
+      class function NameVariable(const AIdent: TIdentString): String;
+      class function QuotedString(const AString: String;
+        const ACharQuote: Char = CharQuoteDouble): String;
+    end;
 
-function CppIsHashString(const AString: String): Boolean;
+    Decode = object
+      class function QuotedString(const AString: String): String;
+    end;
+    class function IsHashString(const AString: String): Boolean;
+  end;
 
 implementation
 
-function CppEncodeString(const AString: String; const ACharQuote: Char): String;
+class function GCpp.Encode.QuotedString(const AString: String; const ACharQuote: Char): String;
 
-  procedure Encode(const ASrc, ADst: Char);
+  procedure LEncode(const ASrc, ADst: Char);
   begin
     Result := ReplaceStr(Result, ASrc, CharSlashBackward + ADst);
   end;
 
 begin
   Result := AString;
-  Encode(CharSlashBackward, CharSlashBackward);
-  Encode(CharQuoteDouble, CharQuoteDouble);
-  Encode(CharQuoteSingle, CharQuoteSingle);
-  Encode(CharLF, 'n');
-  Encode(CharCR, 'r');
-  Encode(CharTab, 't');
+  LEncode(CharSlashBackward, CharSlashBackward);
+  LEncode(CharQuoteDouble, CharQuoteDouble);
+  LEncode(CharQuoteSingle, CharQuoteSingle);
+  LEncode(CharLF, 'n');
+  LEncode(CharCR, 'r');
+  LEncode(CharTab, 't');
   Result := ACharQuote + Result + ACharQuote;
 end;
 
-function CppDecodeString(const AString: String): String;
+class function GCpp.Decode.QuotedString(const AString: String): String;
 
-  procedure Decode(const ASrc, ADst: Char);
+  procedure LDecode(const ASrc, ADst: Char);
   begin
     Result := ReplaceStr(Result, CharSlashBackward + ASrc, ADst);
   end;
 
 begin
   Result := Copy(AString, 2, Length(AString) - 2);
-  Decode(CharQuoteDouble, CharQuoteDouble);
-  Decode(CharQuoteSingle, CharQuoteSingle);
-  Decode('n', CharLF);
-  Decode('r', CharCR);
-  Decode('t', CharTab);
-  Decode(CharSlashBackward, CharSlashBackward);
+  LDecode(CharQuoteDouble, CharQuoteDouble);
+  LDecode(CharQuoteSingle, CharQuoteSingle);
+  LDecode('n', CharLF);
+  LDecode('r', CharCR);
+  LDecode('t', CharTab);
+  LDecode(CharSlashBackward, CharSlashBackward);
 end;
 
-function CppEncodeFloat(const AExtended: Extended): String;
+class function GCpp.Encode.Float(const AExtended: Extended): String;
 begin
-  Result := '(' + GsCppEelF + ')(' + EelFloatToStr(AExtended) + ')';
+  Result := '(' + GsCppEelF + ')(' + GEel.ToString(AExtended) + ')';
 end;
 
-function CppEncodeFloat(const AString: String): String;
+class function GCpp.Encode.Float(const AString: String): String;
 begin
-  if J2C_TokenIsSame(PChar(AString), GsEelM_PI) then
+  if GToken.IsSame(PChar(AString), GsEelM_PI) then
   begin
     Result := GsCppM_PI;
-  end else if J2C_TokenIsSame(PChar(AString), GsEelM_E) then
+  end else if GToken.IsSame(PChar(AString), GsEelM_E) then
   begin
     Result := GsCppM_E;
-  end else if J2C_TokenIsSame(PChar(AString), GsEelM_PHI) then
+  end else if GToken.IsSame(PChar(AString), GsEelM_PHI) then
   begin
     Result := GsCppM_PHI;
-  end else if J2C_TokenIsNumberMask(PChar(AString)) then
+  end else if GToken.IsNumberMask(PChar(AString)) then
   begin
-    Result := CppEncodeFloat((1 shl StrToInt(Copy(AString, 3, MaxInt))) - 1);
-  end else if J2C_TokenIsNumberHex(PChar(AString)) then
+    Result := Float((1 shl StrToInt(Copy(AString, 3, MaxInt))) - 1);
+  end else if GToken.IsNumberHex(PChar(AString)) then
   begin
-    Result := CppEncodeFloat(StrToInt(CharDollar + Copy(AString, 3, MaxInt)));
-  end else if J2C_TokenIsNumberAsc(PChar(AString)) then
+    Result := Float(StrToInt64(CharDollar + Copy(AString, 3, MaxInt)));
+  end else if GToken.IsNumberAsc(PChar(AString)) then
   begin
-    Result := CppEncodeFloat(Ord(AString[3]));
+    Result := Float(Ord(AString[3]));
   end else begin
-    Result := CppEncodeFloat(EelStrToFloat(AString));
+    Result := Float(GEel.ToFloat(AString));
   end;
 end;
 
-function CppIsHashString(const AString: String): Boolean;
+class function GCpp.IsHashString(const AString: String): Boolean;
 begin
   Result := (AString <> EmptyStr) and (AString[1] = CharDollar) and (Pos(CharSpace, AString) = 0);
 end;
 
-function CppEncodeIdent(const AIdent: TIdentString): String;
+class function GCpp.Encode.NameIdentifier(const AIdent: TIdentString): String;
 var
   LIndex: Integer;
 begin
@@ -186,9 +193,9 @@ begin
   end;
 end;
 
-function CppEncodeVariable(const AIdent: TIdentString): String;
+class function GCpp.Encode.NameVariable(const AIdent: TIdentString): String;
 begin
-  Result := CppEncodeIdent(AIdent);
+  Result := NameIdentifier(AIdent);
   if (Result <> EmptyStr) and (Result[Length(AIdent)] = CharAsterisk) then
   begin
     Delete(Result, Length(Result), 1);
@@ -196,9 +203,14 @@ begin
   end;
 end;
 
-function CppEncodeFunction(const AIdent: TIdentString): String;
+class function GCpp.Encode.NameFunction(const AIdent: TIdentString; const ACount: Integer): String;
 begin
-  Result := CppEncodeIdent(AIdent) + CharUnderscore;
+  Result := NameIdentifier(AIdent);
+  if ACount > 0 then
+  begin
+    Result += IntToStr(ACount);
+  end;
+  Result += CharUnderscore;
 end;
 
 end.

@@ -1,0 +1,146 @@
+@init
+
+// IsCreated
+function IsCreated.Get() ( this.Value );
+function IsCreated.Not() ( this.Value = !this.Value );
+function IsCreated.Set(AIsCreated) ( this.Value = AIsCreated );
+function IsCreated.Inc(AIsCreated) ( this.Value += AIsCreated );
+function IsCreated.Dec(AIsCreated) ( this.Value -= AIsCreated );
+function IsCreated.Mul(AIsCreated) ( this.Value *= AIsCreated );
+function IsCreated.Div(AIsCreated) ( this.Value /= AIsCreated );
+
+// IsCaptured
+function IsCaptured.Get() ( this.Value );
+function IsCaptured.Not() ( this.Value = !this.Value );
+function IsCaptured.Set(AIsCaptured) ( this.Value = AIsCaptured );
+function IsCaptured.Inc(AIsCaptured) ( this.Value += AIsCaptured );
+function IsCaptured.Dec(AIsCaptured) ( this.Value -= AIsCaptured );
+function IsCaptured.Mul(AIsCaptured) ( this.Value *= AIsCaptured );
+function IsCaptured.Div(AIsCaptured) ( this.Value /= AIsCaptured );
+
+// IsLimited
+function IsLimited.Get() ( this.Value );
+function IsLimited.Not() ( this.Value = !this.Value );
+function IsLimited.Set(AIsLimited) ( this.Value = AIsLimited );
+function IsLimited.Inc(AIsLimited) ( this.Value += AIsLimited );
+function IsLimited.Dec(AIsLimited) ( this.Value -= AIsLimited );
+function IsLimited.Mul(AIsLimited) ( this.Value *= AIsLimited );
+function IsLimited.Div(AIsLimited) ( this.Value /= AIsLimited );
+
+// IsOpen
+function IsOpen.Get() ( this.Value );
+function IsOpen.Not() ( this.Value = !this.Value );
+function IsOpen.Set(AIsOpen) ( this.Value = AIsOpen );
+function IsOpen.Inc(AIsOpen) ( this.Value += AIsOpen );
+function IsOpen.Dec(AIsOpen) ( this.Value -= AIsOpen );
+function IsOpen.Mul(AIsOpen) ( this.Value *= AIsOpen );
+function IsOpen.Div(AIsOpen) ( this.Value /= AIsOpen );
+
+// Name
+function Name.Get() ( this.Value );
+function Name.Not() ( this.Value = !this.Value );
+function Name.Set(AName) ( this.Value = AName );
+function Name.Inc(AName) ( this.Value += AName );
+function Name.Dec(AName) ( this.Value -= AName );
+function Name.Mul(AName) ( this.Value *= AName );
+function Name.Div(AName) ( this.Value /= AName );
+
+// ClassName
+function ClassName.Get() ( this.Value );
+function ClassName.Not() ( this.Value = !this.Value );
+function ClassName.Set(AClassName) ( this.Value = AClassName );
+function ClassName.Inc(AClassName) ( this.Value += AClassName );
+function ClassName.Dec(AClassName) ( this.Value -= AClassName );
+function ClassName.Mul(AClassName) ( this.Value *= AClassName );
+function ClassName.Div(AClassName) ( this.Value /= AClassName );
+
+// Text
+function Text.Get() ( this.Value );
+function Text.Not() ( this.Value = !this.Value );
+function Text.Set(AText) ( this.Value = AText );
+function Text.Inc(AText) ( this.Value += AText );
+function Text.Dec(AText) ( this.Value -= AText );
+function Text.Mul(AText) ( this.Value *= AText );
+function Text.Div(AText) ( this.Value /= AText );
+
+// Label
+function Label.Get() ( this.Value );
+function Label.Not() ( this.Value = !this.Value );
+function Label.Set(ALabel) ( this.Value = ALabel );
+function Label.Inc(ALabel) ( this.Value += ALabel );
+function Label.Dec(ALabel) ( this.Value -= ALabel );
+function Label.Mul(ALabel) ( this.Value *= ALabel );
+function Label.Div(ALabel) ( this.Value /= ALabel );
+
+// Value
+function Value.Get() ( this.Value );
+function Value.Not() ( this.Value = !this.Value );
+function Value.Set(AValue) ( this.Value = AValue );
+function Value.Inc(AValue) ( this.Value += AValue );
+function Value.Dec(AValue) ( this.Value -= AValue );
+function Value.Mul(AValue) ( this.Value *= AValue );
+function Value.Div(AValue) ( this.Value /= AValue );
+
+// Slider
+function Slider.Get() ( this.Value );
+function Slider.Not() ( this.Value = !this.Value );
+function Slider.Set(ASlider) ( this.Value = ASlider );
+function Slider.Inc(ASlider) ( this.Value += ASlider );
+function Slider.Dec(ASlider) ( this.Value -= ASlider );
+function Slider.Mul(ASlider) ( this.Value *= ASlider );
+function Slider.Div(ASlider) ( this.Value /= ASlider );
+
+// Position
+function Position.Get() ( this.Value );
+function Position.Not() ( this.Value = !this.Value );
+function Position.Set(APosition) ( this.Value = APosition );
+function Position.Inc(APosition) ( this.Value += APosition );
+function Position.Dec(APosition) ( this.Value -= APosition );
+function Position.Mul(APosition) ( this.Value *= APosition );
+function Position.Div(APosition) ( this.Value /= APosition );
+
+// Width
+function Width.Get() ( this.Value );
+function Width.Not() ( this.Value = !this.Value );
+function Width.Set(AWidth) ( this.Value = AWidth );
+function Width.Inc(AWidth) ( this.Value += AWidth );
+function Width.Dec(AWidth) ( this.Value -= AWidth );
+function Width.Mul(AWidth) ( this.Value *= AWidth );
+function Width.Div(AWidth) ( this.Value /= AWidth );
+
+// Height
+function Height.Get() ( this.Value );
+function Height.Not() ( this.Value = !this.Value );
+function Height.Set(AHeight) ( this.Value = AHeight );
+function Height.Inc(AHeight) ( this.Value += AHeight );
+function Height.Dec(AHeight) ( this.Value -= AHeight );
+function Height.Mul(AHeight) ( this.Value *= AHeight );
+function Height.Div(AHeight) ( this.Value /= AHeight );
+
+// Min
+function Min.Get() ( this.Value );
+function Min.Not() ( this.Value = !this.Value );
+function Min.Set(AMin) ( this.Value = AMin );
+function Min.Inc(AMin) ( this.Value += AMin );
+function Min.Dec(AMin) ( this.Value -= AMin );
+function Min.Mul(AMin) ( this.Value *= AMin );
+function Min.Div(AMin) ( this.Value /= AMin );
+
+// Max
+function Max.Get() ( this.Value );
+function Max.Not() ( this.Value = !this.Value );
+function Max.Set(AMax) ( this.Value = AMax );
+function Max.Inc(AMax) ( this.Value += AMax );
+function Max.Dec(AMax) ( this.Value -= AMax );
+function Max.Mul(AMax) ( this.Value *= AMax );
+function Max.Div(AMax) ( this.Value /= AMax );
+
+// Def
+function Def.Get() ( this.Value );
+function Def.Not() ( this.Value = !this.Value );
+function Def.Set(ADef) ( this.Value = ADef );
+function Def.Inc(ADef) ( this.Value += ADef );
+function Def.Dec(ADef) ( this.Value -= ADef );
+function Def.Mul(ADef) ( this.Value *= ADef );
+function Def.Div(ADef) ( this.Value /= ADef );
+
